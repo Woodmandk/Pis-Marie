@@ -1503,13 +1503,31 @@ const TUT_STEPS = [
   { text: "Nu er bunken tom. Træk et af dine andre kort over i den tomme plads. Det giver plads, og lå der et skjult kort under, kan du vende det.",
     done: () => S.you.cols[0].length > 0, hi: () => [myCard(0)] },
   { text: "Se, der ligger to 8'ere i midten! Tryk på Pismarie! før modstanderen, så får modstanderen begge dynger.",
-    enter: () => { S.piles[0].push(TUT.extra); render(); flashPile(0, true); sfx("cardOpp"); },
+    enter: () => { tutPair(); render(); flashPile(0, true); sfx("cardOpp"); },
     lock: true, done: () => S.you.shouts > 0 && !S.pending, hi: () => [$("shout")] },
   { text: "Modstanderen fik begge dynger, og I har hver vendt et kort fra jeres reserve. Det sker også, når ingen af jer kan lægge noget.",
     next: "Næste", hi: () => [$("side0").querySelector(".card"), $("side1").querySelector(".card")] },
   { text: "Tøm dine 5 bunker før modstanderen. Så vælger du en af dyngerne i midten: tag den mindste. Den, der først er helt løbet tør for kort, vinder spillet.",
     next: "Spil mod computeren", final: true, hi: () => [] },
 ];
+// The Pismarie step needs a pair on top, whatever the player laid before: the opponent lays a card
+// of the same rank as the top of your dynge (taken from its own cards).
+function tutPair() {
+  const t = pileTop(S, 1);
+  const r = t ? t.r : TUT.extra.r;
+  if (!t) { S.piles[1].push(TUT.extra); return; }
+  if (TUT.extra.r === r) { S.piles[0].push(TUT.extra); return; }
+  S.ai.stock.push(TUT.extra);
+  for (const src of [S.ai.stock, ...S.ai.cols]) {
+    const j = src.findIndex(c => c.r === r);
+    if (j >= 0) {
+      const [c] = src.splice(j, 1);
+      if (src !== S.ai.stock) { const k = S.ai.cols.indexOf(src); S.ai.open[k] = src.length ? 1 : 0; }
+      S.piles[0].push(c);
+      return;
+    }
+  }
+}
 function startTutorial() {
   if (NET) return;
   stopTimers(); pickOppDz();
@@ -1537,10 +1555,12 @@ function tutHighlight() {
 }
 function tutCheck() {
   const st = TUT_STEPS[TUT.step];
-  if (st.done && st.done()) setTimeout(tutAdvance, 450);
+  if (TUT.next || !st.done || !st.done()) return;
+  TUT.next = setTimeout(tutAdvance, 450);  // once: several moves in a row must not skip steps
 }
 function tutAdvance() {
   if (!TUT) return;
+  TUT.next = null;
   TUT.step++;
   sfx("pick");
   const st = TUT_STEPS[TUT.step];
