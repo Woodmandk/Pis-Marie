@@ -20,7 +20,7 @@ App-id'et er `dk.woodmandk.pismarie` (kan ikke ændres efter første upload til 
 
 ## Reklamer (Google AdMob)
 
-`web/ads.js` lægges kun ind i app-udgaven. Den viser en helskærmsannonce højst efter hvert 3. færdige spil og højst én gang hvert 3. minut, aldrig midt i et spil og ikke i online-spil (de tæller dog med). Den hægter sig på spillets globale `finish()` og `NET`, så de navne skal blive i `src/pismarie.html`.
+`web/ads.js` lægges kun ind i app-udgaven. Den viser en helskærmsannonce højst efter hvert 3. færdige spil og højst én gang hvert 3. minut, aldrig midt i et spil og ikke i online-spil (de tæller dog med). Den lytter på hændelsen `pismarie:gameover`, som spillet sender, når et spil er slut.
 
 Lige nu bruges Googles test-annoncer. Når AdMob-kontoen er klar:
 
