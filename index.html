@@ -142,7 +142,7 @@ button:focus-visible, select:focus-visible, .col:focus-visible { outline: 3px so
 .pile.flash .card { animation: land .25s ease-out; }
 .pile.flash.by-ai .card { box-shadow: 0 0 0 3px var(--ink-dim), 0 6px 14px rgba(0,0,0,.25); }
 .pile.same .card { box-shadow: 0 0 0 4px var(--brass), 0 0 28px rgba(226,181,74,.6); }
-.pile { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.pile { display: flex; flex-direction: column; align-items: center; gap: 10px; }
 .pile .pc { font-size: .7rem; color: var(--ink-dim); letter-spacing: .08em; text-transform: uppercase; font-variant-numeric: tabular-nums; }
 .pile.off { opacity: .35; }
 .pile.choose { cursor: pointer; box-shadow: 0 0 0 3px var(--brass); background: var(--brass-soft); animation: pulse .6s ease-in-out infinite alternate; }
@@ -253,7 +253,7 @@ button.alt { background: transparent; color: var(--brass); border: 2px solid var
 .modepick { display: flex; gap: 6px; }
 .mode { flex: 1; }
 .mode.on { background: var(--brass-soft); border-color: var(--brass); color: var(--ink); box-shadow: 0 0 0 1px var(--brass); }
-.modeinfo { margin: 0; font-size: .85rem; color: var(--ink-dim); line-height: 1.4; }
+.modeinfo, .newbietxt { margin: 0; font-size: .85rem; color: var(--ink-dim); line-height: 1.4; }
 .mine .card.takeme { cursor: pointer; box-shadow: 0 0 0 2px var(--ink-dim), 0 6px 14px rgba(0,0,0,.3); }
 .card.held { opacity: .35; }
 .opp .card.held { opacity: 1; transform: translateY(10px) rotate(-4deg); box-shadow: 0 0 0 2px var(--brass), 0 12px 22px rgba(0,0,0,.45); }
@@ -264,6 +264,22 @@ button.alt { background: transparent; color: var(--brass); border: 2px solid var
 .lobbystat { margin: 0; color: var(--ink-dim); font-size: .9rem; }
 .lobbystat.live { color: var(--brass); font-weight: 800; }
 .lobbystat.live::before { content: "● "; }
+.menutitle { font-size: 2.8rem !important; text-align: center; }
+.menusub { margin: -6px 0 2px; text-align: center; color: var(--ink-dim); }
+.menu { display: flex; flex-direction: column; gap: 8px; }
+.menu .big { font-size: 1.15rem; padding: 14px 16px; }
+.menu2 { display: flex; gap: 8px; flex-wrap: wrap; }
+.menu2 button { flex: 1 1 30%; }
+.coach { position: fixed; z-index: 18; top: max(8px, env(safe-area-inset-top, 0px)); left: 50%; transform: translateX(-50%); width: min(460px, calc(100% - 24px)); box-sizing: border-box;
+  background: var(--felt-deep); border: 2px solid var(--brass); border-radius: 14px; padding: 12px 14px; box-shadow: 0 14px 40px rgba(0,0,0,.5); }
+.coach p { margin: 0 0 8px; font-size: .95rem; line-height: 1.4; }
+.coachrow { display: flex; gap: 8px; align-items: center; }
+.coachrow .label { margin-right: auto; }
+#coachNext { background: var(--brass); color: var(--black); border-color: var(--brass); font-weight: 800; }
+.coach.pop { animation: coachin .3s ease-out; }
+@keyframes coachin { from { transform: translateX(-50%) translateY(-10px) scale(.95); opacity: 0; } }
+.coach-hi { animation: coachpulse 1s ease-in-out infinite; position: relative; z-index: 3; }
+@keyframes coachpulse { 0%, 100% { box-shadow: 0 0 0 3px var(--brass), 0 6px 14px rgba(0,0,0,.3); } 50% { box-shadow: 0 0 0 8px rgba(226,181,74,.45), 0 6px 14px rgba(0,0,0,.3); } }
 .sethead { margin: 6px 0 0; font: 800 .8rem var(--display); text-transform: uppercase; letter-spacing: .12em; color: var(--ink-dim); }
 .dznote { min-height: 1.2em; margin: 0; font-size: .85rem; color: var(--ink-dim); }
 
@@ -297,6 +313,8 @@ button.alt { background: transparent; color: var(--brass); border: 2px solid var
   .pile .card { --w: clamp(48px, min(20vw, 11.5vh), 112px); }
   .mine .card { --w: clamp(40px, min(15vw, 8.6vh), 84px); }
   .opp .card { --w: clamp(30px, min(10vw, 6vh), 58px); }
+  .menu .big { padding: 10px 14px; }
+  .menusub { display: none; }
   .msg { min-height: 1.2em; font-size: .8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 }
 @media (hover: none) { .panel .kbd { display: none; } .key { display: none; } }
@@ -331,6 +349,13 @@ button.alt { background: transparent; color: var(--brass); border: 2px solid var
   .zone { gap: 4px; }
   .panel { max-height: 94%; padding: 14px 18px; }
   .panel .kbd { display: none; }
+  #panel { max-width: 620px; }
+  .menutitle { font-size: 1.9rem !important; }
+  .menusub { display: none; }
+  .menu { flex-direction: row; }
+  .menu .big { flex: 1; padding: 10px 12px; font-size: 1rem; }
+  #panel .modeinfo { display: none; }
+  #panel .lobby { padding: 8px 12px; gap: 6px; }
 }
 </style>
 
@@ -385,13 +410,10 @@ button.alt { background: transparent; color: var(--brass); border: 2px solid var
     <h3 class="sethead">Dine kort</h3>
     <div class="dzgrid" id="dzGrid"></div>
     <p class="dznote" id="dzNote"></p>
-    <div class="btnrow"><button class="primary" id="setClose" type="button">Luk</button><button id="setRules" type="button">Vis reglerne</button></div>
+    <div class="btnrow"><button class="primary" id="setClose" type="button">Luk</button><button id="setRules" type="button">Vis reglerne</button><button id="setMenu" type="button">Til menuen</button></div>
   </div>
 </div>
-<div class="overlay" id="overlay">
-  <div class="panel" id="panel">
-    <h2>Pismarie</h2>
-    <div class="scroll">
+<template id="rulesTpl">
     <ul>
       <li>I har hver et halvt kortspil. Du lægger 5 bunker med 5, 4, 3, 2 og 1 kort, og kun det øverste vender op. Resten er din reserve.</li>
       <li><strong>Træk</strong> dine kort op på dyngerne i midten, ét trin over eller under. Es går både til 2 og til konge.</li>
@@ -403,16 +425,13 @@ button.alt { background: transparent; color: var(--brass); border: 2px solid var
       <li>Har en spiller ingen reserve, spilles der kun på én dynge. Tømmer den spiller sine bunker, har den vundet.</li>
       <li><strong>Skjulte bunker:</strong> alle 5 bunker har 5 kort med bagsiden op. Tryk på en bunke for at tage den op på hånden, læg de kort der passer, og læg bunken tilbage. Husk hvad der ligger hvor!</li>
     </ul>
-    <p class="kbd">Tastatur: 1–5 vælger en bunke, piletasterne lægger kortet, mellemrum råber Pismarie.</p>
-    </div>
-    <div class="modepick" role="group" aria-label="Spil"><button type="button" class="mode" data-mode="normal">Normal</button><button type="button" class="mode" data-mode="skjult">Skjulte bunker</button></div>
-    <p class="modeinfo"></p>
-    <div class="btnrow">
-      <button class="primary" id="startBtn" type="button">Mod computeren</button>
-      <button class="primary alt" id="mpBtn" type="button">Mod en anden telefon</button>
-      <button id="dzBtn" type="button">Vælg dine kort</button>
-    </div>
-  </div>
+</template>
+<div class="overlay" id="overlay">
+  <div class="panel" id="panel"></div>
+</div>
+<div class="coach" id="coach" hidden>
+  <p id="coachText"></p>
+  <div class="coachrow"><span class="label" id="coachStep"></span><button id="coachNext" type="button" hidden>Næste</button><button id="coachSkip" type="button">Afslut</button></div>
 </div>
 
 <script>
@@ -594,6 +613,7 @@ const $ = id => document.getElementById(id);
 const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 let NET = null;  // set while playing against another phone
 const opp = () => NET ? "Modstanderen" : "Computeren";
+let TUT = null;  // the tutorial's progress while it runs
 let S = newGame(), aiTimer = null, stuckTimer = null, aiShoutTimer = null, running = false, selected = null, drag = null, startedAt = 0;
 
 function cardEl(c) {
@@ -733,6 +753,7 @@ function render() {
   const live = running && same;
   $("shout").classList.toggle("live", live);
   $("shout").setAttribute("aria-disabled", String(!live));
+  if (TUT) tutHighlight();
   if (NET && NET.role === "host") broadcast();
 }
 
@@ -772,6 +793,7 @@ function fly(card, from, toEl, faceDown, dz) {
 
 // Everything that changes the table goes through here.
 function afterChange(pl) {
+  if (TUT) { render(); tutCheck(); return; }
   render();
   if (pl && bunkerEmpty(pl)) { roundOver(pl); return; }
   if (isPismarie(S) && !NET) scheduleAiShout();
@@ -1216,6 +1238,7 @@ function showPanel(html) { $("panel").innerHTML = html; $("overlay").hidden = fa
 
 function start() {
   if (isGuest()) return;
+  endTutorial(false);
   stopTimers();
   if (!NET) pickOppDz();
   running = false; S = newGame(Settings.mode); S.mp = !!NET; selected = null; mood = 1; lastCounts = [26, 26]; render(); say("");
@@ -1223,9 +1246,128 @@ function start() {
   beginRound();
 }
 
+/* ---------- Menu ---------- */
+function showMenu() {
+  stopTimers(); running = false; endTutorial(false);
+  if (!NET) { S = newGame(Settings.mode); S.phase = "menu"; selected = null; render(); say(""); }
+  const fresh = !Settings.tutorialDone;
+  showPanel(`<h2 class="menutitle">Pismarie</h2>
+    <p class="menusub">Det hurtige kortspil for to. Først med tomme bunker vinder.</p>
+    ${fresh ? `<div class="lobby"><p class="lobbystat live">Ny i Pismarie?</p>
+      <p class="newbietxt">Lær spillet på et par minutter. Du spiller dig igennem det, trin for trin.</p>
+      <div class="btnrow"><button class="primary" id="mTut" type="button">Lær at spille</button><button id="mKnow" type="button">Jeg kan spillet</button></div></div>` : ""}
+    <div class="menu">
+      <button class="primary big" id="mCpu" type="button">Mod computeren</button>
+      <button class="primary alt big" id="mOnline" type="button">Online og mod venner</button>
+    </div>
+    <div class="modepick" role="group" aria-label="Spil"><button type="button" class="mode" data-mode="normal">Normal</button><button type="button" class="mode" data-mode="skjult">Skjulte bunker</button></div>
+    <p class="modeinfo"></p>
+    <div class="menu2">
+      ${fresh ? "" : `<button id="mTut" type="button">Lær at spille</button>`}
+      <button id="mCards" type="button">Dine kort</button>
+      <button id="mSet" type="button" aria-label="Indstillinger">⚙ Indstillinger</button>
+    </div>`);
+  $("mCpu").addEventListener("click", start);
+  $("mOnline").addEventListener("click", () => mpMenu());
+  $("mTut").addEventListener("click", startTutorial);
+  if ($("mKnow")) $("mKnow").addEventListener("click", () => { Settings.tutorialDone = true; saveSettings(); showMenu(); });
+  $("mCards").addEventListener("click", () => { openSettings(); $("dzGrid").scrollIntoView({ block: "center" }); });
+  $("mSet").addEventListener("click", openSettings);
+  syncModeUI();
+  $("mCpu").focus();
+}
+
+/* ---------- Tutorial: a set table where you play the first moves yourself ---------- */
+const cardOf = (r, si) => ALL[si * 13 + r - 1];  // si: 0 ♠, 1 ♥, 2 ♦, 3 ♣
+function tutorialGame() {
+  const G = newGame("normal");
+  const mine = [[[8, 2], [7, 1]], [[2, 1], [9, 0], [11, 0]], [[12, 3], [4, 2]], [[13, 1], [5, 3], [10, 3]], [[12, 1]]];
+  const used = new Set();
+  const own = ([r, si]) => { const c = cardOf(r, si); used.add(c); return c; };
+  G.you.cols = mine.map(col => col.map(own));
+  G.you.open = [1, 1, 1, 1, 1];
+  G.piles = [[own([2, 3])], [own([6, 3])]];
+  const extra = own([8, 0]);
+  const rest = shuffle(ALL.filter(c => !used.has(c)));
+  G.ai.cols = [[], [], [], [], []];
+  for (let row = 0; row < 5; row++) for (let c = row; c < 5; c++) G.ai.cols[c].push(rest.pop());
+  G.ai.open = [1, 1, 1, 1, 1];
+  G.you.stock = rest.splice(0, 10); G.ai.stock = rest;
+  G.you.deck = []; G.ai.deck = [];
+  G.active = [true, true]; G.round = 1;
+  return { G, extra };
+}
+const TUT_STEPS = [
+  { text: "Forneden er dine 5 bunker. Træk 7'eren op på dyngen med 6'eren. Et kort passer, når det er ét over eller ét under.",
+    done: () => pileTop(S, 1) === cardOf(7, 1), hi: () => [myCard(0), $("pile1").querySelector(".card")] },
+  { text: "Godt! Under 7'eren lå et skjult kort. Tryk på bunken for at vende det.",
+    done: () => S.you.open[0] > 0, hi: () => [myCard(0)] },
+  { text: "En 8'er. Den passer på 7'eren, så træk den også op.",
+    done: () => pileTop(S, 1) === cardOf(8, 2), hi: () => [myCard(0), $("pile1").querySelector(".card")] },
+  { text: "Nu er bunken tom. Træk et af dine andre kort over i den tomme plads. Det giver plads, og lå der et skjult kort under, kan du vende det.",
+    done: () => S.you.cols[0].length > 0, hi: () => [myCard(0)] },
+  { text: "Se, der ligger to 8'ere i midten! Tryk på Pismarie! før modstanderen, så får modstanderen begge dynger.",
+    enter: () => { S.piles[0].push(TUT.extra); render(); flashPile(0, true); sfx("cardOpp"); },
+    done: () => S.you.shouts > 0 && !S.pending, hi: () => [$("shout")] },
+  { text: "Modstanderen fik begge dynger, og I har hver vendt et kort fra jeres reserve. Det sker også, når ingen af jer kan lægge noget.",
+    next: "Næste", hi: () => [$("side0").querySelector(".card"), $("side1").querySelector(".card")] },
+  { text: "Tøm dine 5 bunker før modstanderen. Så vælger du en af dyngerne i midten: tag den mindste. Den, der først er helt løbet tør for kort, vinder spillet.",
+    next: "Spil mod computeren", final: true, hi: () => [] },
+];
+function startTutorial() {
+  if (NET) return;
+  stopTimers(); pickOppDz();
+  const t = tutorialGame();
+  S = t.G; S.phase = "play"; selected = null;
+  TUT = { step: 0, extra: t.extra };
+  lastCounts = [remaining(S.you), remaining(S.ai)];
+  $("overlay").hidden = true; running = true;
+  render(); say(""); dealIn(); sfx("go");
+  showCoach();
+}
+function showCoach() {
+  const st = TUT_STEPS[TUT.step];
+  $("coachText").textContent = st.text;
+  $("coachStep").textContent = `Trin ${TUT.step + 1} af ${TUT_STEPS.length}`;
+  $("coachNext").hidden = !st.next; $("coachNext").textContent = st.next || "";
+  $("coach").hidden = false;
+  $("coach").classList.remove("pop"); void $("coach").offsetWidth; $("coach").classList.add("pop");
+  tutHighlight();
+}
+function tutHighlight() {
+  document.querySelectorAll(".coach-hi").forEach(el => el.classList.remove("coach-hi"));
+  if (!TUT) return;
+  TUT_STEPS[TUT.step].hi().forEach(el => el && el.classList.add("coach-hi"));
+}
+function tutCheck() {
+  const st = TUT_STEPS[TUT.step];
+  if (st.done && st.done()) setTimeout(tutAdvance, 450);
+}
+function tutAdvance() {
+  if (!TUT) return;
+  TUT.step++;
+  sfx("pick");
+  const st = TUT_STEPS[TUT.step];
+  if (st.enter) st.enter();
+  showCoach();
+}
+function endTutorial(learned) {
+  if (learned) { Settings.tutorialDone = true; saveSettings(); }
+  if (!TUT) return;
+  TUT = null;
+  $("coach").hidden = true;
+  tutHighlight();
+}
+$("coachNext").addEventListener("click", () => {
+  if (!TUT) return;
+  if (TUT_STEPS[TUT.step].final) { endTutorial(true); start(); return; }
+  tutAdvance();
+});
+$("coachSkip").addEventListener("click", () => { endTutorial(true); showMenu(); });
+
 /* ---------- Sound: everything is synthesised, so there are no sound files to ship ---------- */
 const Settings = (() => {
-  const d = { music: 35, sfx: 75, vibe: true, design: "klassisk", owned: [], mode: "normal" };
+  const d = { music: 35, sfx: 75, vibe: true, design: "klassisk", owned: [], mode: "normal", tutorialDone: false };
   try { return Object.assign(d, JSON.parse(localStorage.getItem("pismarie.settings") || "{}")); } catch (e) { return d; }
 })();
 function saveSettings() { try { localStorage.setItem("pismarie.settings", JSON.stringify(Settings)); } catch (e) {} }
@@ -1409,10 +1551,9 @@ function closeSettings() {
   }
 }
 $("gear").addEventListener("click", openSettings);
-$("dzBtn").addEventListener("click", openSettings);
 $("settings").addEventListener("click", e => { if (e.target === $("settings")) closeSettings(); });
 const SETTINGS_HTML = $("settings").querySelector(".panel").innerHTML;
-const RULES_HTML = document.querySelector("#panel ul").outerHTML;
+const RULES_HTML = $("rulesTpl").innerHTML;
 function wireSettings() {
   $("setClose").addEventListener("click", closeSettings);
   $("volMusic").addEventListener("input", e => { Settings.music = +e.target.value; $("outMusic").textContent = Settings.music; Sound.levels(); saveSettings(); });
@@ -1420,6 +1561,7 @@ function wireSettings() {
   $("volSfx").addEventListener("change", () => sfx("card"));
   $("optVibe").addEventListener("change", e => { Settings.vibe = e.target.checked; saveSettings(); buzz(30); });
   $("dzGrid").addEventListener("click", e => { const b = e.target.closest(".dz"); if (b) setMyDz(b.dataset.id); });
+  $("setMenu").addEventListener("click", () => { if (NET) { location.reload(); return; } pausedForSettings = false; $("settings").hidden = true; showMenu(); });
   $("setRules").addEventListener("click", () => {
     $("settings").querySelector(".panel").innerHTML = `<h2>Regler</h2><div class="scroll">${RULES_HTML}</div><div class="btnrow"><button class="primary" id="rulesBack" type="button">Tilbage</button></div>`;
     $("rulesBack").addEventListener("click", () => { $("settings").querySelector(".panel").innerHTML = SETTINGS_HTML; wireSettings(); syncSettingsUI(); });
@@ -1659,7 +1801,7 @@ function mpMenu(note) {
   $("mpHost").addEventListener("click", hostGame);
   $("mpJoin").addEventListener("click", () => joinGame($("mpCode").value.trim()));
   $("mpCode").addEventListener("keydown", e => { if (e.key === "Enter") joinGame($("mpCode").value.trim()); });
-  $("mpBack").addEventListener("click", () => location.reload());
+  $("mpBack").addEventListener("click", () => { clearTimeout(lobbyTimer); showMenu(); });
   if (lobby) { $("lobbyFind").addEventListener("click", findGame); showLobby(); }
 }
 
@@ -1792,8 +1934,7 @@ async function joinGame(code) {
   }, 20000);
 }
 
-$("mpBtn").addEventListener("click", () => mpMenu());
-$("startBtn").addEventListener("click", start);
+showMenu();
 $("restart").addEventListener("click", start);
 render();
 </script>
