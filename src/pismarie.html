@@ -250,6 +250,16 @@ button.alt { background: transparent; color: var(--brass); border: 2px solid var
 .dz.locked { opacity: .7; }
 .dz .tag { font-size: .66rem; color: var(--ink-dim); text-transform: uppercase; letter-spacing: .08em; }
 .dz.on .tag { color: var(--brass); }
+.modepick { display: flex; gap: 6px; }
+.mode { flex: 1; }
+.mode.on { background: var(--brass-soft); border-color: var(--brass); color: var(--ink); box-shadow: 0 0 0 1px var(--brass); }
+.modeinfo { margin: 0; font-size: .85rem; color: var(--ink-dim); line-height: 1.4; }
+.mine .card.takeme { cursor: pointer; box-shadow: 0 0 0 2px var(--ink-dim), 0 6px 14px rgba(0,0,0,.3); }
+.card.held { opacity: .35; }
+.opp .card.held { opacity: 1; transform: translateY(10px) rotate(-4deg); box-shadow: 0 0 0 2px var(--brass), 0 12px 22px rgba(0,0,0,.45); }
+#cols.hand .card { animation: handin .18s ease-out backwards; }
+@keyframes handin { from { transform: translateY(14px) scale(.9); opacity: .4; } }
+#putBack { background: var(--brass); color: var(--black); border-color: var(--brass); font-weight: 800; padding: 4px 14px; }
 .sethead { margin: 6px 0 0; font: 800 .8rem var(--display); text-transform: uppercase; letter-spacing: .12em; color: var(--ink-dim); }
 .dznote { min-height: 1.2em; margin: 0; font-size: .85rem; color: var(--ink-dim); }
 
@@ -259,6 +269,7 @@ button.alt { background: transparent; color: var(--brass); border: 2px solid var
 .opp .cols.deal .col { animation-name: dealinopp; }
 @keyframes dealinopp { from { transform: translateY(40px) scale(.7) rotate(8deg); opacity: 0; } }
 .countdown { font: 6rem/1 var(--rank); color: var(--brass); text-align: center; animation: pop .3s ease-out; }
+
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 @media (max-width: 480px) {
   h1 small { display: none; } h1 { font-size: 1.6rem; }
@@ -285,6 +296,38 @@ button.alt { background: transparent; color: var(--brass); border: 2px solid var
   .msg { min-height: 1.2em; font-size: .8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 }
 @media (hover: none) { .panel .kbd { display: none; } .key { display: none; } }
+/* Phone on its side: the header becomes a slim column on the left, the Pismarie button sits beside the dynger,
+   and both players' counts sit beside their bunker. */
+@media (orientation: landscape) and (max-height: 540px) {
+  body { padding-block: 4px; }
+  .table {
+    max-width: 980px; display: grid; gap: 4px 14px; align-items: center;
+    grid-template-columns: auto 1fr auto; grid-template-rows: auto 1fr auto;
+    grid-template-areas: "head opp opp" "head mid call" "head mine mine";
+  }
+  header { grid-area: head; flex-direction: column; align-items: stretch; justify-content: flex-start; align-self: stretch; gap: 8px; width: 112px; flex-wrap: nowrap; padding-top: 4px; }
+  h1 { font-size: 1.25rem; } h1 small { display: none; }
+  .controls { flex-direction: column; align-items: stretch; gap: 5px; }
+  .controls .label { font-size: .6rem; }
+  select, button { padding: 5px 8px; font-size: .8rem; }
+  .zone.opp { grid-area: opp; flex-direction: row-reverse; justify-content: center; gap: 14px; }
+  .middle { grid-area: mid; min-height: 0; gap: 10px; }
+  .callrow { grid-area: call; width: 170px; }
+  .zone.mine { grid-area: mine; flex-direction: row; justify-content: center; gap: 14px; }
+  .seat { flex-direction: column; align-items: center; gap: 0; min-width: 76px; }
+  #youSeat { display: flex; flex-direction: column; align-items: center; }
+  .card { --w: clamp(34px, 15vh, 76px); }
+  .mine .card { --w: clamp(34px, 15vh, 76px); }
+  .opp .card { --w: clamp(24px, 10vh, 50px); }
+  .pile .card { --w: clamp(40px, 17.5vh, 88px); }
+  .side .card { --w: clamp(22px, 9vh, 44px); }
+  .pile { gap: 7px; padding: 4px; }
+  .msg { white-space: normal; text-align: center; font-size: .8rem; min-height: 2.4em; }
+  #shout { font-size: 1.2rem; padding: 6px 20px; }
+  .zone { gap: 4px; }
+  .panel { max-height: 94%; padding: 14px 18px; }
+  .panel .kbd { display: none; }
+}
 </style>
 
 <div class="table">
@@ -322,7 +365,7 @@ button.alt { background: transparent; color: var(--brass); border: 2px solid var
 
   <section class="zone mine">
     <div class="cols" id="cols"></div>
-    <div class="seat"><span class="label">Dig</span><span class="count" id="youCount">26</span><span class="label">kort tilbage</span></div>
+    <div class="seat"><span id="youSeat"><span class="label">Dig</span> <span class="count" id="youCount">26</span> <span class="label">kort tilbage</span></span><button id="putBack" type="button" hidden>Læg bunken tilbage</button></div>
   </section>
 </div>
 
@@ -332,6 +375,9 @@ button.alt { background: transparent; color: var(--brass); border: 2px solid var
     <label class="setrow" for="volMusic"><span>Musik</span><input type="range" id="volMusic" min="0" max="100" step="5"><output id="outMusic"></output></label>
     <label class="setrow" for="volSfx"><span>Lydeffekter</span><input type="range" id="volSfx" min="0" max="100" step="5"><output id="outSfx"></output></label>
     <label class="setrow check" for="optVibe"><span>Vibration</span><input type="checkbox" id="optVibe"></label>
+    <h3 class="sethead">Spil</h3>
+    <div class="modepick" role="group" aria-label="Spil"><button type="button" class="mode" data-mode="normal">Normal</button><button type="button" class="mode" data-mode="skjult">Skjulte bunker</button></div>
+    <p class="modeinfo"></p>
     <h3 class="sethead">Dine kort</h3>
     <div class="dzgrid" id="dzGrid"></div>
     <p class="dznote" id="dzNote"></p>
@@ -351,9 +397,12 @@ button.alt { background: transparent; color: var(--brass); border: 2px solid var
       <li>Kan ingen lægge noget, vender I hver et kort fra jeres reserve ud på jeres dynge.</li>
       <li>Har du tømt dine 5 bunker, vælger du en af dyngerne i midten. Tag den mindste! Modstanderen får den anden, og I lægger ud igen.</li>
       <li>Har en spiller ingen reserve, spilles der kun på én dynge. Tømmer den spiller sine bunker, har den vundet.</li>
+      <li><strong>Skjulte bunker:</strong> alle 5 bunker har 5 kort med bagsiden op. Tryk på en bunke for at tage den op på hånden, læg de kort der passer, og læg bunken tilbage. Husk hvad der ligger hvor!</li>
     </ul>
     <p class="kbd">Tastatur: 1–5 vælger en bunke, piletasterne lægger kortet, mellemrum råber Pismarie.</p>
     </div>
+    <div class="modepick" role="group" aria-label="Spil"><button type="button" class="mode" data-mode="normal">Normal</button><button type="button" class="mode" data-mode="skjult">Skjulte bunker</button></div>
+    <p class="modeinfo"></p>
     <div class="btnrow">
       <button class="primary" id="startBtn" type="button">Mod computeren</button>
       <button class="primary alt" id="mpBtn" type="button">Mod en anden telefon</button>
@@ -381,10 +430,15 @@ const ALPH = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 const enc = cards => cards.map(c => ALPH[ALL.indexOf(c)]).join("");
 const dec = str => [...String(str || "")].map(ch => ALL[ALPH.indexOf(ch)]).filter(Boolean);
 
-function newGame() {
+/* Two ways to play. "normal": bunker of 5-4-3-2-1 with the top card face up.
+   "skjult" (hidden bunker): 5 face-down cards in every bunke; take one bunke up in your hand at a time,
+   play any of its cards, then put it back face down. pl.hand is the bunke in your hand, or -1. */
+const MODES = { normal: "Normal", skjult: "Skjulte bunker" };
+function newGame(mode) {
   const deck = shuffle(ALL.slice());
-  const player = () => ({ deck: deck.splice(0, 26), cols: [[], [], [], [], []], open: [0, 0, 0, 0, 0], stock: [], played: 0, shouts: 0 });
-  const G = { you: player(), ai: player(), piles: [[], []], active: [true, true], round: 0, over: false };
+  const skjult = mode === "skjult";
+  const player = () => ({ deck: deck.splice(0, 26), cols: [[], [], [], [], []], open: [0, 0, 0, 0, 0], stock: [], played: 0, shouts: 0, skjult, hand: -1 });
+  const G = { you: player(), ai: player(), piles: [[], []], active: [true, true], round: 0, over: false, mode: skjult ? "skjult" : "normal" };
   dealRound(G);
   return G;
 }
@@ -394,8 +448,9 @@ function dealRound(G) {
   for (const pl of [G.you, G.ai]) {
     const cards = shuffle(pl.deck); pl.deck = [];
     pl.cols = [[], [], [], [], []];
-    for (let row = 0; row < 5; row++) for (let c = row; c < 5; c++) if (cards.length) pl.cols[c].push(cards.pop());
-    pl.open = pl.cols.map(c => c.length ? 1 : 0);
+    for (let row = 0; row < 5; row++) for (let c = pl.skjult ? 0 : row; c < 5; c++) if (cards.length) pl.cols[c].push(cards.pop());
+    pl.open = pl.cols.map(c => c.length && !pl.skjult ? 1 : 0);
+    pl.hand = -1;
     pl.stock = cards;
   }
   G.piles = [[], []];
@@ -431,7 +486,26 @@ function moves(G, pl) {
   for (let k = 0; k < 5; k++) { const c = topOf(pl, k); for (let i = 0; i < 2; i++) if (fits(c, pileTop(G, i))) out.push([k, i]); }
   return out;
 }
-function flipTarget(pl) { return pl.cols.findIndex((c, k) => c.length && !pl.open[k]); }
+function flipTarget(pl) { return pl.skjult ? -1 : pl.cols.findIndex((c, k) => c.length && !pl.open[k]); }
+// Hidden bunker: the cards in your hand, the moves from it, and whether any hidden card could be played at all.
+function handCards(pl) { return pl.hand >= 0 ? pl.cols[pl.hand] : []; }
+function handMoves(G, pl) {
+  const out = [];
+  handCards(pl).forEach((c, j) => { for (let i = 0; i < 2; i++) if (fits(c, pileTop(G, i))) out.push([j, i]); });
+  return out;
+}
+function anyFits(G, pl) { return pl.cols.some(col => col.some(c => fits(c, pileTop(G, 0)) || fits(c, pileTop(G, 1)))); }
+function doTake(pl, k) { if (!pl.skjult || !pl.cols[k].length || pl.hand === k) return false; pl.hand = k; return true; }
+function doPutBack(pl) { if (pl.hand < 0) return false; pl.hand = -1; return true; }
+function doPlayHand(G, pl, j, i) {
+  const col = handCards(pl), c = col[j];
+  if (!fits(c, pileTop(G, i))) return false;
+  col.splice(j, 1);
+  G.piles[i].push(c);
+  pl.played++;
+  if (!col.length) pl.hand = -1;
+  return true;
+}
 function fillTarget(pl) { return -1; }  // the reserve is only for turning cards onto the dynger
 function isPismarie(G) { const a = pileTop(G, 0), b = pileTop(G, 1); return !!(a && b && a.r === b.r); }
 // Moving within your own bunker: onto an empty bunke, or onto a face-up card of the same rank.
@@ -504,6 +578,7 @@ function doSpit(G) {
 // (Your own shifts and fills are optional, so the game does not wait for them.)
 function isStuck(G) {
   if (isPismarie(G)) return false;
+  if (G.mode === "skjult") return !anyFits(G, G.you) && !anyFits(G, G.ai);
   if (moves(G, G.you).length || moves(G, G.ai).length) return false;
   if (flipTarget(G.you) >= 0 || flipTarget(G.ai) >= 0) return false;
   if (!G.mp && (usefulShift(G.ai) || fillTarget(G.ai) >= 0)) return false;
@@ -536,6 +611,7 @@ function backEl(n) {
 function stockEl(n) { return n ? backEl(n) : cardEl(null); }
 
 function colEl(pl, k, mine) {
+  if (pl.skjult) return hiddenColEl(pl, k, mine);
   const col = document.createElement("div");
   col.className = "col";
   col.dataset.k = k;
@@ -576,11 +652,55 @@ function colEl(pl, k, mine) {
   return wrap;
 }
 
+function keyWrap(col, label) {
+  const key = document.createElement("span"); key.className = "key"; key.textContent = label;
+  const wrap = document.createElement("div"); wrap.className = "zone"; wrap.style.gap = "2px";
+  wrap.append(col, key);
+  return wrap;
+}
+// Hidden bunker: a face-down bunke with its count. Yours are taken up in your hand with a tap.
+function hiddenColEl(pl, k, mine) {
+  const col = document.createElement("div");
+  col.className = "col"; col.dataset.k = k;
+  const n = pl.cols[k].length;
+  const card = n ? backEl(n) : cardEl(null);
+  if (pl.hand === k) card.classList.add("held");
+  if (!mine && aimK === k && n) card.classList.add("aim");
+  col.appendChild(card);
+  if (!mine) return col;
+  if (n) card.classList.add("takeme");
+  col.tabIndex = 0;
+  col.setAttribute("aria-label", `Bunke ${k + 1}, ${n} kort. Tag den op`);
+  col.addEventListener("pointerdown", e => { e.preventDefault(); take(S.you, k); });
+  col.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); take(S.you, k); } });
+  return keyWrap(col, k + 1);
+}
+// A card in your hand: drag any of them to the middle.
+function handEl(j) {
+  const c = handCards(S.you)[j];
+  const col = document.createElement("div");
+  col.className = "col"; col.dataset.k = j;
+  const card = cardEl(c);
+  if (fits(c, pileTop(S, 0)) || fits(c, pileTop(S, 1))) card.classList.add("playable");
+  if (drag && drag.card === c) card.classList.add("lifted");
+  if (selected === j) col.classList.add("selected");
+  col.appendChild(card);
+  col.tabIndex = 0;
+  col.addEventListener("pointerdown", e => startDrag(e, j, card));
+  col.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); keyCol(j); } });
+  return keyWrap(col, j + 1);
+}
+
 let lastCounts = [26, 26];
 function render() {
   applyDesigns();
   const cols = $("cols"); cols.innerHTML = "";
-  for (let k = 0; k < 5; k++) cols.appendChild(colEl(S.you, k, true));
+  const holding = S.you.skjult && S.you.hand >= 0;
+  cols.classList.toggle("hand", holding);
+  if (holding) handCards(S.you).forEach((c, j) => cols.appendChild(handEl(j)));
+  else for (let k = 0; k < 5; k++) cols.appendChild(colEl(S.you, k, true));
+  $("putBack").hidden = !holding;
+  $("youSeat").hidden = holding;
   const ai = $("aiCols"); ai.innerHTML = "";
   for (let k = 0; k < 5; k++) ai.appendChild(colEl(S.ai, k, false));
   const same = isPismarie(S);
@@ -594,7 +714,7 @@ function render() {
     const choosing = S.choosing === S.you && S.active[i] && !singlePile(S);
     p.classList.toggle("choose", choosing);
     p.classList.toggle("smallest", choosing && S.piles[i].length <= S.piles[1 - i].length);
-    const dragCard = drag ? drag.card : selected !== null ? topOf(S.you, selected) : null;
+    const dragCard = drag ? drag.card : selected !== null ? (S.you.skjult ? handCards(S.you)[selected] : topOf(S.you, selected)) : null;
     p.classList.toggle("drop-ok", !!dragCard && fits(dragCard, pileTop(S, i)));
     p.classList.toggle("same", running && same);
   }
@@ -710,6 +830,65 @@ function shift(pl, from, to) {
   sfx("slide");
   return true;
 }
+function take(pl, k) {
+  if (isGuest()) {
+    if (pl !== S.you || !running || !doTake(pl, k)) return false;
+    selected = null; render(); sfx("flip"); send({ t: "t", k });
+    return true;
+  }
+  if (!running || S.over || !doTake(pl, k)) return false;
+  if (pl === S.you) selected = null;
+  afterChange(pl);
+  sfx(pl === S.you ? "flip" : "flipOpp");
+  return true;
+}
+function putBack(pl) {
+  if (isGuest()) {
+    if (pl !== S.you || !running || !doPutBack(pl)) return false;
+    selected = null; render(); sfx("slide"); send({ t: "b" });
+    return true;
+  }
+  if (!running || S.over || !doPutBack(pl)) return false;
+  if (pl === S.you) selected = null;
+  afterChange(pl);
+  sfx("slide");
+  return true;
+}
+function playHand(pl, j, i) {
+  const card = handCards(pl)[j];
+  if (isGuest()) {
+    if (pl !== S.you || !running || !doPlayHand(S, pl, j, i)) return false;
+    selected = null; render(); flashPile(i); sfx("card");
+    send({ t: "q", c: ALL.indexOf(card), i: 1 - i });
+    return true;
+  }
+  if (!running || S.over) return false;
+  const from = pl === S.ai && pl.hand >= 0 ? aiCardRect(pl.hand) : null;
+  if (!doPlayHand(S, pl, j, i)) return false;
+  if (pl === S.you) selected = null;
+  afterChange(pl);
+  if (S.over) return true;
+  if (from) fly(card, from, $("pile" + i), false, oppDz);
+  flashPile(i, pl === S.ai);
+  sfx(pl === S.you ? "card" : "cardOpp");
+  return true;
+}
+$("putBack").addEventListener("click", () => putBack(S.you));
+
+const MODE_INFO = {
+  normal: "Bunker med 5, 4, 3, 2 og 1 kort, og det øverste kort vender op.",
+  skjult: "5 kort i hver bunke, alle med bagsiden op. Tag en bunke op på hånden, læg det der passer, og læg den tilbage. Husk hvad der ligger hvor!",
+};
+function syncModeUI() {
+  const m = Settings.mode === "skjult" ? "skjult" : "normal";
+  document.querySelectorAll(".mode").forEach(b => { b.classList.toggle("on", b.dataset.mode === m); b.setAttribute("aria-pressed", String(b.dataset.mode === m)); });
+  const later = running || S.phase === "play" || S.phase === "countdown";
+  document.querySelectorAll(".modeinfo").forEach(p => { p.textContent = MODE_INFO[m] + (later && p.closest("#settings") ? " Gælder fra næste spil." : ""); });
+}
+document.addEventListener("click", e => {
+  const b = e.target.closest(".mode"); if (!b) return;
+  Settings.mode = b.dataset.mode; saveSettings(); syncModeUI(); sfx("card");
+});
 function showBubble() {
   document.querySelectorAll(".bubble").forEach(b => b.remove());
   const b = document.createElement("div"); b.className = "bubble"; b.textContent = "Pismarie!";
@@ -753,7 +932,7 @@ function near(el, x, y, pad) { const r = el.getBoundingClientRect(); return x > 
 // dynge it fits on (the nearest one if it fits both).
 function targetAt(x, y, card) {
   for (let i = 0; i < 2; i++) if (near($("pile" + i), x, y, 40) && fits(card, pileTop(S, i))) return { pile: i };
-  const cols = $("cols").querySelectorAll(".col");
+  const cols = S.you.skjult ? [] : $("cols").querySelectorAll(".col");
   for (const c of cols) if (near(c, x, y, 6)) return { col: +c.dataset.k };
   const band = $("cols").getBoundingClientRect().top - 8, roof = $("aiCols").getBoundingClientRect().bottom;
   if (y < band && y > roof) {
@@ -771,14 +950,18 @@ function startDrag(e, k, el) {
   if (drag) { drag.ghost.remove(); drag = null; }  // a lost finger-up must never block the next drag
   e.preventDefault();
   const pl = S.you;
-  if (!pl.cols[k].length) return;
-  if (!pl.open[k]) { flip(pl, k); return; }
+  if (!pl.skjult) {
+    if (!pl.cols[k].length) return;
+    if (!pl.open[k]) { flip(pl, k); return; }
+  }
+  const card = pl.skjult ? handCards(pl)[k] : topOf(pl, k);
+  if (!card) return;
   const r = el.getBoundingClientRect();
-  const ghost = cardEl(topOf(pl, k));
+  const ghost = cardEl(card);
   ghost.classList.add("ghost"); ghost.dataset.dz = myDz();
   ghost.style.width = r.width + "px"; ghost.style.left = r.left + "px"; ghost.style.top = r.top + "px";
   document.body.appendChild(ghost);
-  drag = { k, card: topOf(pl, k), ghost, dx: e.clientX - r.left, dy: e.clientY - r.top, home: r, moved: false, sx: e.clientX, sy: e.clientY, x: e.clientX, y: e.clientY, id: e.pointerId };
+  drag = { k, card, ghost, dx: e.clientX - r.left, dy: e.clientY - r.top, home: r, moved: false, sx: e.clientX, sy: e.clientY, x: e.clientX, y: e.clientY, id: e.pointerId };
   // Capture on a container that is never rebuilt, so the drag survives the table redrawing under the finger.
   try { $("cols").setPointerCapture(e.pointerId); } catch (err) {}
   selected = null;
@@ -807,9 +990,10 @@ function endDrag(e) {
   const x = e.type === "pointerup" ? e.clientX : d.x, y = e.type === "pointerup" ? e.clientY : d.y;
   const t = d.moved ? targetAt(x, y, d.card) : null;
   // The card must still be the top card: the computer may have changed the table meanwhile.
-  const still = topOf(S.you, d.k) === d.card;
+  const hand = S.you.skjult;
+  const still = hand ? handCards(S.you).includes(d.card) : topOf(S.you, d.k) === d.card;
   let ok = false;
-  if (t && still && t.pile !== undefined) ok = play(S.you, d.k, t.pile);
+  if (t && still && t.pile !== undefined) ok = hand ? playHand(S.you, handCards(S.you).indexOf(d.card), t.pile) : play(S.you, d.k, t.pile);
   else if (t && still && t.col !== undefined && t.col !== d.k) ok = shift(S.you, d.k, t.col);
   if (ok) { d.ghost.remove(); return; }
   if (!d.moved) say("Træk kortet op på en af dyngerne i midten.");
@@ -824,6 +1008,11 @@ document.addEventListener("touchmove", e => { if (drag) e.preventDefault(); }, {
 /* Keyboard: 1–5 picks a bunke, arrows lay the card, space shouts. */
 function keyCol(k) {
   const pl = S.you;
+  if (pl.skjult) {
+    if (pl.hand < 0) take(pl, k);
+    else if (k < handCards(pl).length) { selected = selected === k ? null : k; render(); }
+    return;
+  }
   if (selected !== null && selected !== k && canShift(pl, selected, k)) { const f = selected; selected = null; shift(pl, f, k); return; }
   if (!pl.cols[k].length) return;
   if (!pl.open[k]) { flip(pl, k); return; }
@@ -834,9 +1023,10 @@ document.addEventListener("keydown", e => {
   const n = parseInt(e.key, 10);
   if (n >= 1 && n <= 5) keyCol(n - 1);
   if (e.key === " ") { e.preventDefault(); shout(S.you); }
+  if (e.key === "Backspace" || e.key === "0") putBack(S.you);
   if (selected !== null && (e.key === "ArrowLeft" || e.key === "ArrowRight")) {
-    const k = selected;
-    if (!play(S.you, k, e.key === "ArrowLeft" ? 0 : 1)) { selected = null; render(); shake(myCard(k)); }
+    const k = selected, i = e.key === "ArrowLeft" ? 0 : 1;
+    if (!(S.you.skjult ? playHand(S.you, k, i) : play(S.you, k, i))) { selected = null; render(); shake(myCard(k)); }
   }
 });
 $("shout").addEventListener("click", () => shout(S.you));
@@ -863,6 +1053,7 @@ let aimK = -1;
 function aiTick() {
   if (!running || S.over) return;
   const pl = S.ai;
+  if (pl.skjult) { aiHidden(pl); return; }
   const m = moves(S, pl);
   const sh = usefulShift(pl);
   let act = null, k = -1;
@@ -880,6 +1071,28 @@ function aiTick() {
     if (!act()) render();  // the table changed under it: put the card back down
     aiTimer = setTimeout(aiTick, aiDelay());
   }, reduceMotion ? 0 : 140 + Math.random() * 160);
+}
+
+// Hidden bunker: the computer takes a bunke up, plays what fits, puts it back and tries the next.
+// It half remembers where the good cards are.
+function aiHidden(pl) {
+  let act;
+  if (pl.hand >= 0) {
+    const hm = handMoves(S, pl);
+    if (hm.length) { const [j, i] = pick(hm); act = () => playHand(pl, j, i); }
+    else act = () => putBack(pl);
+  } else {
+    const ks = [0, 1, 2, 3, 4].filter(k => pl.cols[k].length && k !== pl.lastHand);
+    const good = ks.filter(k => pl.cols[k].some(c => fits(c, pileTop(S, 0)) || fits(c, pileTop(S, 1))));
+    const k = good.length && Math.random() < 0.55 ? pick(good) : ks.length ? pick(ks) : pl.cols.findIndex(c => c.length);
+    if (k >= 0) { pl.lastHand = k; act = () => take(pl, k); }
+  }
+  if (!act) { aiTimer = setTimeout(aiTick, aiDelay()); return; }
+  aiTimer = setTimeout(() => {
+    if (!running || S.over) return;
+    if (!act()) render();
+    aiTimer = setTimeout(aiTick, aiDelay() * 0.7);
+  }, reduceMotion ? 0 : 120);
 }
 
 function checkStuck() {
@@ -990,6 +1203,7 @@ function beginRound() {
     running = true; flashPile(0); flashPile(1);
     if (!NET) aiTimer = setTimeout(aiTick, aiDelay() + 400);
     afterChange(null);
+    if (S.you.skjult && S.round === 1) say("Tryk på en bunke for at tage den op på hånden.");
   };
   setTimeout(step, 600);
 }
@@ -1000,14 +1214,14 @@ function start() {
   if (isGuest()) return;
   stopTimers();
   if (!NET) pickOppDz();
-  running = false; S = newGame(); S.mp = !!NET; selected = null; mood = 1; lastCounts = [26, 26]; render(); say("");
+  running = false; S = newGame(Settings.mode); S.mp = !!NET; selected = null; mood = 1; lastCounts = [26, 26]; render(); say("");
   startedAt = Date.now();
   beginRound();
 }
 
 /* ---------- Sound: everything is synthesised, so there are no sound files to ship ---------- */
 const Settings = (() => {
-  const d = { music: 35, sfx: 75, vibe: true, design: "klassisk", owned: [] };
+  const d = { music: 35, sfx: 75, vibe: true, design: "klassisk", owned: [], mode: "normal" };
   try { return Object.assign(d, JSON.parse(localStorage.getItem("pismarie.settings") || "{}")); } catch (e) { return d; }
 })();
 function saveSettings() { try { localStorage.setItem("pismarie.settings", JSON.stringify(Settings)); } catch (e) {} }
@@ -1176,7 +1390,7 @@ function syncSettingsUI() {
   $("volSfx").value = Settings.sfx; $("outSfx").textContent = Settings.sfx;
   $("optVibe").checked = Settings.vibe;
   $("dzNote").textContent = "";
-  renderDzGrid();
+  renderDzGrid(); syncModeUI();
 }
 function openSettings() {
   syncSettingsUI();
@@ -1208,17 +1422,21 @@ function wireSettings() {
   });
 }
 wireSettings();
+syncModeUI();
 document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("settings").hidden) closeSettings(); });
 
 /* ---------- Two phones: one hosts the game, the other mirrors it ----------
    Both join a named room from a 4-digit code. The host keeps the real game and puts it in its presence;
    the guest sees the table from its own side and sends its moves in its presence, numbered. */
 function isGuest() { return !!NET && NET.role === "guest"; }
-function encPl(pl) { return { c: pl.cols.map(enc), o: pl.open, s: enc(pl.stock), d: enc(pl.deck || []), p: pl.played, x: pl.shouts }; }
-function decPl(o) { return { cols: [0, 1, 2, 3, 4].map(k => dec(o.c[k])), open: [0, 1, 2, 3, 4].map(k => Math.max(0, o.o[k] | 0)), stock: dec(o.s), deck: dec(o.d), played: o.p | 0, shouts: o.x | 0 }; }
+function encPl(pl) { return { c: pl.cols.map(enc), o: pl.open, s: enc(pl.stock), d: enc(pl.deck || []), p: pl.played, x: pl.shouts, h: pl.hand }; }
+function decPl(o, skjult) {
+  const hand = Number.isInteger(o.h) && o.h >= 0 && o.h <= 4 ? o.h : -1;
+  return { cols: [0, 1, 2, 3, 4].map(k => dec(o.c[k])), open: [0, 1, 2, 3, 4].map(k => Math.max(0, o.o[k] | 0)), stock: dec(o.s), deck: dec(o.d), played: o.p | 0, shouts: o.x | 0, skjult, hand };
+}
 function broadcast() {
   const ch = S.choosing === S.you ? "h" : S.choosing === S.ai ? "g" : "";
-  const st = { v: 0, h: encPl(S.you), g: encPl(S.ai), p: S.piles.map(enc), a: S.active, r: S.round, ph: S.phase || "", ch, w: S.winner || "", e: S.ev || null };
+  const st = { v: 0, md: S.mode, h: encPl(S.you), g: encPl(S.ai), p: S.piles.map(enc), a: S.active, r: S.round, ph: S.phase || "", ch, w: S.winner || "", e: S.ev || null };
   const key = JSON.stringify(st);
   if (key === NET.lastSent) return;  // unchanged: sending it again would only echo back here
   NET.lastSent = key;
@@ -1242,12 +1460,16 @@ function hostTakeActs(acts) {
     else if (a.t === "m" && ok(a.a, 4) && ok(a.b, 4)) shift(S.ai, a.a, a.b);
     else if (a.t === "s") shout(S.ai);
     else if (a.t === "c" && ok(a.i, 1)) choose(S.ai, a.i);
+    else if (a.t === "t" && ok(a.k, 4)) take(S.ai, a.k);
+    else if (a.t === "b") putBack(S.ai);
+    else if (a.t === "q" && ok(a.c, 51) && ok(a.i, 1)) { const j = handCards(S.ai).indexOf(ALL[a.c]); if (j >= 0) playHand(S.ai, j, a.i); }
   }
 }
 function hostPeers(ch) {
   const g = ch.peers.find(p => !p.isMe && p.presence && p.presence.role === "guest" && (!NET.guest || p.peer === NET.guest));
-  if (NET.guest && ch.left.some(p => p.peer === NET.guest)) say("Din modspiller har forladt spillet.");
+  if (NET.guest && ch.left.some(p => p.peer === NET.guest)) { say("Din modspiller har mistet forbindelsen…"); NET.lost = true; }
   if (!g) return;
+  if (NET.lost) { NET.lost = false; say(""); }
   if (g.presence.dz && dzOk(g.presence.dz) !== oppDz) { oppDz = dzOk(g.presence.dz); applyDesigns(); }
   if (NET.guest && !ch.updated.includes(g) && !ch.joined.includes(g)) return;
   if (!NET.guest) {
@@ -1262,8 +1484,9 @@ function hostPeers(ch) {
 // Guest: rebuild the table from the host's state, seen from the guest's side.
 function guestPeers(ch) {
   const h = ch.peers.find(p => !p.isMe && p.presence && p.presence.role === "host");
-  if (!h) { if (NET.seenHost && ch.left.length) say("Din modspiller har forladt spillet."); return; }
+  if (!h) { if (NET.seenHost && ch.left.length) { say("Forbindelsen blev afbrudt. Prøver igen…"); NET.lost = true; } return; }
   NET.seenHost = true;
+  if (NET.lost) { NET.lost = false; say(""); }
   if (h.presence.dz && dzOk(h.presence.dz) !== oppDz) { oppDz = dzOk(h.presence.dz); applyDesigns(); }
   const st = h.presence.st;
   if (!st || typeof st.v !== "number" || st.v <= NET.ver) return;
@@ -1271,13 +1494,14 @@ function guestPeers(ch) {
   try { applyState(st); } catch (e) {}
 }
 function applyState(st) {
-  const prevTops = [0, 1, 2, 3, 4].map(k => topOf(S.ai, k));
-  const rects = prevTops.map((c, k) => c ? aiCardRect(k) : null);
+  const prevCols = S.ai.cols.map(c => c.slice());
+  const rects = prevCols.map((c, k) => c.length ? aiCardRect(k) : null);
   const prevPile = [pileTop(S, 0), pileTop(S, 1)];
   const prevOpen = S.ai.open.slice();
   const keepDrag = drag;
-  S = { you: decPl(st.g), ai: decPl(st.h), piles: [dec(st.p[1]), dec(st.p[0])], active: [!!st.a[1], !!st.a[0]],
-        round: st.r | 0, over: st.ph === "over", phase: st.ph, mp: true };
+  const skjult = st.md === "skjult";
+  S = { you: decPl(st.g, skjult), ai: decPl(st.h, skjult), piles: [dec(st.p[1]), dec(st.p[0])], active: [!!st.a[1], !!st.a[0]],
+        round: st.r | 0, over: st.ph === "over", phase: st.ph, mp: true, mode: skjult ? "skjult" : "normal" };
   S.choosing = st.ch === "g" ? S.you : st.ch === "h" ? S.ai : null;
   running = st.ph === "play";
   if (keepDrag && !running) { keepDrag.ghost.remove(); drag = null; }
@@ -1285,7 +1509,7 @@ function applyState(st) {
   for (let i = 0; i < 2; i++) {
     const t = pileTop(S, i);
     if (!t || t === prevPile[i]) continue;
-    const k = prevTops.indexOf(t);
+    const k = prevCols.findIndex(c => c.includes(t));
     if (k >= 0 && rects[k]) { fly(t, rects[k], $("pile" + i), false, oppDz); flashPile(i, true); sfx("cardOpp"); }
   }
   for (let k = 0; k < 5; k++) if (!prevOpen[k] && S.ai.open[k] && S.ai.cols[k].length) { const c = aiColEl(k).querySelector(".card"); if (c) c.classList.add("flipped"); }
@@ -1334,10 +1558,19 @@ async function getRoom() {
   if (window.Peer) return { join: (name, role) => peerRoom(name, role) };
   return null;
 }
+// Phones on mobile data often cannot reach each other directly, so a public relay (TURN) is offered as well.
+const ICE = [
+  { urls: "stun:stun.l.google.com:19302" },
+  { urls: "stun:openrelay.metered.ca:80" },
+  { urls: "turn:openrelay.metered.ca:80", username: "openrelayproject", credential: "openrelayproject" },
+  { urls: "turn:openrelay.metered.ca:443", username: "openrelayproject", credential: "openrelayproject" },
+  { urls: "turn:openrelay.metered.ca:443?transport=tcp", username: "openrelayproject", credential: "openrelayproject" },
+];
 function peerRoom(name, role) {
   return new Promise((resolve, reject) => {
-    const opts = window.PEER_OPTS || {};
+    const opts = Object.assign({ config: { iceServers: ICE } }, window.PEER_OPTS || {});
     const peer = role === "host" ? new Peer(name, opts) : new Peer(opts);
+    if (window.PEER_OPTS) window.__peers = [...(window.__peers || []), peer];  // tests only
     let mine = {}, self = null, myId = "me", ready = false;
     const remote = new Map(), handlers = [], conns = new Set();
     const mk = (id, presence, isMe) => Object.freeze({ peer: id, by: null, isMe, sameTab: isMe, kind: "viewer", guest: false, presence: Object.freeze(presence), updatedAt: Date.now() });
@@ -1352,9 +1585,30 @@ function peerRoom(name, role) {
         remote.set(conn.peer, p);
         deliver(ex ? [] : [p], [], ex ? [p] : []);
       });
-      const gone = () => { conns.delete(conn); const ex = remote.get(conn.peer); if (ex) { remote.delete(conn.peer); deliver([], [ex], []); } };
+      const gone = () => {
+        if (!conns.delete(conn)) return;
+        const ex = remote.get(conn.peer);
+        if (ex && ![...conns].some(c => c.open && c.peer === conn.peer)) { remote.delete(conn.peer); deliver([], [ex], []); }
+        if (role === "guest") keepTrying();  // the link dropped (screen lock, network change): find the host again
+      };
       conn.on("close", gone); conn.on("error", gone);
     };
+    // The guest keeps knocking for a while, because the host may be reconnecting to the broker.
+    let tries = 0, knock = null;
+    const linked = () => [...conns].some(c => c.open);
+    const connect = () => { if (!peer.destroyed && !peer.disconnected && !linked()) wire(peer.connect(name, { reliable: true })); };
+    const keepTrying = () => {
+      if (knock || peer.destroyed) return;
+      tries = 0;
+      knock = setInterval(() => {
+        if (peer.destroyed || linked() || ++tries > 10) { clearInterval(knock); knock = null; return; }
+        connect();
+      }, 3000);
+    };
+    // Switching app or locking the screen drops the link to the broker; come back to it with the same id.
+    const revive = () => { if (peer.disconnected && !peer.destroyed) { try { peer.reconnect(); } catch (e) {} } };
+    peer.on("disconnected", () => setTimeout(revive, 1000));
+    document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") { revive(); if (role === "guest" && ready) setTimeout(() => { if (!linked()) { connect(); keepTrying(); } }, 800); } });
     const api = {
       name,
       async presence(patch) {
@@ -1367,17 +1621,23 @@ function peerRoom(name, role) {
       onPeers(h) { handlers.push(h); return () => {}; },
       peers: list,
       connected: () => !peer.disconnected,
+      linked,
+      lastError: null,
       async leave() { peer.destroy(); }
     };
     peer.on("open", id => {
-      myId = id; ready = true;
-      if (role === "host") {
+      myId = id;
+      if (role === "host" && !ready) {
         // One opponent at a time; a phone that reloads may come back once the old link is gone.
         peer.on("connection", c => { if ([...conns].some(x => x.open)) { c.on("open", () => c.close()); return; } wire(c); });
-      } else wire(peer.connect(name, { reliable: true }));
-      resolve(api);
+      } else if (role === "guest" && !linked()) { connect(); keepTrying(); }
+      if (!ready) { ready = true; resolve(api); }
     });
-    peer.on("error", err => { if (!ready) { reject(err); peer.destroy(); } });
+    peer.on("error", err => {
+      api.lastError = err && err.type;
+      if (!ready) { reject(err); peer.destroy(); return; }
+      if (err && err.type === "unavailable-id" && role === "host") return;  // our id is still held by the old link; reconnect retries
+    });
   });
 }
 function mpMenu(note) {
@@ -1405,7 +1665,8 @@ async function hostGame() {
   r.presence({ role: "host", dz: myDz() }).catch(() => {});
   r.onPeers(hostPeers);
   showPanel(`<h2>Din spilkode</h2><div class="code">${code}</div>
-    <p>Bed din modspiller åbne Pismarie, vælge <strong>Mod en anden telefon</strong> og skrive koden. Spillet starter, så snart I begge er inde.</p>`);
+    <p>Bed din modspiller åbne Pismarie, vælge <strong>Mod en anden telefon</strong> og skrive koden. Spillet starter, så snart I begge er inde.</p>
+    <p class="modeinfo">Hold siden åben imens. Sig koden højt, eller kom tilbage hertil lige efter, du har sendt den. I skal begge bruge hjemmesiden.</p>`);
 }
 async function joinGame(code) {
   if (!/^\d{4}$/.test(code)) { shake($("mpCode")); return; }
@@ -1418,7 +1679,14 @@ async function joinGame(code) {
   r.presence({ role: "guest", acts: [], dz: myDz() }).catch(() => {});
   r.onPeers(guestPeers);
   showPanel(`<h2>Forbinder…</h2><p>Venter på spillet med kode <strong>${code}</strong>.</p>`);
-  setTimeout(() => { if (NET && NET.role === "guest" && !NET.seenHost) showPanel(`<h2>Ingen spil fundet</h2><p>Der er ingen med koden <strong>${code}</strong> lige nu. Tjek koden, eller bed din modspiller oprette spillet igen.</p><button class="primary" id="mpRetry" type="button">Tilbage</button>`) || $("mpRetry").addEventListener("click", () => location.reload()); }, 8000);
+  setTimeout(() => {
+    if (!NET || NET.role !== "guest" || NET.seenHost) return;
+    const missing = r.lastError === "peer-unavailable";
+    showPanel(missing
+      ? `<h2>Ingen spil fundet</h2><p>Der er ingen spil med koden <strong>${code}</strong> lige nu. Tjek koden, og bed din modspiller have Pismarie åben på skærmen, mens du deltager.</p><p class="modeinfo">I skal begge bruge hjemmesiden, ikke den ene i Claude-appen.</p><button class="primary" id="mpRetry" type="button">Prøv igen</button>`
+      : `<h2>Ingen forbindelse</h2><p>Spillet med koden <strong>${code}</strong> findes, men telefonerne kunne ikke få forbindelse til hinanden. Prøv igen, eller kom på det samme wifi.</p><button class="primary" id="mpRetry" type="button">Prøv igen</button>`);
+    $("mpRetry").addEventListener("click", () => location.reload());
+  }, 20000);
 }
 
 $("mpBtn").addEventListener("click", () => mpMenu());
