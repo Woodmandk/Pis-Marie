@@ -1,6 +1,6 @@
 <!doctype html><html lang="da"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#113a2d"><style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}</style><script src="peerjs.min.js"></script></head><body><title>Pismarie</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Rozha+One&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Rozha+One&family=Fredoka:wght@600&family=Playfair+Display:wght@800&family=Alfa+Slab+One&family=Bebas+Neue&family=Righteous&family=Cinzel:wght@700&display=swap">
 <style>
 /* Layout: one-screen card table. Opponent's five bunker on top, two middle dynger with the Pismarie button, your five bunker at the bottom. Single felt look by choice. */
 :root {
@@ -72,7 +72,9 @@ button:focus-visible, select:focus-visible, .col:focus-visible { outline: 3px so
   position: relative; user-select: none; -webkit-user-select: none; box-sizing: border-box;
   transition: transform .12s ease, box-shadow .12s ease;
 }
-.card .r { position: absolute; top: 6%; left: 9%; font: calc(var(--w) * .3)/1 var(--rank); }
+.card .r { position: absolute; top: 6%; left: 9%; font: var(--rank-weight, 400) calc(var(--w) * .3 * var(--rank-scale, 1))/1 var(--rank-font, var(--rank)); letter-spacing: var(--rank-track, 0); }
+.card.fig .big { font-family: "Segoe UI Symbol", "Noto Sans Symbols 2", "DejaVu Sans", serif; font-size: calc(var(--w) * .56); }
+.card.fig { background: var(--face-fig, var(--face)); }
 .card .s { position: absolute; top: 39%; left: 9%; font-size: calc(var(--w) * .2); line-height: 1; }
 .card .big { position: absolute; right: 8%; bottom: 6%; font-size: calc(var(--w) * .46); line-height: .8; opacity: .9; }
 .card { overflow: visible; }
@@ -185,42 +187,56 @@ button.alt { background: transparent; color: var(--brass); border: 2px solid var
 #settings { z-index: 40; }
 /* Card designs. Each player's own cards, reserve and dynge wear that player's design (data-dz). */
 :root, [data-dz="klassisk"] {
+  --rank-font: "Rozha One", Georgia, serif; --rank-weight: 400; --rank-scale: 1; --rank-track: 0;
+  --face-fig: linear-gradient(160deg, #fffdf7 0%, #f6ecd6 100%);
   --card: #fbf8f0; --card-edge: #d9d2bf; --red: #c0312b; --black: #1d2321;
   --face: linear-gradient(160deg, #fffdf7 0%, #fbf8f0 60%, #f1ecdf 100%);
   --back: #7a2335; --back-edge: #fbf8f0; --back-ink: #fbf8f0;
   --back-pat: radial-gradient(circle at 50% 50%, rgba(255,255,255,.12) 0 18%, transparent 19%), repeating-linear-gradient(45deg, transparent 0 5px, rgba(255,255,255,.08) 5px 10px), #7a2335;
 }
 [data-dz="hav"] {
+  --rank-font: "Fredoka", system-ui, sans-serif; --rank-weight: 600; --rank-scale: .95;
+  --face-fig: linear-gradient(160deg, #ffffff 0%, #e4eef7 100%);
   --card: #f4f8fb; --card-edge: #c9d6e0; --red: #d0453a; --black: #14324a;
   --face: linear-gradient(160deg, #ffffff 0%, #eef4f9 70%, #dfe9f2 100%);
   --back: #1d4e7a; --back-edge: #f4f8fb; --back-ink: #f4f8fb;
   --back-pat: repeating-radial-gradient(circle at 50% 115%, rgba(255,255,255,.16) 0 3px, transparent 3px 8px), #1d4e7a;
 }
 [data-dz="nat"] {
+  --rank-font: "Playfair Display", Georgia, serif; --rank-weight: 800;
+  --face-fig: linear-gradient(160deg, #3a3326 0%, #232a2b 100%);
   --card: #252c2e; --card-edge: #3d484b; --red: #ff6f61; --black: #f1e9d4;
   --face: linear-gradient(160deg, #303839 0%, #232a2b 70%, #1b2122 100%);
   --back: #111517; --back-edge: #e2b54a; --back-ink: #e2b54a;
   --back-pat: repeating-linear-gradient(0deg, transparent 0 6px, rgba(226,181,74,.3) 6px 7px), repeating-linear-gradient(90deg, transparent 0 6px, rgba(226,181,74,.3) 6px 7px), #111517;
 }
 [data-dz="skov"] {
+  --rank-font: "Alfa Slab One", Georgia, serif; --rank-scale: .9;
+  --face-fig: linear-gradient(160deg, #fffcf2 0%, #e9efd8 100%);
   --card: #fbf7ea; --card-edge: #d6cfb5; --red: #b8452a; --black: #23331f;
   --face: linear-gradient(160deg, #fffcf2 0%, #fbf7ea 60%, #efe8d2 100%);
   --back: #2f5a2a; --back-edge: #fbf7ea; --back-ink: #fbf7ea;
   --back-pat: conic-gradient(rgba(255,255,255,.12) 25%, transparent 0 50%, rgba(255,255,255,.12) 0 75%, transparent 0) 0 0 / 12px 12px, #2f5a2a;
 }
 [data-dz="dannebrog"] {
+  --rank-font: "Bebas Neue", Impact, sans-serif; --rank-scale: 1.2; --rank-track: .02em;
+  --face-fig: linear-gradient(160deg, #ffffff 0%, #fbe6e6 100%);
   --card: #fffaf3; --card-edge: #e3d7c6; --red: #c8102e; --black: #1a1a1a;
   --face: linear-gradient(160deg, #ffffff 0%, #fffaf3 60%, #f5ebdc 100%);
   --back: #c8102e; --back-edge: #ffffff; --back-ink: #ffffff;
   --back-pat: linear-gradient(90deg, transparent 0 30%, #fff 30% 43%, transparent 43%), linear-gradient(0deg, transparent 0 43%, #fff 43% 57%, transparent 57%), #c8102e;
 }
 [data-dz="neon"] {
+  --rank-font: "Righteous", system-ui, sans-serif; --rank-scale: .95;
+  --face-fig: linear-gradient(160deg, #ffffff 0%, #f1e4ff 100%);
   --card: #ffffff; --card-edge: #e2d6f5; --red: #e0218a; --black: #4b2bd6;
   --face: linear-gradient(160deg, #ffffff 0%, #fbf7ff 60%, #efe6fb 100%);
   --back: #784ba0; --back-edge: #ffffff; --back-ink: #ffffff;
   --back-pat: radial-gradient(circle at 30% 25%, rgba(255,255,255,.35) 0 12%, transparent 13%), linear-gradient(140deg, #ff3cac 0%, #784ba0 50%, #2b86c5 100%);
 }
 [data-dz="guld"] {
+  --rank-font: "Cinzel", Georgia, serif; --rank-weight: 700; --rank-scale: .9;
+  --face-fig: linear-gradient(160deg, #fffdf6 0%, #f3e2b4 100%);
   --card: #fffaf0; --card-edge: #e6d3a3; --red: #a8322a; --black: #2a2014;
   --face: linear-gradient(160deg, #fffdf6 0%, #fffaf0 60%, #f3e6c6 100%);
   --back: #c9962e; --back-edge: #fff6dc; --back-ink: #2a2014;
@@ -349,7 +365,9 @@ button.alt { background: transparent; color: var(--brass); border: 2px solid var
 <script>
 /* ---------- Game rules (no DOM in this part, so it can move into an app) ---------- */
 const SUITS = [["♠","black"],["♥","red"],["♦","red"],["♣","black"]];
-const RANKS = ["","A","2","3","4","5","6","7","8","9","10","J","Q","K"];
+// Danish court letters: B (knægt/bonde), D (dame), K (konge).
+const RANKS = ["","A","2","3","4","5","6","7","8","9","10","B","D","K"];
+const FIGURES = { 11: "♞", 12: "♛", 13: "♚" };
 
 function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
 function fits(card, t) { if (!card || !t) return false; const d = Math.abs(card.r - t.r); return d === 1 || d === 12; }
@@ -502,9 +520,11 @@ let S = newGame(), aiTimer = null, stuckTimer = null, aiShoutTimer = null, runni
 function cardEl(c) {
   const d = document.createElement("div");
   if (!c) { d.className = "card empty"; return d; }
-  d.className = `card ${c.c}`;
-  d.innerHTML = `<span class="r">${RANKS[c.r]}</span><span class="s">${c.s}</span><span class="big">${c.s}</span>`;
-  d.setAttribute("aria-label", RANKS[c.r] + " " + c.s);
+  const fig = FIGURES[c.r];
+  d.className = `card ${c.c}` + (fig ? " fig" : "");
+  // Court cards show a figure (knight, queen, king) instead of the big suit, so D never reads as a 2.
+  d.innerHTML = `<span class="r">${RANKS[c.r]}</span><span class="s">${c.s}</span><span class="big">${fig ? fig + "\uFE0E" : c.s}</span>`;
+  d.setAttribute("aria-label", ["", "es", "2", "3", "4", "5", "6", "7", "8", "9", "10", "knægt", "dame", "konge"][c.r] + " " + c.s);
   return d;
 }
 function backEl(n) {
@@ -1036,7 +1056,7 @@ function renderDzGrid() {
     b.dataset.id = d.id; b.dataset.dz = d.id;
     b.setAttribute("aria-pressed", String(d.id === myDz()));
     const pair = document.createElement("span"); pair.className = "pair";
-    pair.append(backEl(0), cardEl({ r: 1, s: "♥", c: "red" }), cardEl({ r: 13, s: "♠", c: "black" }));
+    pair.append(backEl(0), cardEl({ r: 12, s: "♥", c: "red" }), cardEl({ r: 7, s: "♠", c: "black" }));
     const tag = document.createElement("span"); tag.className = "tag";
     tag.textContent = d.id === myDz() ? "Valgt" : owns(d) ? "Gratis" : "🔒 Butik";
     const nm = document.createElement("span"); nm.textContent = d.name;
