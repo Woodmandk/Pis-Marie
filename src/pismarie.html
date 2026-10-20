@@ -1,0 +1,1089 @@
+<title>Pismarie</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Rozha+One&display=swap">
+<style>
+/* Layout: one-screen card table. Opponent's five bunker on top, two middle dynger with the Pismarie button, your five bunker at the bottom. Single felt look by choice. */
+:root {
+  --felt: #1f5e49;
+  --felt-deep: #113a2d;
+  --felt-line: #2f7a60;
+  --ink: #f3efe2;
+  --ink-dim: #b9cfc4;
+  --card: #fbf8f0;
+  --card-edge: #d9d2bf;
+  --red: #c0312b;
+  --black: #1d2321;
+  --brass: #e2b54a;
+  --brass-soft: rgba(226,181,74,.18);
+  --back: #7a2335;
+  --display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --rank: "Rozha One", Georgia, "Times New Roman", serif;
+  color-scheme: dark;
+}
+[hidden] { display: none !important; }
+html, body { height: 100%; overscroll-behavior: none; }
+body {
+  background:
+    radial-gradient(ellipse at 50% 45%, rgba(255,255,255,.06) 0%, transparent 60%),
+    radial-gradient(ellipse at 50% 45%, var(--felt) 0%, var(--felt-deep) 85%);
+  background-color: var(--felt-deep);
+  color: var(--ink);
+  font-family: var(--display);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 12px;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  margin: 0;
+  display: flex; flex-direction: column;
+}
+.table { max-width: 720px; width: 100%; margin: 0 auto; flex: 1 0 auto; display: flex; flex-direction: column; gap: 10px; }
+header { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+h1 { font: 400 1.9rem/1 var(--rank); margin: 0; color: var(--brass); }
+h1 small { font: 500 .8rem var(--display); color: var(--ink-dim); margin-left: 10px; letter-spacing: .04em; }
+.controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+select, button {
+  font: 500 .9rem var(--display); color: var(--ink); background: var(--felt-deep);
+  border: 1px solid var(--felt-line); border-radius: 8px; padding: 7px 12px; cursor: pointer;
+}
+button.primary { background: var(--brass); color: var(--black); border-color: var(--brass); font-weight: 800; font-size: 1rem; padding: 10px 16px; }
+button:focus-visible, select:focus-visible, .col:focus-visible { outline: 3px solid var(--brass); outline-offset: 2px; }
+
+.seat { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.label { font-size: .72rem; text-transform: uppercase; letter-spacing: .12em; color: var(--ink-dim); }
+.count { font-variant-numeric: tabular-nums; font-weight: 800; font-size: 1.15rem; }
+.count.bump { animation: bump .4s ease-out; }
+@keyframes bump { 30% { transform: scale(1.5); color: var(--brass); } }
+.zone { display: flex; flex-direction: column; gap: 8px; align-items: center; }
+.cols { display: grid; grid-template-columns: repeat(5, auto); gap: 8px; justify-content: center; align-items: end; }
+.opp .cols { align-items: start; }
+
+.card {
+  --w: clamp(50px, 15vw, 84px);
+  width: var(--w); aspect-ratio: 5 / 7; max-width: 100%;
+  border-radius: calc(var(--w) * .1);
+  background: linear-gradient(160deg, #fffdf7 0%, var(--card) 60%, #f1ecdf 100%);
+  border: 1px solid var(--card-edge);
+  box-shadow: 0 2px 0 rgba(0,0,0,.15), 0 6px 14px rgba(0,0,0,.25);
+  position: relative; user-select: none; -webkit-user-select: none; box-sizing: border-box;
+  transition: transform .12s ease, box-shadow .12s ease;
+}
+.card .r { position: absolute; top: 6%; left: 9%; font: calc(var(--w) * .3)/1 var(--rank); }
+.card .s { position: absolute; top: 34%; left: 9%; font-size: calc(var(--w) * .2); line-height: 1; }
+.card .big { position: absolute; right: 8%; bottom: 4%; font-size: calc(var(--w) * .5); line-height: 1; opacity: .9; }
+.card.red { color: var(--red); } .card.black { color: var(--black); }
+.card.back {
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255,255,255,.12) 0 18%, transparent 19%),
+    repeating-linear-gradient(45deg, transparent 0 5px, rgba(255,255,255,.08) 5px 10px), var(--back);
+  border: 3px solid var(--card);
+}
+.card.empty { background: transparent; border: 2px dashed var(--felt-line); box-shadow: none; }
+.card .n { position: absolute; inset: 0; display: grid; place-items: center; font: 800 1rem var(--display); color: var(--card); text-shadow: 0 1px 2px rgba(0,0,0,.6); }
+.card .times {
+  position: absolute; top: -8px; right: -8px; min-width: 22px; height: 22px; padding: 0 5px; box-sizing: border-box;
+  border-radius: 11px; background: var(--brass); color: var(--black); font: 800 .75rem/22px var(--display); text-align: center;
+}
+.card.stacked { box-shadow: 3px -3px 0 -1px var(--card), 3px -3px 0 0 var(--card-edge), 0 6px 14px rgba(0,0,0,.25); }
+
+/* A column: face-down cards peek out above the top card */
+.col { position: relative; -webkit-user-select: none; user-select: none; display: flex; flex-direction: column; align-items: center; border-radius: 10px; touch-action: none; padding: 2px; }
+.col .under { height: 6px; width: 90%; }
+.col .under span { display: block; height: 100%; margin: 0 auto; width: 92%; border-radius: 4px 4px 0 0; background: var(--back); border: 1px solid var(--card); border-bottom: 0; box-sizing: border-box; }
+.opp .col { flex-direction: column-reverse; }
+.opp .col .under span { border-radius: 0 0 4px 4px; border-top: 0; border-bottom: 1px solid var(--card); }
+.opp .card { --w: clamp(36px, 10vw, 58px); }
+.opp .card .times { top: auto; bottom: -6px; right: -6px; min-width: 18px; height: 18px; font-size: .65rem; line-height: 18px; }
+.mine .card:not(.empty) { cursor: grab; }
+.mine .card.playable { box-shadow: 0 0 0 2px var(--brass), 0 6px 14px rgba(0,0,0,.3); }
+.mine .card.flipme, .mine .card.fillme { cursor: pointer; box-shadow: 0 0 0 2px var(--ink), 0 6px 14px rgba(0,0,0,.3); }
+.mine .card.flipme::after, .mine .card.fillme::after { position: absolute; inset: 0; display: grid; place-items: center; font: 800 .85rem var(--display); letter-spacing: .06em; text-align: center; }
+.mine .card.flipme::after { content: "Vend"; color: var(--card); }
+.mine .card.fillme { border-color: var(--ink-dim); }
+.mine .card.fillme::after { content: "Læg ud"; color: var(--ink-dim); font-size: .75rem; }
+.mine .card.lifted { visibility: hidden; }
+.mine .col.selected .card { transform: translateY(-12px); box-shadow: 0 0 0 3px var(--brass), 0 10px 18px rgba(0,0,0,.35); }
+.col.drop-ok { background: var(--brass-soft); box-shadow: 0 0 0 2px var(--brass); }
+.col.hover { background: rgba(226,181,74,.32); }
+.key { font-size: .7rem; color: var(--ink-dim); font-variant-numeric: tabular-nums; }
+
+.ghost { position: fixed; z-index: 20; pointer-events: none; margin: 0; transform: rotate(-4deg) scale(1.06); box-shadow: 0 14px 28px rgba(0,0,0,.45); transition: none; }
+.ghost.back-home { transition: left .18s ease, top .18s ease, transform .18s ease; transform: none; }
+.flyer { position: fixed; z-index: 15; pointer-events: none; margin: 0; transition: left .3s cubic-bezier(.3,.7,.4,1), top .3s cubic-bezier(.3,.7,.4,1), width .3s, transform .3s; box-shadow: 0 16px 30px rgba(0,0,0,.45); }
+.opp { position: relative; }
+.opp .card.aim { transform: translateY(12px) scale(1.14) rotate(-3deg); box-shadow: 0 0 0 2px var(--ink-dim), 0 12px 22px rgba(0,0,0,.45); z-index: 2; }
+.opp .card.flipped { animation: flip .28s ease-out; }
+.opp .card.landed { animation: settle .3s ease-out; }
+@keyframes settle { from { transform: translateY(-10px) scale(1.1); } }
+.bubble {
+  position: absolute; left: 50%; bottom: -14px; z-index: 12; transform: translateX(-50%);
+  background: var(--card); color: var(--red); font: 400 1.5rem/1 var(--rank); padding: 10px 18px; border-radius: 18px;
+  box-shadow: 0 10px 24px rgba(0,0,0,.4); white-space: nowrap; pointer-events: none;
+  animation: shoutpop 1.3s ease-out forwards;
+}
+.bubble::after { content: ""; position: absolute; left: 50%; top: -9px; margin-left: -9px; border: 9px solid transparent; border-top: 0; border-bottom-color: var(--card); }
+@keyframes shoutpop { 0% { transform: translateX(-50%) scale(.3) rotate(-8deg); opacity: 0; } 15% { transform: translateX(-50%) scale(1.15) rotate(3deg); opacity: 1; } 25% { transform: translateX(-50%) scale(1); } 80% { opacity: 1; } 100% { opacity: 0; transform: translateX(-50%) translateY(-8px); } }
+.pile.slam .card { animation: slam .4s ease-out; }
+@keyframes slam { 0% { transform: scale(1); } 30% { transform: scale(.88) rotate(2deg); } 60% { transform: scale(1.05) rotate(-2deg); } 100% { transform: none; } }
+.opp .seat.thinking .label:first-child { animation: think 1s ease-in-out infinite; }
+@keyframes think { 50% { color: var(--brass); } }
+
+.middle { flex: 1; display: grid; grid-template-columns: auto 1fr 1fr auto; align-items: center; gap: 10px; justify-items: center; min-height: 0; }
+.pile { border-radius: 12px; padding: 6px; transition: background .12s, box-shadow .12s; }
+.pile .card { --w: clamp(64px, 20vw, 112px); }
+.pile.drop-ok { box-shadow: 0 0 0 2px var(--brass); background: var(--brass-soft); }
+.pile.hover { box-shadow: 0 0 0 4px var(--brass); background: rgba(226,181,74,.32); }
+.pile.flash .card { animation: land .25s ease-out; }
+.pile.flash.by-ai .card { box-shadow: 0 0 0 3px var(--ink-dim), 0 6px 14px rgba(0,0,0,.25); }
+.pile.same .card { box-shadow: 0 0 0 4px var(--brass), 0 0 28px rgba(226,181,74,.6); }
+.pile { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.pile .pc { font-size: .7rem; color: var(--ink-dim); letter-spacing: .08em; text-transform: uppercase; font-variant-numeric: tabular-nums; }
+.pile.off { opacity: .35; }
+.pile.choose { cursor: pointer; box-shadow: 0 0 0 3px var(--brass); background: var(--brass-soft); animation: pulse .6s ease-in-out infinite alternate; }
+.pile.choose.smallest .pc { color: var(--brass); font-weight: 800; }
+.side { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: .68rem; color: var(--ink-dim); text-transform: uppercase; letter-spacing: .1em; text-align: center; }
+.side .card { --w: clamp(30px, 8vw, 50px); }
+@keyframes land { from { transform: scale(1.12) rotate(-3deg); } to { transform: none; } }
+.shake { animation: shake .3s; }
+@keyframes shake { 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+.flipped { animation: flip .2s ease-out; }
+@keyframes flip { from { transform: rotateY(90deg); } to { transform: none; } }
+
+.callrow { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+#shout {
+  font: 400 1.4rem var(--rank); letter-spacing: .02em; padding: 8px 30px; border-radius: 999px;
+  background: var(--felt-deep); color: var(--ink-dim); border: 2px solid var(--felt-line); cursor: default; opacity: .7;
+}
+#shout.live { background: var(--brass); color: var(--black); border-color: var(--brass); cursor: pointer; opacity: 1; animation: pulse .6s ease-in-out infinite alternate; }
+@keyframes pulse { from { transform: scale(1); box-shadow: 0 0 0 0 rgba(226,181,74,.5); } to { transform: scale(1.08); box-shadow: 0 0 0 10px rgba(226,181,74,0); } }
+.msg { text-align: center; min-height: 1.5em; font-weight: 500; color: var(--brass); }
+.msg.big { font: 400 1.3rem var(--rank); animation: pop .35s ease-out; }
+@keyframes pop { from { transform: scale(.6); opacity: 0; } }
+.overlay { position: fixed; inset: 0; display: grid; place-items: center; background: rgba(10, 30, 23, .76); padding: 16px; z-index: 30; }
+.panel { background: var(--felt-deep); border: 1px solid var(--felt-line); border-radius: 16px; padding: 24px; max-width: 460px; display: flex; flex-direction: column; gap: 12px; max-height: 90%; overflow-y: auto; box-sizing: border-box; box-shadow: 0 20px 60px rgba(0,0,0,.5); }
+.panel h2 { margin: 0; font: 400 2rem/1.1 var(--rank); color: var(--brass); text-wrap: balance; }
+.panel p, .panel li { color: var(--ink-dim); line-height: 1.5; margin: 0; }
+.panel ul { margin: 0; padding-left: 1.2em; display: flex; flex-direction: column; gap: 5px; }
+.panel strong { color: var(--ink); font-weight: 800; }
+.stats { display: grid; grid-template-columns: 1fr auto auto; gap: 4px 16px; font-variant-numeric: tabular-nums; }
+.stats span:nth-child(3n+1) { color: var(--ink-dim); }
+.stats .h { font-size: .72rem; text-transform: uppercase; letter-spacing: .12em; color: var(--ink-dim); }
+.btnrow { display: flex; gap: 8px; flex-wrap: wrap; }
+.btnrow > * { flex: 1 1 140px; }
+button.alt { background: transparent; color: var(--brass); border: 2px solid var(--brass); }
+.code { font: 400 3rem/1 var(--rank); color: var(--brass); letter-spacing: .15em; text-align: center; }
+#mpCode { font: 800 1.6rem var(--display); letter-spacing: .3em; text-align: center; padding: 8px; border-radius: 8px; border: 1px solid var(--felt-line); background: var(--felt); color: var(--ink); width: 100%; box-sizing: border-box; }
+.countdown { font: 6rem/1 var(--rank); color: var(--brass); text-align: center; animation: pop .3s ease-out; }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+@media (max-width: 480px) {
+  h1 small { display: none; } h1 { font-size: 1.6rem; }
+  .middle { gap: 6px; } .cols { gap: 5px; }
+  .panel { padding: 18px; gap: 10px; }
+  .panel li, .panel p { font-size: .9rem; line-height: 1.4; }
+  .panel h2 { font-size: 1.7rem; }
+  .side { font-size: .6rem; }
+}
+.panel > .primary, .panel .btnrow { position: sticky; bottom: 0; box-shadow: 0 -12px 16px var(--felt-deep); }
+@media (max-height: 640px) { .panel .kbd { display: none; } }
+@media (hover: none) { .panel .kbd { display: none; } .key { display: none; } }
+</style>
+
+<div class="table">
+  <header>
+    <h1>Pismarie <small>du mod computeren</small></h1>
+    <div class="controls">
+      <label for="speed" class="label" id="speedLabel">Modstander</label>
+      <select id="speed">
+        <option value="1900">Rolig</option>
+        <option value="1200" selected>Normal</option>
+        <option value="750">Hurtig</option>
+        <option value="450">Lynhurtig</option>
+      </select>
+      <button id="restart" type="button">Nyt spil</button>
+    </div>
+  </header>
+
+  <section class="zone opp">
+    <div class="seat"><span class="label" id="oppName">Computeren</span><span class="count" id="aiCount">26</span><span class="label">kort tilbage</span></div>
+    <div class="cols" id="aiCols"></div>
+  </section>
+
+  <div class="middle">
+    <div class="side"><div id="side1"></div><span><span id="oppRes">Computerens</span><br>reserve</span></div>
+    <div class="pile" id="pile0" aria-label="Venstre dynge"></div>
+    <div class="pile" id="pile1" aria-label="Højre dynge"></div>
+    <div class="side"><div id="side0"></div><span>Din<br>reserve</span></div>
+  </div>
+
+  <div class="callrow">
+    <button id="shout" type="button" aria-disabled="true">Pismarie!</button>
+    <div class="msg" id="msg" aria-live="polite"></div>
+  </div>
+
+  <section class="zone mine">
+    <div class="cols" id="cols"></div>
+    <div class="seat"><span class="label">Dig</span><span class="count" id="youCount">26</span><span class="label">kort tilbage</span></div>
+  </section>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="panel" id="panel">
+    <h2>Pismarie</h2>
+    <ul>
+      <li>I har hver et halvt kortspil. Du lægger 5 bunker med 5, 4, 3, 2 og 1 kort, og kun det øverste vender op. Resten er din reserve.</li>
+      <li><strong>Træk</strong> dine kort op på dyngerne i midten, ét trin over eller under. Es går både til 2 og til konge.</li>
+      <li><strong>Tryk</strong> på en bunke for at vende det næste kort.</li>
+      <li>Træk et kort over i en <strong>tom bunke</strong> for at gøre plads, eller oven på et <strong>ens kort</strong> i dine egne bunker. Så kan du vende kortet under.</li>
+      <li>To ens kort øverst i midten? Tryk <strong>Pismarie!</strong> før computeren, så får den begge dynger.</li>
+      <li>Kan ingen lægge noget, vender I hver et kort fra jeres reserve ud på jeres dynge.</li>
+      <li>Har du tømt dine 5 bunker, vælger du en af dyngerne i midten. Tag den mindste! Modstanderen får den anden, og I lægger ud igen.</li>
+      <li>Har en spiller ingen reserve, spilles der kun på én dynge. Tømmer den spiller sine bunker, har den vundet.</li>
+    </ul>
+    <p class="kbd">Tastatur: 1–5 vælger en bunke, piletasterne lægger kortet, mellemrum råber Pismarie.</p>
+    <div class="btnrow">
+      <button class="primary" id="startBtn" type="button">Mod computeren</button>
+      <button class="primary alt" id="mpBtn" type="button">Mod en anden telefon</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------- Game rules (no DOM in this part, so it can move into an app) ---------- */
+const SUITS = [["♠","black"],["♥","red"],["♦","red"],["♣","black"]];
+const RANKS = ["","A","2","3","4","5","6","7","8","9","10","J","Q","K"];
+
+function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function fits(card, t) { if (!card || !t) return false; const d = Math.abs(card.r - t.r); return d === 1 || d === 12; }
+
+/* A bunke is an array of cards with the top last. pl.open[k] counts how many cards on top of bunke k
+   are face up: 0 means the top must be turned, more than 1 means equal cards are stacked there. */
+// One object per card for the whole session, so a card is the same object after a network update.
+const ALL = [];
+for (const [s, c] of SUITS) for (let r = 1; r <= 13; r++) ALL.push({ r, s, c });
+const ALPH = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+const enc = cards => cards.map(c => ALPH[ALL.indexOf(c)]).join("");
+const dec = str => [...String(str || "")].map(ch => ALL[ALPH.indexOf(ch)]).filter(Boolean);
+
+function newGame() {
+  const deck = shuffle(ALL.slice());
+  const player = () => ({ deck: deck.splice(0, 26), cols: [[], [], [], [], []], open: [0, 0, 0, 0, 0], stock: [], played: 0, shouts: 0 });
+  const G = { you: player(), ai: player(), piles: [[], []], active: [true, true], round: 0, over: false };
+  dealRound(G);
+  return G;
+}
+// Deal each player's cards into 5 bunker, row by row (5, 4, 3, 2, 1 when there are enough), the rest is the reserve.
+// Dynge 0 belongs to the computer, dynge 1 to you. A player with no reserve has no dynge of their own.
+function dealRound(G) {
+  for (const pl of [G.you, G.ai]) {
+    const cards = shuffle(pl.deck); pl.deck = [];
+    pl.cols = [[], [], [], [], []];
+    for (let row = 0; row < 5; row++) for (let c = row; c < 5; c++) if (cards.length) pl.cols[c].push(cards.pop());
+    pl.open = pl.cols.map(c => c.length ? 1 : 0);
+    pl.stock = cards;
+  }
+  G.piles = [[], []];
+  G.active = [G.ai.stock.length > 0, G.you.stock.length > 0];
+  G.round++;
+}
+function singlePile(G) { return G.active.filter(Boolean).length === 1; }
+function bunkerEmpty(pl) { return pl.cols.every(c => !c.length); }
+// The round is over when a player has emptied their bunker. Returns the winner of the whole game, or null.
+// Otherwise the round winner takes dynge `choice`, the other player gets the other dynge plus their leftovers.
+function endRound(G, w, choice) {
+  const L = w === G.you ? G.ai : G.you;
+  if (singlePile(G) && !w.stock.length) return w;
+  const flat = pl => pl.cols.flat();
+  let wTake = [], lTake = [];
+  if (singlePile(G)) lTake = [...G.piles[0], ...G.piles[1]];
+  else { wTake = G.piles[choice]; lTake = G.piles[1 - choice]; }
+  w.deck = [...w.stock, ...flat(w), ...wTake];
+  L.deck = [...L.stock, ...flat(L), ...lTake];
+  w.cols = L.cols = [[], [], [], [], []];
+  w.stock = []; L.stock = [];
+  G.piles = [[], []];
+  if (!w.deck.length) return w;
+  dealRound(G);
+  return null;
+}
+function pileTop(G, i) { const p = G.piles[i]; return p[p.length - 1]; }
+function topOf(pl, k) { const c = pl.cols[k]; return c.length && pl.open[k] ? c[c.length - 1] : null; }
+function hiddenUnder(pl, k) { return pl.cols[k].length - pl.open[k]; }
+function remaining(pl) { return pl.cols.reduce((n, c) => n + c.length, 0) + pl.stock.length; }
+function moves(G, pl) {
+  const out = [];
+  for (let k = 0; k < 5; k++) { const c = topOf(pl, k); for (let i = 0; i < 2; i++) if (fits(c, pileTop(G, i))) out.push([k, i]); }
+  return out;
+}
+function flipTarget(pl) { return pl.cols.findIndex((c, k) => c.length && !pl.open[k]); }
+function fillTarget(pl) { return -1; }  // the reserve is only for turning cards onto the dynger
+function isPismarie(G) { const a = pileTop(G, 0), b = pileTop(G, 1); return !!(a && b && a.r === b.r); }
+// Moving within your own bunker: onto an empty bunke, or onto a face-up card of the same rank.
+function canShift(pl, from, to) {
+  if (from === to) return false;
+  const c = topOf(pl, from); if (!c) return false;
+  if (!pl.cols[to].length) return true;
+  const t = topOf(pl, to);
+  return !!(t && t.r === c.r);
+}
+// A shift is worth making when it uncovers a hidden card or empties a bunke onto a matching stack.
+function usefulShift(pl) {
+  for (let from = 0; from < 5; from++) {
+    if (pl.open[from] !== 1) continue;
+    const reveals = hiddenUnder(pl, from) > 0;
+    for (let to = 0; to < 5; to++) {
+      if (!canShift(pl, from, to)) continue;
+      const stacking = pl.cols[to].length > 0;
+      if (reveals || stacking) return [from, to];
+    }
+  }
+  return null;
+}
+
+function doPlay(G, pl, k, i) {
+  if (!fits(topOf(pl, k), pileTop(G, i))) return false;
+  G.piles[i].push(pl.cols[k].pop());
+  pl.open[k]--;
+  pl.played++;
+  return true;
+}
+function doFlip(pl, k) { if (!pl.cols[k].length || pl.open[k]) return false; pl.open[k] = 1; return true; }
+function doFill(pl, k) { return false; pl.cols[k].push(pl.stock.pop()); pl.open[k] = 1; return true; }
+function doShift(pl, from, to) {
+  if (!canShift(pl, from, to)) return false;
+  pl.cols[to].push(pl.cols[from].pop());
+  pl.open[to] = pl.cols[to].length === 1 ? 1 : pl.open[to] + 1;
+  pl.open[from]--;
+  return true;
+}
+// The caller gives both middle dynger to the opponent, under their reserve.
+function doPismarie(G, caller) {
+  if (!isPismarie(G)) return 0;
+  const loser = caller === G.you ? G.ai : G.you;
+  const taken = [...G.piles[0], ...G.piles[1]];
+  loser.stock.unshift(...shuffle(taken));
+  G.piles = [[], []];
+  caller.shouts++;
+  return taken.length;
+}
+// Nobody can play: each flips a reserve card onto the middle. An empty reserve borrows from the other.
+function doSpit(G) {
+  if (!G.you.stock.length && !G.ai.stock.length) {
+    const rest = [];
+    for (let i = 0; i < 2; i++) { const t = G.piles[i].pop(); rest.push(...G.piles[i]); G.piles[i] = t ? [t] : []; }
+    shuffle(rest);
+    const half = Math.ceil(rest.length / 2);
+    G.you.stock = rest.slice(0, half); G.ai.stock = rest.slice(half);
+  }
+  const src = [G.ai.stock, G.you.stock];
+  let flipped = 0;
+  for (let i = 0; i < 2; i++) {
+    if (!G.active[i]) continue;
+    const from = src[i].length ? src[i] : src[1 - i];
+    if (from.length) { G.piles[i].push(from.pop()); flipped++; }
+  }
+  return flipped;
+}
+// Stuck: nobody can play to the middle, nobody has a card to turn, and the computer has nothing useful to do.
+// (Your own shifts and fills are optional, so the game does not wait for them.)
+function isStuck(G) {
+  if (isPismarie(G)) return false;
+  if (moves(G, G.you).length || moves(G, G.ai).length) return false;
+  if (flipTarget(G.you) >= 0 || flipTarget(G.ai) >= 0) return false;
+  if (!G.mp && (usefulShift(G.ai) || fillTarget(G.ai) >= 0)) return false;
+  return true;
+}
+
+/* ---------- Table (rendering, input, computer opponent) ---------- */
+const $ = id => document.getElementById(id);
+const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+let NET = null;  // set while playing against another phone
+const opp = () => NET ? "Modstanderen" : "Computeren";
+let S = newGame(), aiTimer = null, stuckTimer = null, aiShoutTimer = null, running = false, selected = null, drag = null, startedAt = 0;
+
+function cardEl(c) {
+  const d = document.createElement("div");
+  if (!c) { d.className = "card empty"; return d; }
+  d.className = `card ${c.c}`;
+  d.innerHTML = `<span class="r">${RANKS[c.r]}</span><span class="s">${c.s}</span><span class="big">${c.s}</span>`;
+  d.setAttribute("aria-label", RANKS[c.r] + " " + c.s);
+  return d;
+}
+function backEl(n) {
+  const d = document.createElement("div");
+  d.className = "card back";
+  if (n) d.innerHTML = `<span class="n">${n}</span>`;
+  return d;
+}
+function stockEl(n) { return n ? backEl(n) : cardEl(null); }
+
+function colEl(pl, k, mine) {
+  const col = document.createElement("div");
+  col.className = "col";
+  col.dataset.k = k;
+  const cards = pl.cols[k];
+  const hidden = hiddenUnder(pl, k) - (pl.open[k] ? 0 : 1);
+  const under = document.createElement("div");
+  under.className = "under";
+  if (hidden > 0) { under.innerHTML = "<span></span>"; under.style.height = (4 + hidden * 3) + "px"; }
+  else under.style.visibility = "hidden";
+  col.appendChild(under);
+  let card;
+  if (!cards.length) card = cardEl(null);
+  else if (pl.open[k]) card = cardEl(cards[cards.length - 1]);
+  else card = backEl(0);
+  if (pl.open[k] > 1) {
+    card.classList.add("stacked");
+    const t = document.createElement("span"); t.className = "times"; t.textContent = "×" + pl.open[k];
+    card.appendChild(t);
+  }
+  if (mine) {
+    if (!cards.length) {}
+    else if (!pl.open[k]) card.classList.add("flipme");
+    else if (fits(cards[cards.length - 1], pileTop(S, 0)) || fits(cards[cards.length - 1], pileTop(S, 1))) card.classList.add("playable");
+    if (drag && drag.k === k) card.classList.add("lifted");
+  }
+  if (!mine && pl === S.ai && aimK === k && pl.cols[k].length) card.classList.add("aim");
+  col.appendChild(card);
+  if (!mine) return col;
+  col.tabIndex = 0;
+  col.setAttribute("aria-label", "Bunke " + (k + 1));
+  if (selected === k) col.classList.add("selected");
+  if (drag && canShift(pl, drag.k, k)) col.classList.add("drop-ok");
+  col.addEventListener("pointerdown", e => startDrag(e, k, card));
+  col.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); keyCol(k); } });
+  const key = document.createElement("span"); key.className = "key"; key.textContent = k + 1;
+  const wrap = document.createElement("div"); wrap.className = "zone"; wrap.style.gap = "2px";
+  wrap.append(col, key);
+  return wrap;
+}
+
+let lastCounts = [26, 26];
+function render() {
+  const cols = $("cols"); cols.innerHTML = "";
+  for (let k = 0; k < 5; k++) cols.appendChild(colEl(S.you, k, true));
+  const ai = $("aiCols"); ai.innerHTML = "";
+  for (let k = 0; k < 5; k++) ai.appendChild(colEl(S.ai, k, false));
+  const same = isPismarie(S);
+  for (let i = 0; i < 2; i++) {
+    const p = $("pile" + i); p.innerHTML = "";
+    p.appendChild(cardEl(pileTop(S, i)));
+    const pc = document.createElement("span"); pc.className = "pc";
+    pc.textContent = S.active[i] ? S.piles[i].length + " kort" : "ingen dynge";
+    p.appendChild(pc);
+    p.classList.toggle("off", !S.active[i]);
+    const choosing = S.choosing === S.you && S.active[i] && !singlePile(S);
+    p.classList.toggle("choose", choosing);
+    p.classList.toggle("smallest", choosing && S.piles[i].length <= S.piles[1 - i].length);
+    const dragCard = drag ? drag.card : selected !== null ? topOf(S.you, selected) : null;
+    p.classList.toggle("drop-ok", !!dragCard && fits(dragCard, pileTop(S, i)));
+    p.classList.toggle("same", running && same);
+  }
+  $("side0").innerHTML = ""; $("side0").appendChild(stockEl(S.you.stock.length));
+  $("side1").innerHTML = ""; $("side1").appendChild(stockEl(S.ai.stock.length));
+  const counts = [remaining(S.you), remaining(S.ai)];
+  ["youCount", "aiCount"].forEach((id, j) => {
+    $(id).textContent = counts[j];
+    if (counts[j] > lastCounts[j]) { $(id).classList.remove("bump"); void $(id).offsetWidth; $(id).classList.add("bump"); }
+  });
+  lastCounts = counts;
+  const live = running && same;
+  $("shout").classList.toggle("live", live);
+  $("shout").setAttribute("aria-disabled", String(!live));
+  if (NET && NET.role === "host") broadcast();
+}
+
+function flashPile(i, byAi) {
+  const p = $("pile" + i);
+  p.classList.remove("flash", "by-ai"); void p.offsetWidth;
+  p.classList.add("flash"); if (byAi) p.classList.add("by-ai");
+}
+function myCard(k) { return $("cols").children[k].querySelector(".card"); }
+function aiColEl(k) { return $("aiCols").children[k]; }
+function aiCardRect(k) { return $("aiCols").children[k].querySelector(".card").getBoundingClientRect(); }
+function shake(el) { if (!el) return; el.classList.remove("shake"); void el.offsetWidth; el.classList.add("shake"); }
+let msgTimer = null;
+function say(t, big) {
+  const m = $("msg"); m.textContent = t; m.classList.toggle("big", !!big);
+  clearTimeout(msgTimer);
+  if (big) msgTimer = setTimeout(() => { m.textContent = ""; m.classList.remove("big"); }, 1800);
+}
+function buzz(ms) { try { navigator.vibrate && navigator.vibrate(ms); } catch (e) {} }
+
+// The computer's card flies from its bunke to the dynge it lands on.
+function fly(card, from, toEl, faceDown) {
+  if (reduceMotion || !toEl || !toEl.querySelector(".card")) return;
+  const to = toEl.querySelector(".card").getBoundingClientRect();
+  const f = faceDown ? backEl(0) : cardEl(card); f.classList.add("flyer");
+  f.style.transform = "rotate(" + (Math.random() * 16 - 8) + "deg)";
+  f.style.width = from.width + "px"; f.style.left = from.left + "px"; f.style.top = from.top + "px";
+  document.body.appendChild(f);
+  toEl.querySelector(".card").style.visibility = "hidden";
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    f.style.width = to.width + "px"; f.style.left = to.left + "px"; f.style.top = to.top + "px"; f.style.transform = "none";
+  }));
+  setTimeout(() => { f.remove(); const c = toEl.querySelector(".card"); if (c) c.style.visibility = ""; }, 320);
+}
+
+// Everything that changes the table goes through here.
+function afterChange(pl) {
+  render();
+  if (pl && bunkerEmpty(pl)) { roundOver(pl); return; }
+  if (isPismarie(S) && !NET) scheduleAiShout();
+  else { clearTimeout(aiShoutTimer); aiShoutTimer = null; }
+  checkStuck();
+}
+
+function play(pl, k, i) {
+  if (isGuest()) {
+    if (pl !== S.you || !running || !doPlay(S, pl, k, i)) return false;
+    selected = null; render(); flashPile(i);
+    send({ t: "p", k, i: 1 - i });
+    return true;
+  }
+  if (!running || S.over) return false;
+  const card = topOf(pl, k);
+  const from = pl === S.ai ? aiCardRect(k) : null;
+  if (!doPlay(S, pl, k, i)) return false;
+  if (pl === S.you) selected = null;
+  afterChange(pl);
+  if (S.over) return true;
+  if (from) fly(card, from, $("pile" + i));
+  flashPile(i, pl === S.ai);
+  return true;
+}
+function flip(pl, k) {
+  if (isGuest()) {
+    if (pl !== S.you || !running || !doFlip(pl, k)) return false;
+    render(); myCard(k).classList.add("flipped");
+    send({ t: "f", k });
+    return true;
+  }
+  if (!running || S.over || !doFlip(pl, k)) return false;
+  afterChange(pl);
+  if (pl === S.you) myCard(k).classList.add("flipped");
+  else aiColEl(k).querySelector(".card").classList.add("flipped");
+  return true;
+}
+function fill(pl, k) {
+  const from = $(pl === S.ai ? "side1" : "side0").getBoundingClientRect();
+  if (!running || S.over || !doFill(pl, k)) return false;
+  afterChange(pl);
+  if (pl === S.you) myCard(k).classList.add("flipped");
+  else fly(pl.cols[k][pl.cols[k].length - 1], from, aiColEl(k));
+  return true;
+}
+function shift(pl, from, to) {
+  if (isGuest()) {
+    if (pl !== S.you || !running || !doShift(pl, from, to)) return false;
+    render();
+    send({ t: "m", a: from, b: to });
+    return true;
+  }
+  const card = topOf(pl, from), rect = pl === S.ai ? aiCardRect(from) : null;
+  if (!running || S.over || !doShift(pl, from, to)) return false;
+  afterChange(pl);
+  if (rect) fly(card, rect, aiColEl(to));
+  return true;
+}
+function showBubble() {
+  document.querySelectorAll(".bubble").forEach(b => b.remove());
+  const b = document.createElement("div"); b.className = "bubble"; b.textContent = "Pismarie!";
+  document.querySelector(".opp").appendChild(b);
+  setTimeout(() => b.remove(), 1400);
+}
+function shout(pl) {
+  if (isGuest()) {
+    if (!running || !isPismarie(S)) { shake($("shout")); return; }
+    send({ t: "s" });
+    return;
+  }
+  if (!running || S.over) return;
+  const n = doPismarie(S, pl);
+  if (!n) { if (pl === S.you) shake($("shout")); return; }
+  clearTimeout(aiShoutTimer); aiShoutTimer = null;
+  buzz(pl === S.you ? 40 : [60, 40, 60]);
+  const pileRects = [0, 1].map(i => ({ rect: $("pile" + i).querySelector(".card").getBoundingClientRect(), card: pileTop(S, i) }));
+  if (pl === S.ai) showBubble();
+  S.ev = { id: (S.ev ? S.ev.id : 0) + 1, k: "shout", w: pl === S.you ? "h" : "g", n };
+  say(pl === S.you ? `Pismarie! ${opp()} får ${n} kort` : `${opp()} råbte Pismarie! Du får ${n} kort`, true);
+  // The won dynger fly to the loser's reserve, then the table slams down new cards.
+  const loserSide = $(pl === S.you ? "side1" : "side0");
+  pileRects.forEach(p => p.card && fly(p.card, p.rect, loserSide));
+  S.pending = true; render();
+  setTimeout(() => {
+    S.pending = false;
+    if (S.over || !running) return;
+    doSpit(S);
+    afterChange(null);
+    for (let i = 0; i < 2; i++) { const el = $("pile" + i); el.classList.remove("slam"); void el.offsetWidth; el.classList.add("slam"); }
+  }, reduceMotion ? 0 : 420);
+}
+
+/* Dragging: onto a middle dynge, onto an empty bunke of your own, or onto an equal card of your own.
+   A short tap turns a hidden card or fills an empty bunke from the reserve. */
+function near(el, x, y, pad) { const r = el.getBoundingClientRect(); return x > r.left - pad && x < r.right + pad && y > r.top - pad && y < r.bottom + pad; }
+// Generous targets for fingers: anywhere in the middle band counts, and the card goes to the
+// dynge it fits on (the nearest one if it fits both).
+function targetAt(x, y, card) {
+  for (let i = 0; i < 2; i++) if (near($("pile" + i), x, y, 40) && fits(card, pileTop(S, i))) return { pile: i };
+  const cols = $("cols").querySelectorAll(".col");
+  for (const c of cols) if (near(c, x, y, 6)) return { col: +c.dataset.k };
+  const band = $("cols").getBoundingClientRect().top - 8, roof = $("aiCols").getBoundingClientRect().bottom;
+  if (y < band && y > roof) {
+    const ok = [0, 1].filter(i => fits(card, pileTop(S, i)));
+    if (ok.length === 1) return { pile: ok[0] };
+    if (ok.length === 2) {
+      const mid = i => { const r = $("pile" + i).getBoundingClientRect(); return Math.abs(x - (r.left + r.width / 2)); };
+      return { pile: mid(0) <= mid(1) ? 0 : 1 };
+    }
+  }
+  return null;
+}
+function startDrag(e, k, el) {
+  if (!running) return;
+  if (drag) { drag.ghost.remove(); drag = null; }  // a lost finger-up must never block the next drag
+  e.preventDefault();
+  const pl = S.you;
+  if (!pl.cols[k].length) return;
+  if (!pl.open[k]) { flip(pl, k); return; }
+  const r = el.getBoundingClientRect();
+  const ghost = cardEl(topOf(pl, k));
+  ghost.classList.add("ghost");
+  ghost.style.width = r.width + "px"; ghost.style.left = r.left + "px"; ghost.style.top = r.top + "px";
+  document.body.appendChild(ghost);
+  drag = { k, card: topOf(pl, k), ghost, dx: e.clientX - r.left, dy: e.clientY - r.top, home: r, moved: false, sx: e.clientX, sy: e.clientY, x: e.clientX, y: e.clientY, id: e.pointerId };
+  // Capture on a container that is never rebuilt, so the drag survives the table redrawing under the finger.
+  try { $("cols").setPointerCapture(e.pointerId); } catch (err) {}
+  selected = null;
+  render();
+}
+let hoverKey = "";
+document.addEventListener("pointermove", e => {
+  if (!drag || e.pointerId !== drag.id) return;
+  drag.x = e.clientX; drag.y = e.clientY;
+  if (Math.hypot(e.clientX - drag.sx, e.clientY - drag.sy) > 6) drag.moved = true;
+  drag.ghost.style.left = (e.clientX - drag.dx) + "px";
+  drag.ghost.style.top = (e.clientY - drag.dy) + "px";
+  const t = targetAt(e.clientX, e.clientY, drag.card);
+  const key = t ? (t.pile !== undefined ? "p" + t.pile : "c" + t.col) : "";
+  if (key === hoverKey) return;
+  hoverKey = key;
+  document.querySelectorAll(".hover").forEach(x => x.classList.remove("hover"));
+  if (t && t.pile !== undefined) $("pile" + t.pile).classList.add("hover");
+  if (t && t.col !== undefined && canShift(S.you, drag.k, t.col)) $("cols").children[t.col].querySelector(".col").classList.add("hover");
+});
+function endDrag(e) {
+  if (!drag || e.pointerId !== drag.id) return;
+  const d = drag; drag = null; hoverKey = "";
+  document.querySelectorAll(".hover").forEach(x => x.classList.remove("hover"));
+  // If the phone cancels the gesture, drop the card where the finger last was.
+  const x = e.type === "pointerup" ? e.clientX : d.x, y = e.type === "pointerup" ? e.clientY : d.y;
+  const t = d.moved ? targetAt(x, y, d.card) : null;
+  // The card must still be the top card: the computer may have changed the table meanwhile.
+  const still = topOf(S.you, d.k) === d.card;
+  let ok = false;
+  if (t && still && t.pile !== undefined) ok = play(S.you, d.k, t.pile);
+  else if (t && still && t.col !== undefined && t.col !== d.k) ok = shift(S.you, d.k, t.col);
+  if (ok) { d.ghost.remove(); return; }
+  if (!d.moved) say("Træk kortet op på en af dyngerne i midten.");
+  d.ghost.classList.add("back-home");
+  d.ghost.style.left = d.home.left + "px"; d.ghost.style.top = d.home.top + "px";
+  setTimeout(() => { d.ghost.remove(); render(); if (d.moved && !(t && t.col === d.k)) shake(myCard(d.k)); }, 180);
+}
+document.addEventListener("pointerup", endDrag);
+document.addEventListener("pointercancel", endDrag);
+document.addEventListener("touchmove", e => { if (drag) e.preventDefault(); }, { passive: false });
+
+/* Keyboard: 1–5 picks a bunke, arrows lay the card, space shouts. */
+function keyCol(k) {
+  const pl = S.you;
+  if (selected !== null && selected !== k && canShift(pl, selected, k)) { const f = selected; selected = null; shift(pl, f, k); return; }
+  if (!pl.cols[k].length) return;
+  if (!pl.open[k]) { flip(pl, k); return; }
+  selected = selected === k ? null : k; render();
+}
+document.addEventListener("keydown", e => {
+  if (!running) return;
+  const n = parseInt(e.key, 10);
+  if (n >= 1 && n <= 5) keyCol(n - 1);
+  if (e.key === " ") { e.preventDefault(); shout(S.you); }
+  if (selected !== null && (e.key === "ArrowLeft" || e.key === "ArrowRight")) {
+    const k = selected;
+    if (!play(S.you, k, e.key === "ArrowLeft" ? 0 : 1)) { selected = null; render(); shake(myCard(k)); }
+  }
+});
+$("shout").addEventListener("click", () => shout(S.you));
+
+/* Computer opponent. Its pace drifts, it sometimes hesitates, picks moves at random,
+   and can miss a Pismarie altogether. */
+const pick = a => a[Math.floor(Math.random() * a.length)];
+let mood = 1;
+function base() { return +$("speed").value; }
+function aiDelay() {
+  mood = Math.min(1.5, Math.max(0.7, mood + (Math.random() - 0.5) * 0.2));
+  let d = base() * mood * (0.45 + Math.random() * 1.1);
+  if (Math.random() < 0.12) d += base() * (0.8 + Math.random() * 1.5);
+  return d;
+}
+function scheduleAiShout() {
+  if (aiShoutTimer) return;
+  const miss = { 1900: .4, 1200: .25, 750: .12, 450: .05 }[base()] ?? .2;
+  if (Math.random() < miss) { aiShoutTimer = -1; return; }
+  aiShoutTimer = setTimeout(() => { aiShoutTimer = null; shout(S.ai); }, base() * (0.5 + Math.random() * 1.1) + 200);
+}
+// The computer first lifts the card it is going for, so you can see what it is about to do.
+let aimK = -1;
+function aiTick() {
+  if (!running || S.over) return;
+  const pl = S.ai;
+  const m = moves(S, pl);
+  const sh = usefulShift(pl);
+  let act = null, k = -1;
+  if (m.length && !(sh && Math.random() < 0.25)) { const [kk, i] = pick(m); k = kk; act = () => play(pl, kk, i); }
+  else if (flipTarget(pl) >= 0) { k = flipTarget(pl); act = () => flip(pl, k); }
+  else if (sh) { k = sh[0]; act = () => shift(pl, sh[0], sh[1]); }
+  else if (fillTarget(pl) >= 0) { const f = fillTarget(pl); act = () => fill(pl, f); }
+  document.querySelector(".opp .seat").classList.toggle("thinking", !act);
+  if (!act) { aiTimer = setTimeout(aiTick, aiDelay()); return; }
+  aimK = k;
+  if (k >= 0) { const c = aiColEl(k).querySelector(".card"); if (c) c.classList.add("aim"); }
+  aiTimer = setTimeout(() => {
+    aimK = -1;
+    if (!running || S.over) return;
+    if (!act()) render();  // the table changed under it: put the card back down
+    aiTimer = setTimeout(aiTick, aiDelay());
+  }, reduceMotion ? 0 : 140 + Math.random() * 160);
+}
+
+function checkStuck() {
+  if (S.over || S.pending || stuckTimer) return;
+  if (!isStuck(S)) {
+    if (!moves(S, S.you).length && !moves(S, S.ai).length && flipTarget(S.you) >= 0) say("Vend dit næste kort.");
+    return;
+  }
+  say("Ingen kan lægge. I vender hver et kort fra reserven…");
+  stuckTimer = setTimeout(() => {
+    stuckTimer = null;
+    if (S.over || !isStuck(S)) { say(""); return; }
+    if (!doSpit(S)) { const a = remaining(S.you), b = remaining(S.ai); finish(a < b ? true : a > b ? false : null); return; }
+    say(""); flashPile(0); flashPile(1);
+    S.ev = { id: (S.ev ? S.ev.id : 0) + 1, k: "spit" };
+    afterChange(null);
+  }, 1500);
+}
+
+function stopTimers() { clearTimeout(aiTimer); clearTimeout(stuckTimer); if (aiShoutTimer > 0) clearTimeout(aiShoutTimer); stuckTimer = aiShoutTimer = null; }
+
+function finish(youWon) {
+  S.over = true; running = false; stopTimers();
+  S.phase = "over"; S.winner = youWon === true ? "h" : youWon === false ? "g" : "d";
+  render();
+  const secs = Math.round((Date.now() - startedAt) / 1000);
+  const time = `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, "0")}`;
+  const title = youWon === true ? "Du vandt!" : youWon === false ? `${opp()} vandt` : "Uafgjort";
+  const sub = youWon === true ? `Du vandt på den sidste dynge. ${opp()} havde ${remaining(S.ai) + S.ai.deck.length} kort tilbage.`
+    : youWon === false ? `Du havde ${remaining(S.you) + S.you.deck.length} kort tilbage. ${NET ? "Tag revanche!" : "Prøv en roligere modstander, eller tag revanche."}`
+    : "I sad fast med lige mange kort.";
+  showPanel(`<h2>${title}</h2><p>${sub}</p>
+    <div class="stats"><span class="h">Spilletid ${time}</span><span class="h">Dig</span><span class="h">${NET ? "Modstander" : "Computer"}</span>
+    <span>Kort lagt i midten</span><span>${S.you.played}</span><span>${S.ai.played}</span>
+    <span>Pismarie råbt</span><span>${S.you.shouts}</span><span>${S.ai.shouts}</span>
+    <span>Runder spillet</span><span>${S.round}</span><span></span></div>
+    ${isGuest() ? "<p>Venter på, at din modspiller starter et nyt spil.</p>" : `<button class="primary" id="againBtn" type="button">Spil igen</button>`}`);
+  if (!isGuest()) { $("againBtn").addEventListener("click", start); $("againBtn").focus(); }
+}
+
+/* Rounds: whoever empties their bunker first picks a dynge (the smallest, if they are smart). */
+function roundOver(w) {
+  S.phase = "roundend";
+  running = false; stopTimers(); selected = null; aimK = -1;
+  document.querySelector(".opp .seat").classList.remove("thinking");
+  S.choosing = w; render();
+  const me = w === S.you;
+  if (singlePile(S) && !w.stock.length) { setTimeout(() => finish(me), 700); return; }
+  if (singlePile(S)) {
+    const n = S.piles[0].length + S.piles[1].length;
+    say(me ? `Dine bunker er tomme! ${opp()} får dyngen på ${n} kort.` : `${opp()} tømte sine bunker. Du får dyngen på ${n} kort.`);
+    setTimeout(() => resolveRound(0), 1800);
+    return;
+  }
+  S.phase = "choose"; render();
+  if (me) { say("Dine bunker er tomme! Tryk på den dynge, du vil have. Tag den mindste."); return; }
+  if (NET) { say("Modstanderen tømte sine bunker og vælger dynge…"); return; }
+  const a = S.piles[0].length, b = S.piles[1].length;
+  const pickI = a === b ? Math.floor(Math.random() * 2) : a < b ? 0 : 1;
+  say("Computeren tømte sine bunker og vælger dynge…");
+  setTimeout(() => {
+    say(`Computeren tog dyngen med ${S.piles[pickI].length} kort. Du får den med ${S.piles[1 - pickI].length}.`);
+    setTimeout(() => resolveRound(pickI), 1500);
+  }, 900);
+}
+function choosePile(i) { choose(S.you, i); }
+function choose(pl, i) {
+  if (S.choosing !== pl || running || S.over || singlePile(S) || !S.active[i] || S.resolving) return;
+  S.resolving = true;
+  if (isGuest()) { say("Vent et øjeblik…"); send({ t: "c", i: 1 - i }); return; }
+  resolveRound(i);
+}
+[0, 1].forEach(i => $("pile" + i).addEventListener("click", () => choosePile(i)));
+function resolveRound(choice) {
+  const w = S.choosing;
+  const winner = endRound(S, w, choice);
+  S.choosing = null; S.resolving = false;
+  if (winner) { finish(winner === S.you); return; }
+  S.phase = "round";
+  say(""); render();
+  if (NET) { showPanel(roundPanel() + "<p>Næste runde starter om lidt…</p>"); setTimeout(() => { if (!S.over) beginRound(); }, 2500); return; }
+  showPanel(`<h2>Runde ${S.round}</h2>
+    <p>Du har <strong>${remaining(S.you)}</strong> kort, ${opp().toLowerCase()} har <strong>${remaining(S.ai)}</strong>.</p>
+    ${singlePile(S) ? `<p>${S.you.stock.length ? opp() : "Du"} har ingen reserve, så der spilles kun på én dynge.</p>` : ""}
+    <button class="primary" id="nextBtn" type="button">Læg ud</button>`);
+  $("nextBtn").addEventListener("click", () => beginRound());
+  $("nextBtn").focus();
+}
+function roundPanel() {
+  return `<h2>Runde ${S.round}</h2>
+    <p>Du har <strong>${remaining(S.you)}</strong> kort, ${opp().toLowerCase()} har <strong>${remaining(S.ai)}</strong>.</p>
+    ${singlePile(S) ? `<p>${S.you.stock.length ? opp() : "Du"} har ingen reserve, så der spilles kun på én dynge.</p>` : ""}`;
+}
+function beginRound() {
+  S.phase = "countdown"; render();
+  let n = 3;
+  showPanel(`<div class="countdown" id="cd">${n}</div>`);
+  const step = () => {
+    n--;
+    if (n > 0) { $("cd").outerHTML = `<div class="countdown" id="cd">${n}</div>`; setTimeout(step, 600); return; }
+    $("overlay").hidden = true;
+    doSpit(S);
+    S.phase = "play";
+    running = true; flashPile(0); flashPile(1);
+    if (!NET) aiTimer = setTimeout(aiTick, aiDelay() + 400);
+    afterChange(null);
+  };
+  setTimeout(step, 600);
+}
+
+function showPanel(html) { $("panel").innerHTML = html; $("overlay").hidden = false; }
+
+function start() {
+  if (isGuest()) return;
+  stopTimers();
+  running = false; S = newGame(); S.mp = !!NET; selected = null; mood = 1; lastCounts = [26, 26]; render(); say("");
+  startedAt = Date.now();
+  beginRound();
+}
+
+/* ---------- Two phones: one hosts the game, the other mirrors it ----------
+   Both join a named room from a 4-digit code. The host keeps the real game and puts it in its presence;
+   the guest sees the table from its own side and sends its moves in its presence, numbered. */
+function isGuest() { return !!NET && NET.role === "guest"; }
+function encPl(pl) { return { c: pl.cols.map(enc), o: pl.open, s: enc(pl.stock), d: enc(pl.deck || []), p: pl.played, x: pl.shouts }; }
+function decPl(o) { return { cols: [0, 1, 2, 3, 4].map(k => dec(o.c[k])), open: [0, 1, 2, 3, 4].map(k => Math.max(0, o.o[k] | 0)), stock: dec(o.s), deck: dec(o.d), played: o.p | 0, shouts: o.x | 0 }; }
+function broadcast() {
+  const ch = S.choosing === S.you ? "h" : S.choosing === S.ai ? "g" : "";
+  const st = { v: 0, h: encPl(S.you), g: encPl(S.ai), p: S.piles.map(enc), a: S.active, r: S.round, ph: S.phase || "", ch, w: S.winner || "", e: S.ev || null };
+  const key = JSON.stringify(st);
+  if (key === NET.lastSent) return;  // unchanged: sending it again would only echo back here
+  NET.lastSent = key;
+  st.v = NET.v = (NET.v || 0) + 1;
+  NET.room.presence({ role: "host", st }).catch(() => {});
+}
+function send(a) {
+  NET.n++;
+  NET.acts = [...NET.acts.slice(-15), { ...a, n: NET.n }];
+  NET.room.presence({ role: "guest", acts: NET.acts }).catch(() => {});
+}
+// Host: apply the guest's numbered moves that are new. The guest sits in the computer's seat.
+function hostTakeActs(acts) {
+  if (!Array.isArray(acts)) return;
+  const ok = (v, max) => Number.isInteger(v) && v >= 0 && v <= max;
+  for (const a of acts) {
+    if (!a || !Number.isInteger(a.n) || a.n <= NET.lastN) continue;
+    NET.lastN = a.n;
+    if (a.t === "p" && ok(a.k, 4) && ok(a.i, 1)) play(S.ai, a.k, a.i);
+    else if (a.t === "f" && ok(a.k, 4)) flip(S.ai, a.k);
+    else if (a.t === "m" && ok(a.a, 4) && ok(a.b, 4)) shift(S.ai, a.a, a.b);
+    else if (a.t === "s") shout(S.ai);
+    else if (a.t === "c" && ok(a.i, 1)) choose(S.ai, a.i);
+  }
+}
+function hostPeers(ch) {
+  const g = ch.peers.find(p => !p.isMe && p.presence && p.presence.role === "guest" && (!NET.guest || p.peer === NET.guest));
+  if (NET.guest && ch.left.some(p => p.peer === NET.guest)) say("Din modspiller har forladt spillet.");
+  if (!g) return;
+  if (NET.guest && !ch.updated.includes(g) && !ch.joined.includes(g)) return;
+  if (!NET.guest) {
+    NET.guest = g.peer;
+    const acts = Array.isArray(g.presence.acts) ? g.presence.acts : [];
+    NET.lastN = acts.reduce((m, a) => Math.max(m, (a && a.n) | 0), 0);
+    start();
+    return;
+  }
+  hostTakeActs(g.presence.acts);
+}
+// Guest: rebuild the table from the host's state, seen from the guest's side.
+function guestPeers(ch) {
+  const h = ch.peers.find(p => !p.isMe && p.presence && p.presence.role === "host");
+  if (!h) { if (NET.seenHost && ch.left.length) say("Din modspiller har forladt spillet."); return; }
+  NET.seenHost = true;
+  const st = h.presence.st;
+  if (!st || typeof st.v !== "number" || st.v <= NET.ver) return;
+  NET.ver = st.v;
+  try { applyState(st); } catch (e) {}
+}
+function applyState(st) {
+  const prevTops = [0, 1, 2, 3, 4].map(k => topOf(S.ai, k));
+  const rects = prevTops.map((c, k) => c ? aiCardRect(k) : null);
+  const prevPile = [pileTop(S, 0), pileTop(S, 1)];
+  const prevOpen = S.ai.open.slice();
+  const keepDrag = drag;
+  S = { you: decPl(st.g), ai: decPl(st.h), piles: [dec(st.p[1]), dec(st.p[0])], active: [!!st.a[1], !!st.a[0]],
+        round: st.r | 0, over: st.ph === "over", phase: st.ph, mp: true };
+  S.choosing = st.ch === "g" ? S.you : st.ch === "h" ? S.ai : null;
+  running = st.ph === "play";
+  if (keepDrag && !running) { keepDrag.ghost.remove(); drag = null; }
+  render();
+  for (let i = 0; i < 2; i++) {
+    const t = pileTop(S, i);
+    if (!t || t === prevPile[i]) continue;
+    const k = prevTops.indexOf(t);
+    if (k >= 0 && rects[k]) { fly(t, rects[k], $("pile" + i)); flashPile(i, true); }
+  }
+  for (let k = 0; k < 5; k++) if (!prevOpen[k] && S.ai.open[k] && S.ai.cols[k].length) { const c = aiColEl(k).querySelector(".card"); if (c) c.classList.add("flipped"); }
+  if (st.e && st.e.id !== NET.lastEv) {
+    const first = NET.lastEv === null;
+    NET.lastEv = st.e.id;
+    if (!first && st.e.k === "shout") {
+      if (st.e.w === "h") { showBubble(); buzz([60, 40, 60]); say(`Modstanderen råbte Pismarie! Du får ${st.e.n} kort`, true); }
+      else { buzz(40); say(`Pismarie! Modstanderen får ${st.e.n} kort`, true); }
+    }
+    if (!first && st.e.k === "spit") { flashPile(0); flashPile(1); }
+  }
+  if (st.ph !== NET.lastPh) { NET.lastPh = st.ph; guestPhase(st); }
+}
+function guestPhase(st) {
+  const me = S.choosing === S.you;
+  if (st.ph === "countdown") {
+    if (S.round === 1) { startedAt = Date.now(); lastCounts = [26, 26]; }
+    say("");
+    let n = 3;
+    showPanel(`<div class="countdown" id="cd">${n}</div>`);
+    const step = () => { n--; if (n > 0 && $("cd")) { $("cd").outerHTML = `<div class="countdown" id="cd">${n}</div>`; setTimeout(step, 600); } };
+    setTimeout(step, 600);
+  } else if (st.ph === "play") { $("overlay").hidden = true; flashPile(0); flashPile(1); }
+  else if (st.ph === "choose") {
+    if (singlePile(S)) say(me ? "Dine bunker er tomme!" : "Modstanderen tømte sine bunker.");
+    else say(me ? "Dine bunker er tomme! Tryk på den dynge, du vil have. Tag den mindste." : "Modstanderen tømte sine bunker og vælger dynge…");
+  } else if (st.ph === "round") { say(""); showPanel(roundPanel() + "<p>Næste runde starter om lidt…</p>"); }
+  else if (st.ph === "over") finish(st.w === "g" ? true : st.w === "h" ? false : null);
+}
+
+function setMpLabels() {
+  $("oppName").textContent = NET ? "Modstanderen" : "Computeren";
+  $("oppRes").textContent = NET ? "Modstanderens" : "Computerens";
+  $("speed").hidden = $("speedLabel").hidden = !!NET;
+  $("restart").hidden = isGuest();
+}
+// Inside Claude the platform's room connects the phones. On the stand-alone website, PeerJS connects
+// them directly, with the same calls, so the rest of the game does not care which one it got.
+async function getRoom() {
+  if (window.claude && window.claude.use) {
+    try { const room = await window.claude.use("room"); return room && { join: name => room.join(name) }; } catch (e) { return null; }
+  }
+  if (window.Peer) return { join: (name, role) => peerRoom(name, role) };
+  return null;
+}
+function peerRoom(name, role) {
+  return new Promise((resolve, reject) => {
+    const opts = window.PEER_OPTS || {};
+    const peer = role === "host" ? new Peer(name, opts) : new Peer(opts);
+    let mine = {}, self = null, myId = "me", ready = false;
+    const remote = new Map(), handlers = [], conns = new Set();
+    const mk = (id, presence, isMe) => Object.freeze({ peer: id, by: null, isMe, sameTab: isMe, kind: "viewer", guest: false, presence: Object.freeze(presence), updatedAt: Date.now() });
+    const list = () => [self, ...remote.values()].filter(Boolean);
+    const deliver = (joined, left, updated) => { const peers = list(); handlers.forEach(h => { try { h({ peers, joined, left, updated }); } catch (e) {} }); };
+    const wire = conn => {
+      conns.add(conn);
+      conn.on("open", () => conn.send({ presence: mine }));
+      conn.on("data", d => {
+        if (!d || typeof d !== "object" || !d.presence || typeof d.presence !== "object") return;
+        const ex = remote.get(conn.peer), p = mk(conn.peer, d.presence, false);
+        remote.set(conn.peer, p);
+        deliver(ex ? [] : [p], [], ex ? [p] : []);
+      });
+      const gone = () => { conns.delete(conn); const ex = remote.get(conn.peer); if (ex) { remote.delete(conn.peer); deliver([], [ex], []); } };
+      conn.on("close", gone); conn.on("error", gone);
+    };
+    const api = {
+      name,
+      async presence(patch) {
+        mine = { ...mine, ...patch };
+        for (const k in mine) if (mine[k] === null) delete mine[k];
+        const ex = self; self = mk(myId, JSON.parse(JSON.stringify(mine)), true);
+        queueMicrotask(() => deliver(ex ? [] : [self], [], ex ? [self] : []));
+        conns.forEach(c => { if (c.open) c.send({ presence: mine }); });
+      },
+      onPeers(h) { handlers.push(h); return () => {}; },
+      peers: list,
+      connected: () => !peer.disconnected,
+      async leave() { peer.destroy(); }
+    };
+    peer.on("open", id => {
+      myId = id; ready = true;
+      if (role === "host") {
+        // One opponent at a time; a phone that reloads may come back once the old link is gone.
+        peer.on("connection", c => { if ([...conns].some(x => x.open)) { c.on("open", () => c.close()); return; } wire(c); });
+      } else wire(peer.connect(name, { reliable: true }));
+      resolve(api);
+    });
+    peer.on("error", err => { if (!ready) { reject(err); peer.destroy(); } });
+  });
+}
+function mpMenu(note) {
+  showPanel(`<h2>Mod en anden telefon</h2>
+    <p>Den ene opretter et spil og får en kode. Den anden skriver koden og deltager.</p>
+    ${note ? `<p><strong>${note}</strong></p>` : ""}
+    <button class="primary" id="mpHost" type="button">Opret spil</button>
+    <label class="label" for="mpCode">Kode fra din modspiller</label>
+    <input id="mpCode" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="0000">
+    <div class="btnrow"><button class="primary alt" id="mpJoin" type="button">Deltag</button><button id="mpBack" type="button">Tilbage</button></div>`);
+  $("mpHost").addEventListener("click", hostGame);
+  $("mpJoin").addEventListener("click", () => joinGame($("mpCode").value.trim()));
+  $("mpCode").addEventListener("keydown", e => { if (e.key === "Enter") joinGame($("mpCode").value.trim()); });
+  $("mpBack").addEventListener("click", () => location.reload());
+}
+const NO_ROOM = window.claude ? "Det virker kun, når spillet er åbnet i Claude, og I begge er logget ind og har adgang til spillet." : "Kunne ikke forbinde. Tjek internetforbindelsen, og prøv igen.";
+async function hostGame() {
+  const room = await getRoom();
+  if (!room) { mpMenu(NO_ROOM); return; }
+  const code = String(1000 + Math.floor(Math.random() * 9000));
+  let r;
+  try { r = await room.join("pismarie-dks-" + code, "host"); } catch (e) { mpMenu("Kunne ikke oprette spillet. Prøv igen."); return; }
+  NET = { role: "host", room: r, code, lastN: 0, guest: null, v: 0 };
+  setMpLabels();
+  r.presence({ role: "host" }).catch(() => {});
+  r.onPeers(hostPeers);
+  showPanel(`<h2>Din spilkode</h2><div class="code">${code}</div>
+    <p>Bed din modspiller åbne Pismarie, vælge <strong>Mod en anden telefon</strong> og skrive koden. Spillet starter, så snart I begge er inde.</p>`);
+}
+async function joinGame(code) {
+  if (!/^\d{4}$/.test(code)) { shake($("mpCode")); return; }
+  const room = await getRoom();
+  if (!room) { mpMenu(NO_ROOM); return; }
+  let r;
+  try { r = await room.join("pismarie-dks-" + code, "guest"); } catch (e) { mpMenu("Kunne ikke deltage. Prøv igen."); return; }
+  NET = { role: "guest", room: r, code, n: 0, acts: [], ver: -1, lastPh: null, lastEv: null, seenHost: false };
+  setMpLabels();
+  r.presence({ role: "guest", acts: [] }).catch(() => {});
+  r.onPeers(guestPeers);
+  showPanel(`<h2>Forbinder…</h2><p>Venter på spillet med kode <strong>${code}</strong>.</p>`);
+  setTimeout(() => { if (NET && NET.role === "guest" && !NET.seenHost) showPanel(`<h2>Ingen spil fundet</h2><p>Der er ingen med koden <strong>${code}</strong> lige nu. Tjek koden, eller bed din modspiller oprette spillet igen.</p><button class="primary" id="mpRetry" type="button">Tilbage</button>`) || $("mpRetry").addEventListener("click", () => location.reload()); }, 8000);
+}
+
+$("mpBtn").addEventListener("click", () => mpMenu());
+$("startBtn").addEventListener("click", start);
+$("restart").addEventListener("click", start);
+render();
+</script>
