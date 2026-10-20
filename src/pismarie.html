@@ -280,6 +280,11 @@ button.alt { background: transparent; color: var(--brass); border: 2px solid var
 @keyframes coachin { from { transform: translateX(-50%) translateY(-10px) scale(.95); opacity: 0; } }
 .coach-hi { animation: coachpulse 1s ease-in-out infinite; position: relative; z-index: 3; }
 @keyframes coachpulse { 0%, 100% { box-shadow: 0 0 0 3px var(--brass), 0 6px 14px rgba(0,0,0,.3); } 50% { box-shadow: 0 0 0 8px rgba(226,181,74,.45), 0 6px 14px rgba(0,0,0,.3); } }
+.levels { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.level { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; text-align: left; padding: 10px 12px; }
+.level strong { font-size: 1.05rem; color: var(--ink); }
+.level span { font-size: .78rem; color: var(--ink-dim); line-height: 1.3; }
+.level.on { border-color: var(--brass); box-shadow: 0 0 0 1px var(--brass); background: var(--brass-soft); }
 .sethead { margin: 6px 0 0; font: 800 .8rem var(--display); text-transform: uppercase; letter-spacing: .12em; color: var(--ink-dim); }
 .dznote { min-height: 1.2em; margin: 0; font-size: .85rem; color: var(--ink-dim); }
 
@@ -363,13 +368,7 @@ button.alt { background: transparent; color: var(--brass); border: 2px solid var
   <header>
     <h1>Pismarie <small>du mod computeren</small></h1>
     <div class="controls">
-      <label for="speed" class="label" id="speedLabel">Modstander</label>
-      <select id="speed">
-        <option value="1900">Rolig</option>
-        <option value="1200" selected>Normal</option>
-        <option value="750">Hurtig</option>
-        <option value="450">Lynhurtig</option>
-      </select>
+      <button id="menuBtn" type="button">Menu</button>
       <button id="restart" type="button">Nyt spil</button>
       <button id="gear" type="button" aria-label="Indstillinger" title="Indstillinger">⚙</button>
     </div>
@@ -1062,7 +1061,14 @@ $("shout").addEventListener("click", () => shout(S.you));
    and can miss a Pismarie altogether. */
 const pick = a => a[Math.floor(Math.random() * a.length)];
 let mood = 1;
-function base() { return +$("speed").value; }
+// How fast the computer is: chosen when you pick "Mod computeren".
+const LEVELS = [
+  { ms: 1900, name: "Let", info: "Tager den med ro og glemmer tit at råbe Pismarie." },
+  { ms: 1200, name: "Mellem", info: "En god udfordring." },
+  { ms: 750, name: "Svær", info: "Hurtig og sjældent snydt." },
+  { ms: 450, name: "Lynhurtig", info: "Næsten umulig at slå." },
+];
+function base() { return LEVELS.some(l => l.ms === +Settings.speed) ? +Settings.speed : 1200; }
 function aiDelay() {
   mood = Math.min(1.5, Math.max(0.7, mood + (Math.random() - 0.5) * 0.2));
   let d = base() * mood * (0.45 + Math.random() * 1.1);
@@ -1159,8 +1165,9 @@ function finish(youWon) {
     <span>Kort lagt i midten</span><span>${S.you.played}</span><span>${S.ai.played}</span>
     <span>Pismarie råbt</span><span>${S.you.shouts}</span><span>${S.ai.shouts}</span>
     <span>Runder spillet</span><span>${S.round}</span><span></span></div>
-    ${isGuest() ? "<p>Venter på, at din modspiller starter et nyt spil.</p>" : `<button class="primary" id="againBtn" type="button">Spil igen</button>`}`);
+    ${isGuest() ? "<p>Venter på, at din modspiller starter et nyt spil.</p>" : `<div class="btnrow"><button class="primary" id="againBtn" type="button">Spil igen${NET ? "" : " · " + LEVELS.find(l => l.ms === base()).name}</button>${NET ? "" : `<button id="lvBtn" type="button">Skift sværhed</button><button id="toMenu" type="button">Menu</button>`}</div>`}`);
   if (!isGuest()) { $("againBtn").addEventListener("click", start); $("againBtn").focus(); }
+  if (!NET) { $("lvBtn").addEventListener("click", chooseLevel); $("toMenu").addEventListener("click", showMenu); }
 }
 
 /* Rounds: whoever empties their bunker first picks a dynge (the smallest, if they are smart). */
@@ -1270,7 +1277,7 @@ function showMenu() {
       <button id="mCards" type="button">Dine kort</button>
       <button id="mSet" type="button" aria-label="Indstillinger">⚙ Indstillinger</button>
     </div>`);
-  $("mCpu").addEventListener("click", start);
+  $("mCpu").addEventListener("click", chooseLevel);
   $("mOnline").addEventListener("click", () => mpMenu());
   $("mTut").addEventListener("click", startTutorial);
   if ($("mKnow")) $("mKnow").addEventListener("click", () => { Settings.tutorialDone = true; saveSettings(); showMenu(); });
@@ -1279,6 +1286,18 @@ function showMenu() {
   syncModeUI();
   $("mCpu").focus();
 }
+
+function chooseLevel() {
+  showPanel(`<h2>Mod computeren</h2><p>Hvor svær skal computeren være?</p>
+    <div class="levels">${LEVELS.map(l => `<button type="button" class="level${l.ms === base() ? " on" : ""}" data-ms="${l.ms}"><strong>${l.name}</strong><span>${l.info}</span></button>`).join("")}</div>
+    <div class="modepick" role="group" aria-label="Spil"><button type="button" class="mode" data-mode="normal">Normal</button><button type="button" class="mode" data-mode="skjult">Skjulte bunker</button></div>
+    <div class="btnrow"><button id="lvBack" type="button">Tilbage</button></div>`);
+  document.querySelectorAll(".level").forEach(b => b.addEventListener("click", () => { Settings.speed = +b.dataset.ms; saveSettings(); start(); }));
+  $("lvBack").addEventListener("click", showMenu);
+  syncModeUI();
+  (document.querySelector(".level.on") || document.querySelector(".level")).focus();
+}
+$("menuBtn").addEventListener("click", () => { if (NET) { if (confirm("Forlade spillet mod din modspiller?")) location.reload(); return; } showMenu(); });
 
 /* ---------- Tutorial: a set table where you play the first moves yourself ---------- */
 const cardOf = (r, si) => ALL[si * 13 + r - 1];  // si: 0 ♠, 1 ♥, 2 ♦, 3 ♣
@@ -1370,7 +1389,7 @@ $("coachSkip").addEventListener("click", () => { endTutorial(true); showMenu(); 
 
 /* ---------- Sound: everything is synthesised, so there are no sound files to ship ---------- */
 const Settings = (() => {
-  const d = { music: 35, sfx: 75, vibe: true, design: "klassisk", owned: [], mode: "normal", tutorialDone: false };
+  const d = { music: 35, sfx: 75, vibe: true, design: "klassisk", owned: [], mode: "normal", tutorialDone: false, speed: 1200 };
   try { return Object.assign(d, JSON.parse(localStorage.getItem("pismarie.settings") || "{}")); } catch (e) { return d; }
 })();
 function saveSettings() { try { localStorage.setItem("pismarie.settings", JSON.stringify(Settings)); } catch (e) {} }
@@ -1707,7 +1726,7 @@ const modeName = m => MODES[m === "skjult" ? "skjult" : "normal"];
 function setMpLabels() {
   $("oppName").textContent = NET ? "Modstanderen" : "Computeren";
   $("oppRes").textContent = NET ? "Modstanderens" : "Computerens";
-  $("speed").hidden = $("speedLabel").hidden = !!NET;
+
   $("restart").hidden = isGuest();
   document.querySelector("h1 small").textContent = NET ? "mod en anden telefon" + (NET.md ? " · " + modeName(NET.md) : "") : "du mod computeren";
 }
