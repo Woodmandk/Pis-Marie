@@ -1143,6 +1143,8 @@ function stopTimers() { clearTimeout(aiTimer); clearTimeout(stuckTimer); if (aiS
 
 function finish(youWon) {
   S.over = true; running = false; stopTimers();
+  // For the app shell (ads between games): it listens for this instead of reaching into the page.
+  try { window.dispatchEvent(new CustomEvent("pismarie:gameover", { detail: { online: !!NET, won: youWon } })); } catch (e) {}
   S.phase = "over"; S.winner = youWon === true ? "h" : youWon === false ? "g" : "d";
   render();
   sfx(youWon === true ? "win" : youWon === false ? "lose" : "round");
