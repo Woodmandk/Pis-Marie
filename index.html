@@ -44,6 +44,7 @@ body {
 .table { max-width: 720px; width: 100%; margin: 0 auto; flex: 1 0 auto; display: flex; flex-direction: column; gap: 10px; }
 header { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
 h1 { font: 400 1.9rem/1 var(--rank); margin: 0; color: var(--brass); }
+body.atmenu #menuBtn, body.atmenu #restart { visibility: hidden; }
 h1 small { font: 500 .8rem var(--display); color: var(--ink-dim); margin-left: 10px; letter-spacing: .04em; }
 .controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 select, button {
@@ -102,11 +103,9 @@ button:focus-visible, select:focus-visible, .col:focus-visible { outline: 3px so
 .opp .card .times { min-width: 16px; height: 15px; font-size: .6rem; line-height: 15px; }
 .mine .card:not(.empty) { cursor: grab; }
 .mine .card.playable { box-shadow: 0 0 0 2px var(--brass), 0 6px 14px rgba(0,0,0,.3); }
-.mine .card.flipme, .mine .card.fillme { cursor: pointer; box-shadow: 0 0 0 2px var(--ink), 0 6px 14px rgba(0,0,0,.3); }
-.mine .card.flipme::after, .mine .card.fillme::after { position: absolute; inset: 0; display: grid; place-items: center; font: 800 .85rem var(--display); letter-spacing: .06em; text-align: center; }
+.mine .card.flipme { cursor: pointer; box-shadow: 0 0 0 2px var(--ink), 0 6px 14px rgba(0,0,0,.3); }
+.mine .card.flipme::after { position: absolute; inset: 0; display: grid; place-items: center; font: 800 .85rem var(--display); letter-spacing: .06em; text-align: center; }
 .mine .card.flipme::after { content: "Vend"; color: var(--back-ink); }
-.mine .card.fillme { border-color: var(--ink-dim); }
-.mine .card.fillme::after { content: "Læg ud"; color: var(--ink-dim); font-size: .75rem; }
 .mine .card.lifted { visibility: hidden; }
 .mine .col.selected .card { transform: translateY(-12px); box-shadow: 0 0 0 3px var(--brass), 0 10px 18px rgba(0,0,0,.35); }
 .col.drop-ok { background: var(--brass-soft); box-shadow: 0 0 0 2px var(--brass); }
@@ -119,8 +118,6 @@ button:focus-visible, select:focus-visible, .col:focus-visible { outline: 3px so
 .opp { position: relative; }
 .opp .card.aim { transform: translateY(12px) scale(1.14) rotate(-3deg); box-shadow: 0 0 0 2px var(--ink-dim), 0 12px 22px rgba(0,0,0,.45); z-index: 2; }
 .opp .card.flipped { animation: flip .28s ease-out; }
-.opp .card.landed { animation: settle .3s ease-out; }
-@keyframes settle { from { transform: translateY(-10px) scale(1.1); } }
 .bubble {
   position: absolute; left: 50%; bottom: -14px; z-index: 12; transform: translateX(-50%);
   background: var(--card); color: var(--red); font: 400 1.5rem/1 var(--rank); padding: 10px 18px; border-radius: 18px;
@@ -253,7 +250,7 @@ button.alt { background: transparent; color: var(--brass); border: 2px solid var
   --back: #2b0b4f; --back-edge: #ff3cac; --back-ink: #ffffff;
   --back-pat: linear-gradient(180deg, transparent 0 55%, rgba(255,60,172,.9) 55% 56%, transparent 56%), repeating-linear-gradient(90deg, rgba(62,240,255,.55) 0 1px, transparent 1px 10px) bottom / 100% 44% no-repeat, radial-gradient(circle at 50% 55%, #ffb347 0 16%, #ff3cac 17% 19%, transparent 20%), linear-gradient(180deg, #12002b 0%, #3d0d6b 55%, #1a0533 56%, #0b0018 100%);
   --back-frame: none; --emblem: ""; --emblem-size: .3;
-  --deco: none; --radius: .14; --glow: 1;
+  --deco: none; --radius: .14;
   --fig11: "\2658\FE0E"; --fig12: "\2655\FE0E"; --fig13: "\2654\FE0E";
 }
 [data-dz="guld"] {
@@ -454,6 +451,9 @@ button.alt { background: transparent; color: var(--brass); border: 2px solid var
 [data-dz="neon"] .card.back { animation: neonhue 5s ease-in-out infinite alternate; }
 @keyframes neonhue { to { filter: hue-rotate(45deg) saturate(1.2); } }
 [data-dz="guld"] .card.back { animation: shimmer 3.2s linear infinite; }
+/* "Rolige kort": the designs keep their look but stand still. */
+body.calm [data-dz] .card :is(.r, .big), body.calm [data-dz="rum"] .card:not(.back):not(.empty),
+body.calm :is([data-dz="is"], [data-dz="marmor"], [data-dz="guld"], [data-dz="dannebrog"]) .card.back, body.calm [data-dz="pirat"] .card.back::before { animation: none !important; }
 @keyframes shimmer { from { background-position: 150% 0, 0 0, 0 0, 0 0; } to { background-position: -150% 0, 0 0, 0 0, 0 0; } }
 [data-dz="guld"] .card:not(.back):not(.empty) .r { background: linear-gradient(180deg, #e9c25a, #8f6418); -webkit-background-clip: text; background-clip: text; color: transparent; }
 [data-dz="guld"] .card.red:not(.back) .r { background-image: linear-gradient(180deg, #d9534a, #7a1a14); }
@@ -525,7 +525,6 @@ button.alt { background: transparent; color: var(--brass); border: 2px solid var
 .panel > * { flex-shrink: 0; }
 .panel > .scroll { flex-shrink: 1; }
 @media (max-height: 640px) {
-  .panel .kbd { display: none; }
   body { padding-block: 6px; }
   .table { gap: 6px; }
   h1 { font-size: 1.3rem; }
@@ -539,7 +538,7 @@ button.alt { background: transparent; color: var(--brass); border: 2px solid var
   .menusub { display: none; }
   .msg { min-height: 1.2em; font-size: .8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 }
-@media (hover: none) { .panel .kbd { display: none; } .key { display: none; } }
+@media (hover: none) { .key { display: none; } }
 /* Phone on its side: the header becomes a slim column on the left, the Pismarie button sits beside the dynger,
    and both players' counts sit beside their bunker. */
 @media (orientation: landscape) and (max-height: 540px) {
@@ -570,7 +569,6 @@ button.alt { background: transparent; color: var(--brass); border: 2px solid var
   #shout { font-size: 1.2rem; padding: 6px 20px; }
   .zone { gap: 4px; }
   .panel { max-height: 94%; padding: 14px 18px; }
-  .panel .kbd { display: none; }
   #panel { max-width: 620px; }
   .menutitle { font-size: 1.9rem !important; }
   .menusub { display: none; }
@@ -620,14 +618,15 @@ button.alt { background: transparent; color: var(--brass); border: 2px solid var
     <label class="setrow" for="volMusic"><span>Musik</span><input type="range" id="volMusic" min="0" max="100" step="5"><output id="outMusic"></output></label>
     <label class="setrow" for="volSfx"><span>Lydeffekter</span><input type="range" id="volSfx" min="0" max="100" step="5"><output id="outSfx"></output></label>
     <label class="setrow check" for="optVibe"><span>Vibration</span><input type="checkbox" id="optVibe"></label>
-    <label class="setrow check" for="optSame"><span>Modstander i mit design</span><input type="checkbox" id="optSame"></label>
+    <label class="setrow check" for="optSame"><span>Ens kort for begge</span><input type="checkbox" id="optSame"></label>
+    <label class="setrow check" for="optCalm"><span>Rolige kort</span><input type="checkbox" id="optCalm"></label>
     <h3 class="sethead">Spil</h3>
-    <div class="modepick" role="group" aria-label="Spil"><button type="button" class="mode" data-mode="normal">Normal</button><button type="button" class="mode" data-mode="skjult">Skjulte bunker</button></div>
+    <div class="modepick" role="group" aria-label="Spilletype"><button type="button" class="mode" data-mode="normal">Normal</button><button type="button" class="mode" data-mode="skjult">Skjulte bunker</button></div>
     <p class="modeinfo"></p>
     <h3 class="sethead">Dine kort</h3>
     <div class="dzgrid" id="dzGrid"></div>
     <p class="dznote" id="dzNote"></p>
-    <div class="btnrow"><button class="primary" id="setClose" type="button">Luk</button><button id="setRules" type="button">Vis reglerne</button><button id="setMenu" type="button">Til menuen</button></div>
+    <div class="btnrow"><button class="primary" id="setClose" type="button">Luk</button><button id="setRules" type="button">Regler</button><button id="setMenu" type="button">Menu</button></div>
   </div>
 </div>
 <template id="rulesTpl">
@@ -746,7 +745,6 @@ function doPlayHand(G, pl, j, i) {
   if (!col.length) pl.hand = -1;
   return true;
 }
-function fillTarget(pl) { return -1; }  // the reserve is only for turning cards onto the dynger
 function isPismarie(G) { const a = pileTop(G, 0), b = pileTop(G, 1); return !!(a && b && a.r === b.r); }
 // Moving within your own bunker: onto an empty bunke, or onto a face-up card of the same rank.
 function canShift(pl, from, to) {
@@ -778,7 +776,6 @@ function doPlay(G, pl, k, i) {
   return true;
 }
 function doFlip(pl, k) { if (!pl.cols[k].length || pl.open[k]) return false; pl.open[k] = 1; return true; }
-function doFill(pl, k) { return false; pl.cols[k].push(pl.stock.pop()); pl.open[k] = 1; return true; }
 function doShift(pl, from, to) {
   if (!canShift(pl, from, to)) return false;
   pl.cols[to].push(pl.cols[from].pop());
@@ -815,13 +812,13 @@ function doSpit(G) {
   return flipped;
 }
 // Stuck: nobody can play to the middle, nobody has a card to turn, and the computer has nothing useful to do.
-// (Your own shifts and fills are optional, so the game does not wait for them.)
+// (Your own shifts are optional, so the game does not wait for them.)
 function isStuck(G) {
   if (isPismarie(G)) return false;
   if (G.mode === "skjult") return !anyFits(G, G.you) && !anyFits(G, G.ai);
   if (moves(G, G.you).length || moves(G, G.ai).length) return false;
   if (flipTarget(G.you) >= 0 || flipTarget(G.ai) >= 0) return false;
-  if (!G.mp && (usefulShift(G.ai) || fillTarget(G.ai) >= 0)) return false;
+  if (!G.mp && usefulShift(G.ai)) return false;
   return true;
 }
 
@@ -935,6 +932,7 @@ function handEl(j) {
 
 let lastCounts = [26, 26];
 function render() {
+  document.body.classList.toggle("atmenu", S.phase === "menu");
   applyDesigns();
   const cols = $("cols"); cols.innerHTML = "";
   const holding = S.you.skjult && S.you.hand >= 0;
@@ -980,7 +978,7 @@ function flashPile(i, byAi) {
   p.classList.remove("flash", "by-ai"); void p.offsetWidth;
   p.classList.add("flash"); if (byAi) p.classList.add("by-ai");
 }
-function myCard(k) { return $("cols").children[k].querySelector(".card"); }
+function myCard(k) { const c = $("cols").children[k]; return c ? c.querySelector(".card") : null; }
 function aiColEl(k) { return $("aiCols").children[k]; }
 function aiCardRect(k) { return $("aiCols").children[k].querySelector(".card").getBoundingClientRect(); }
 function shake(el) { if (!el) return; sfx("nope"); el.classList.remove("shake"); void el.offsetWidth; el.classList.add("shake"); }
@@ -1060,14 +1058,6 @@ function flip(pl, k) {
   sfx(pl === S.you ? "flip" : "flipOpp");
   return true;
 }
-function fill(pl, k) {
-  const from = $(pl === S.ai ? "side1" : "side0").getBoundingClientRect();
-  if (!running || S.over || !doFill(pl, k)) return false;
-  afterChange(pl);
-  if (pl === S.you) myCard(k).classList.add("flipped");
-  else fly(pl.cols[k][pl.cols[k].length - 1], from, aiColEl(k));
-  return true;
-}
 function shift(pl, from, to) {
   if (tutLocked(pl)) return false;
   if (isGuest()) {
@@ -1132,8 +1122,10 @@ const MODE_INFO = {
   normal: "Bunker med 5, 4, 3, 2 og 1 kort, og det øverste kort vender op.",
   skjult: "5 kort i hver bunke, alle med bagsiden op. Tag en bunke op på hånden, læg det der passer, og læg den tilbage. Husk hvad der ligger hvor!",
 };
+const MODE_PICK = `<div class="modepick" role="group" aria-label="Spilletype"><button type="button" class="mode" data-mode="normal">Normal</button><button type="button" class="mode" data-mode="skjult">Skjulte bunker</button></div><p class="modeinfo"></p>`;
 function syncModeUI() {
   const m = Settings.mode === "skjult" ? "skjult" : "normal";
+  document.querySelectorAll("#settings .mode").forEach(b => { b.disabled = !!NET; });  // online, the host's game decides
   document.querySelectorAll(".mode").forEach(b => { b.classList.toggle("on", b.dataset.mode === m); b.setAttribute("aria-pressed", String(b.dataset.mode === m)); });
   const later = running || S.phase === "play" || S.phase === "countdown";
   document.querySelectorAll(".modeinfo").forEach(p => { p.textContent = MODE_INFO[m] + (later && p.closest("#settings") ? " Gælder fra næste spil." : ""); });
@@ -1180,7 +1172,7 @@ function shout(pl) {
 }
 
 /* Dragging: onto a middle dynge, onto an empty bunke of your own, or onto an equal card of your own.
-   A short tap turns a hidden card or fills an empty bunke from the reserve. */
+   A short tap turns a hidden card. */
 function near(el, x, y, pad) { const r = el.getBoundingClientRect(); return x > r.left - pad && x < r.right + pad && y > r.top - pad && y < r.bottom + pad; }
 // Generous targets for fingers: anywhere in the middle band counts, and the card goes to the
 // dynge it fits on (the nearest one if it fits both).
@@ -1321,7 +1313,6 @@ function aiTick() {
   if (m.length && !(sh && Math.random() < 0.25)) { const [kk, i] = pick(m); k = kk; act = () => play(pl, kk, i); }
   else if (flipTarget(pl) >= 0) { k = flipTarget(pl); act = () => flip(pl, k); }
   else if (sh) { k = sh[0]; act = () => shift(pl, sh[0], sh[1]); }
-  else if (fillTarget(pl) >= 0) { const f = fillTarget(pl); act = () => fill(pl, f); }
   document.querySelector(".opp .seat").classList.toggle("thinking", !act);
   if (!act) { aiTimer = setTimeout(aiTick, aiDelay()); return; }
   aimK = k;
@@ -1373,9 +1364,19 @@ function checkStuck() {
   }, 1500);
 }
 
-function stopTimers() { clearTimeout(aiTimer); clearTimeout(stuckTimer); if (aiShoutTimer > 0) clearTimeout(aiShoutTimer); stuckTimer = aiShoutTimer = null; }
+function stopTimers() {
+  clearTimeout(aiTimer); clearTimeout(stuckTimer); if (aiShoutTimer > 0) clearTimeout(aiShoutTimer);
+  aiTimer = stuckTimer = aiShoutTimer = null; aimK = -1;
+  const seat = document.querySelector(".opp .seat"); if (seat) seat.classList.remove("thinking");
+}
+// Timers that move the game from one step to the next (countdown, round end). Leaving the game
+// cancels them, so an old game can never pop up over the menu or a new game.
+const flow = new Set();
+function later(fn, ms) { const t = setTimeout(() => { flow.delete(t); fn(); }, ms); flow.add(t); return t; }
+function cancelFlow() { flow.forEach(clearTimeout); flow.clear(); }
 
-function finish(youWon) {
+function finish(youWon, how) {
+  S.how = how || "stuck";
   S.over = true; running = false; stopTimers();
   // For the app shell (ads between games): it listens for this instead of reaching into the page.
   try { window.dispatchEvent(new CustomEvent("pismarie:gameover", { detail: { online: !!NET, won: youWon } })); } catch (e) {}
@@ -1385,15 +1386,16 @@ function finish(youWon) {
   const secs = Math.round((Date.now() - startedAt) / 1000);
   const time = `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, "0")}`;
   const title = youWon === true ? "Du vandt!" : youWon === false ? `${opp()} vandt` : "Uafgjort";
-  const sub = youWon === true ? `Du vandt på den sidste dynge. ${opp()} havde ${remaining(S.ai) + S.ai.deck.length} kort tilbage.`
-    : youWon === false ? `Du havde ${remaining(S.you) + S.you.deck.length} kort tilbage. ${NET ? "Tag revanche!" : "Prøv en roligere modstander, eller tag revanche."}`
+  const sub = youWon === true ? `${how === "last" ? "Du vandt på den sidste dynge" : "Du havde færrest kort, da ingen kunne lægge mere"}. ${opp()} havde ${remaining(S.ai) + S.ai.deck.length} kort tilbage.`
+    : youWon === false ? `Du havde ${remaining(S.you) + S.you.deck.length} kort tilbage. ${NET ? "Tag revanche!" : "Prøv en lettere computer, eller tag revanche."}`
     : "I sad fast med lige mange kort.";
   showPanel(`<h2>${title}</h2><p>${sub}</p>
     <div class="stats"><span class="h">Spilletid ${time}</span><span class="h">Dig</span><span class="h">${NET ? "Modstander" : "Computer"}</span>
     <span>Kort lagt i midten</span><span>${S.you.played}</span><span>${S.ai.played}</span>
     <span>Pismarie råbt</span><span>${S.you.shouts}</span><span>${S.ai.shouts}</span>
     <span>Runder spillet</span><span>${S.round}</span><span></span></div>
-    ${isGuest() ? "<p>Venter på, at din modspiller starter et nyt spil.</p>" : `<div class="btnrow"><button class="primary" id="againBtn" type="button">Spil igen${NET ? "" : " · " + LEVELS.find(l => l.ms === base()).name}</button>${NET ? "" : `<button id="lvBtn" type="button">Skift sværhed</button><button id="toMenu" type="button">Menu</button>`}</div>`}`);
+    ${isGuest() ? `<p>Venter på, at din modstander starter et nyt spil.</p><div class="btnrow"><button class="leave" type="button">Menu</button></div>`
+      : `<div class="btnrow"><button class="primary" id="againBtn" type="button">Nyt spil${NET ? "" : " · " + LEVELS.find(l => l.ms === base()).name}</button>${NET ? `<button class="leave" type="button">Menu</button>` : `<button id="lvBtn" type="button">Skift sværhedsgrad</button><button id="toMenu" type="button">Menu</button>`}</div>`}`);
   if (!isGuest()) { $("againBtn").addEventListener("click", start); $("againBtn").focus(); }
   if (!NET) { $("lvBtn").addEventListener("click", chooseLevel); $("toMenu").addEventListener("click", showMenu); }
 }
@@ -1406,11 +1408,11 @@ function roundOver(w) {
   S.choosing = w; render();
   const me = w === S.you;
   sfx(me ? "round" : "roundOpp");
-  if (singlePile(S) && !w.stock.length) { setTimeout(() => finish(me), 700); return; }
+  if (singlePile(S) && !w.stock.length) { later(() => finish(me, "last"), 700); return; }
   if (singlePile(S)) {
     const n = S.piles[0].length + S.piles[1].length;
-    say(me ? `Bunkerne er tomme! ${opp()} får ${n} kort.` : `${opp()} er tom. Du får ${n} kort.`);
-    setTimeout(() => resolveRound(0), 1800);
+    say(me ? `Bunkerne er tomme! ${opp()} får ${n} kort.` : `${opp()} tømte sine bunker. Du får ${n} kort.`);
+    later(() => resolveRound(0), 1800);
     return;
   }
   S.phase = "choose"; render();
@@ -1419,12 +1421,11 @@ function roundOver(w) {
   const a = S.piles[0].length, b = S.piles[1].length;
   const pickI = a === b ? Math.floor(Math.random() * 2) : a < b ? 0 : 1;
   say("Computeren vælger dynge…");
-  setTimeout(() => {
+  later(() => {
     say(`Computeren tog ${S.piles[pickI].length} kort. Du får ${S.piles[1 - pickI].length}.`);
-    setTimeout(() => resolveRound(pickI), 1500);
+    later(() => resolveRound(pickI), 1500);
   }, 900);
 }
-function choosePile(i) { choose(S.you, i); }
 function choose(pl, i) {
   if (S.choosing !== pl || running || S.over || singlePile(S) || !S.active[i] || S.resolving) return;
   S.resolving = true;
@@ -1432,15 +1433,15 @@ function choose(pl, i) {
   if (isGuest()) { say("Vent et øjeblik…"); send({ t: "c", i: 1 - i }); return; }
   resolveRound(i);
 }
-[0, 1].forEach(i => $("pile" + i).addEventListener("click", () => choosePile(i)));
+[0, 1].forEach(i => $("pile" + i).addEventListener("click", () => choose(S.you, i)));
 function resolveRound(choice) {
   const w = S.choosing;
   const winner = endRound(S, w, choice);
   S.choosing = null; S.resolving = false;
-  if (winner) { finish(winner === S.you); return; }
+  if (winner) { finish(winner === S.you, "last"); return; }
   S.phase = "round";
   say(""); render();
-  if (NET) { showPanel(roundPanel() + "<p>Næste runde starter om lidt…</p>"); setTimeout(() => { if (!S.over) beginRound(); }, 2500); return; }
+  if (NET) { showPanel(roundPanel() + "<p>Næste runde starter om lidt…</p>"); later(() => { if (!S.over) beginRound(); }, 2500); return; }
   showPanel(`<h2>Runde ${S.round}</h2>
     <p>Du har <strong>${remaining(S.you)}</strong> kort, ${opp().toLowerCase()} har <strong>${remaining(S.ai)}</strong>.</p>
     ${singlePile(S) ? `<p>${S.you.stock.length ? opp() : "Du"} har ingen reserve, så der spilles kun på én dynge.</p>` : ""}
@@ -1453,13 +1454,21 @@ function roundPanel() {
     <p>Du har <strong>${remaining(S.you)}</strong> kort, ${opp().toLowerCase()} har <strong>${remaining(S.ai)}</strong>.</p>
     ${singlePile(S) ? `<p>${S.you.stock.length ? opp() : "Du"} har ingen reserve, så der spilles kun på én dynge.</p>` : ""}`;
 }
-function beginRound() {
-  S.phase = "countdown"; render();
+// 3, 2, 1 on the table, then done().
+function countdown(done) {
+  cancelFlow();
   let n = 3;
   showPanel(`<div class="countdown" id="cd">${n}</div>`); sfx("tick");
   const step = () => {
     n--;
-    if (n > 0) { $("cd").outerHTML = `<div class="countdown" id="cd">${n}</div>`; sfx("tick"); setTimeout(step, 600); return; }
+    if (n > 0) { if ($("cd")) $("cd").textContent = n; sfx("tick"); later(step, 600); return; }
+    if (done) done();
+  };
+  later(step, 600);
+}
+function beginRound() {
+  S.phase = "countdown"; render();
+  countdown(() => {
     $("overlay").hidden = true;
     sfx("go"); dealIn();
     doSpit(S);
@@ -1468,8 +1477,7 @@ function beginRound() {
     if (!NET) aiTimer = setTimeout(aiTick, aiDelay() + 400);
     afterChange(null);
     if (S.you.skjult && S.round === 1) say("Tryk på en bunke for at tage den op på hånden.");
-  };
-  setTimeout(step, 600);
+  });
 }
 
 function showPanel(html) { $("panel").innerHTML = html; $("overlay").hidden = false; }
@@ -1477,7 +1485,7 @@ function showPanel(html) { $("panel").innerHTML = html; $("overlay").hidden = fa
 function start() {
   if (isGuest()) return;
   endTutorial(false);
-  stopTimers();
+  stopTimers(); cancelFlow();
   if (!NET) pickOppDz();
   running = false; S = newGame(NET ? NET.md : Settings.mode); S.mp = !!NET; selected = null; mood = 1; lastCounts = [26, 26]; render(); say("");
   startedAt = Date.now();
@@ -1486,7 +1494,7 @@ function start() {
 
 /* ---------- Menu ---------- */
 function showMenu() {
-  stopTimers(); running = false; endTutorial(false);
+  stopTimers(); cancelFlow(); running = false; endTutorial(false);
   if (!NET) { S = newGame(Settings.mode); S.phase = "menu"; selected = null; render(); say(""); }
   const fresh = !Settings.tutorialDone;
   showPanel(`<h2 class="menutitle">Pismarie</h2>
@@ -1498,8 +1506,6 @@ function showMenu() {
       <button class="primary big" id="mCpu" type="button">Mod computeren</button>
       <button class="primary alt big" id="mOnline" type="button">Online og mod venner</button>
     </div>
-    <div class="modepick" role="group" aria-label="Spil"><button type="button" class="mode" data-mode="normal">Normal</button><button type="button" class="mode" data-mode="skjult">Skjulte bunker</button></div>
-    <p class="modeinfo"></p>
     <div class="menu2">
       ${fresh ? "" : `<button id="mTut" type="button">Lær at spille</button>`}
       <button id="mCards" type="button">Dine kort</button>
@@ -1518,14 +1524,16 @@ function showMenu() {
 function chooseLevel() {
   showPanel(`<h2>Mod computeren</h2><p>Hvor svær skal computeren være?</p>
     <div class="levels">${LEVELS.map(l => `<button type="button" class="level${l.ms === base() ? " on" : ""}" data-ms="${l.ms}"><strong>${l.name}</strong><span>${l.info}</span></button>`).join("")}</div>
-    <div class="modepick" role="group" aria-label="Spil"><button type="button" class="mode" data-mode="normal">Normal</button><button type="button" class="mode" data-mode="skjult">Skjulte bunker</button></div>
+    ${MODE_PICK}
     <div class="btnrow"><button id="lvBack" type="button">Tilbage</button></div>`);
   document.querySelectorAll(".level").forEach(b => b.addEventListener("click", () => { Settings.speed = +b.dataset.ms; saveSettings(); start(); }));
   $("lvBack").addEventListener("click", showMenu);
   syncModeUI();
   (document.querySelector(".level.on") || document.querySelector(".level")).focus();
 }
-$("menuBtn").addEventListener("click", () => { if (NET) { if (confirm("Forlade spillet mod din modspiller?")) location.reload(); return; } showMenu(); });
+// Leaving anything online: a fresh page closes every link and timer at once.
+document.addEventListener("click", e => { if (e.target.closest(".leave")) location.reload(); });
+$("menuBtn").addEventListener("click", () => { if (NET) { if (confirm("Forlade spillet mod din modstander?")) location.reload(); return; } showMenu(); });
 
 /* ---------- Tutorial: a set table where you play the first moves yourself ---------- */
 const cardOf = (r, si) => ALL[si * 13 + r - 1];  // si: 0 ♠, 1 ♥, 2 ♦, 3 ♣
@@ -1584,7 +1592,7 @@ function tutPair() {
 }
 function startTutorial() {
   if (NET) return;
-  stopTimers(); pickOppDz();
+  stopTimers(); cancelFlow(); pickOppDz();
   const t = tutorialGame();
   S = t.G; S.phase = "play"; selected = null;
   TUT = { step: 0, extra: t.extra };
@@ -1624,6 +1632,7 @@ function tutAdvance() {
 function endTutorial(learned) {
   if (learned) { Settings.tutorialDone = true; saveSettings(); }
   if (!TUT) return;
+  clearTimeout(TUT.next);
   TUT = null;
   $("coach").hidden = true;
   tutHighlight();
@@ -1637,7 +1646,7 @@ $("coachSkip").addEventListener("click", () => { endTutorial(true); showMenu(); 
 
 /* ---------- Sound: everything is synthesised, so there are no sound files to ship ---------- */
 const Settings = (() => {
-  const d = { music: 35, sfx: 75, vibe: true, sameDz: false, design: "klassisk", owned: [], mode: "normal", tutorialDone: false, speed: 1200 };
+  const d = { music: 35, sfx: 75, vibe: true, sameDz: false, calm: false, design: "klassisk", owned: [], mode: "normal", tutorialDone: false, speed: 1200 };
   try { return Object.assign(d, JSON.parse(localStorage.getItem("pismarie.settings") || "{}")); } catch (e) { return d; }
 })();
 function saveSettings() { try { localStorage.setItem("pismarie.settings", JSON.stringify(Settings)); } catch (e) {} }
@@ -1677,6 +1686,7 @@ function pickOppDz() {
 // "Modstanderen i mit design": some find two colourful designs on one table hard to read.
 const oppShown = () => Settings.sameDz ? myDz() : dzOk(oppDz);
 function applyDesigns() {
+  document.body.classList.toggle("calm", !!Settings.calm);
   const me = myDz(), op = oppShown();
   for (const el of [document.querySelector(".zone.mine"), $("side0"), $("pile1")]) if (el.dataset.dz !== me) el.dataset.dz = me;
   for (const el of [document.querySelector(".zone.opp"), $("side1"), $("pile0")]) if (el.dataset.dz !== op) el.dataset.dz = op;
@@ -1820,20 +1830,27 @@ function syncSettingsUI() {
   $("volSfx").value = Settings.sfx; $("outSfx").textContent = Settings.sfx;
   $("optVibe").checked = Settings.vibe;
   $("optSame").checked = !!Settings.sameDz;
+  $("optCalm").checked = !!Settings.calm;
   $("dzNote").textContent = "";
   renderDzGrid(); syncModeUI();
 }
+// Against the computer the game waits while settings are open or the phone shows something else.
+function pause() { if (!NET && !TUT && running) { pausedForSettings = true; running = false; stopTimers(); } }
+function resume() {
+  if (!pausedForSettings || !$("settings").hidden || document.visibilityState === "hidden") return;
+  pausedForSettings = false; running = true;
+  aiTimer = setTimeout(aiTick, aiDelay()); afterChange(null);
+}
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") pause(); else resume(); });
 function openSettings() {
+  if (!$("volMusic")) { $("settings").querySelector(".panel").innerHTML = SETTINGS_HTML; wireSettings(); }
   syncSettingsUI();
-  if (!NET && running) { pausedForSettings = true; running = false; stopTimers(); }
-  $("settings").hidden = false; $("setClose").focus();
+  pause();
+  $("settings").hidden = false; $("settings").querySelector(".panel").scrollTop = 0; $("setClose").focus({ preventScroll: true });
 }
 function closeSettings() {
   $("settings").hidden = true;
-  if (pausedForSettings) {
-    pausedForSettings = false; running = true;
-    aiTimer = setTimeout(aiTick, aiDelay()); afterChange(null);
-  }
+  resume();
 }
 $("gear").addEventListener("click", openSettings);
 $("settings").addEventListener("click", e => { if (e.target === $("settings")) closeSettings(); });
@@ -1846,6 +1863,7 @@ function wireSettings() {
   $("volSfx").addEventListener("change", () => sfx("card"));
   $("optVibe").addEventListener("change", e => { Settings.vibe = e.target.checked; saveSettings(); buzz(30); });
   $("optSame").addEventListener("change", e => { Settings.sameDz = e.target.checked; saveSettings(); applyDesigns(); });
+  $("optCalm").addEventListener("change", e => { Settings.calm = e.target.checked; saveSettings(); applyDesigns(); });
   $("dzGrid").addEventListener("click", e => { const b = e.target.closest(".dz"); if (b) setMyDz(b.dataset.id); });
   $("setMenu").addEventListener("click", () => { if (NET) { location.reload(); return; } pausedForSettings = false; $("settings").hidden = true; showMenu(); });
   $("setRules").addEventListener("click", () => {
@@ -1868,7 +1886,7 @@ function decPl(o, skjult) {
 }
 function broadcast() {
   const ch = S.choosing === S.you ? "h" : S.choosing === S.ai ? "g" : "";
-  const st = { v: 0, md: S.mode, h: encPl(S.you), g: encPl(S.ai), p: S.piles.map(enc), a: S.active, r: S.round, ph: S.phase || "", ch, w: S.winner || "", e: S.ev || null };
+  const st = { v: 0, md: S.mode, h: encPl(S.you), g: encPl(S.ai), p: S.piles.map(enc), a: S.active, r: S.round, ph: S.phase || "", ch, w: S.winner || "", hw: S.how || "", e: S.ev || null };
   const key = JSON.stringify(st);
   if (key === NET.lastSent) return;  // unchanged: sending it again would only echo back here
   NET.lastSent = key;
@@ -1898,15 +1916,26 @@ function hostTakeActs(acts) {
   }
 }
 function hostPeers(ch) {
-  const g = ch.peers.find(p => !p.isMe && p.presence && p.presence.role === "guest" && (!NET.guest || p.peer === NET.guest));
-  if (NET.guest && ch.left.some(p => p.peer === NET.guest)) { say("Din modspiller har mistet forbindelsen…"); NET.lost = true; }
+  // While the opponent is gone, the same player may come back with a new id (they reloaded the page).
+  const g = ch.peers.find(p => !p.isMe && p.presence && p.presence.role === "guest" && p.presence.pv === PV && (!NET.guest || p.peer === NET.guest || NET.lost))
+    || ch.peers.find(p => !p.isMe && p.presence && p.presence.role === "guest" && !NET.guest);
+  if (NET.guest && ch.left.some(p => p.peer === NET.guest)) { say("Din modstander har mistet forbindelsen…"); NET.lost = true; watchLost(); }
   if (!g) return;
-  if (NET.lost) { NET.lost = false; say(""); }
+  if (NET.lost) {
+    NET.lost = false; say(""); backFromLost();
+    if (NET.guest && g.peer !== NET.guest) {
+      NET.guest = g.peer;
+      const acts = Array.isArray(g.presence.acts) ? g.presence.acts : [];
+      NET.lastN = acts.reduce((m, a) => Math.max(m, (a && a.n) | 0), 0);
+      NET.lastSent = null; broadcast();
+      return;
+    }
+  }
   if (g.presence.dz && dzOk(g.presence.dz) !== oppDz) { oppDz = dzOk(g.presence.dz); applyDesigns(); }
   if (NET.guest && !ch.updated.includes(g) && !ch.joined.includes(g)) return;
   if (!NET.guest) {
     if (g.presence.pv !== PV) {
-      showPanel(`<h2>Gammel version</h2><p>Din modspillers telefon har en ældre udgave af Pismarie. Bed dem genindlæse siden, så starter spillet.</p>`);
+      showPanel(`<h2>Gammel version</h2><p>Din modstanders telefon har en ældre udgave af Pismarie. Bed dem genindlæse siden, så starter spillet.</p><button class="leave" type="button">Annullér</button>`);
       return;
     }
     NET.guest = g.peer;
@@ -1920,21 +1949,34 @@ function hostPeers(ch) {
 // Guest: rebuild the table from the host's state, seen from the guest's side.
 function guestPeers(ch) {
   const h = ch.peers.find(p => !p.isMe && p.presence && p.presence.role === "host");
-  if (!h) { if (NET.seenHost && ch.left.length) { say("Forbindelsen blev afbrudt. Prøver igen…"); NET.lost = true; } return; }
+  if (!h) { if (NET.seenHost && ch.left.length) { say("Forbindelsen blev afbrudt. Prøver igen…"); NET.lost = true; watchLost(); } return; }
   if (h.presence.pv !== PV) {
-    if (!NET.oldHost) { NET.oldHost = true; showPanel(`<h2>Gammel version</h2><p>Den anden telefon har en ældre udgave af Pismarie. Bed dem genindlæse siden og oprette spillet igen.</p><button class="primary" id="mpRetry" type="button">Tilbage</button>`); $("mpRetry").addEventListener("click", () => location.reload()); }
+    if (!NET.oldHost) { NET.oldHost = true; showPanel(`<h2>Gammel version</h2><p>Den anden telefon har en ældre udgave af Pismarie. Bed dem genindlæse siden og oprette spillet igen.</p><button class="primary leave" type="button">Prøv igen</button>`); }
     return;
   }
-  if (!NET.seenHost && !h.presence.st) showPanel(`<h2>Forbundet</h2><p>I spiller <strong>${modeName(h.presence.md)}</strong>. Spillet starter om lidt…</p>`);
+  if (!NET.seenHost && !h.presence.st) showPanel(`<h2>Forbundet</h2><p>I spiller <strong>${modeName(h.presence.md)}</strong>. Spillet starter om lidt…</p><button class="leave" type="button">Annullér</button>`);
   if (NET.md !== h.presence.md) { NET.md = h.presence.md === "skjult" ? "skjult" : "normal"; setMpLabels(); }
   NET.seenHost = true;
-  if (NET.lost) { NET.lost = false; say(""); }
+  if (NET.lost) { NET.lost = false; say(""); backFromLost(); }
   if (h.presence.dz && dzOk(h.presence.dz) !== oppDz) { oppDz = dzOk(h.presence.dz); applyDesigns(); }
   const st = h.presence.st;
   if (!st || typeof st.v !== "number" || st.v <= NET.ver) return;
   NET.ver = st.v;
   try { applyState(st); } catch (e) {}
 }
+// If the opponent stays away, say so and offer a way out instead of waiting forever.
+function watchLost() {
+  clearTimeout(NET.lostTimer);
+  const net = NET;
+  NET.lostTimer = setTimeout(() => {
+    if (NET !== net || !NET.lost) return;
+    running = false;
+    showPanel(`<h2>Forbindelsen er tabt</h2><p>${isGuest() ? "Den anden telefon svarer ikke." : "Din modstander er væk."} Bliv på siden, hvis I vil prøve at finde hinanden igen.</p>
+      <div class="btnrow"><button class="primary" id="lostWait" type="button">Vent lidt endnu</button><button class="leave" type="button">Menu</button></div>`);
+    $("lostWait").addEventListener("click", () => { $("overlay").hidden = true; running = S.phase === "play"; watchLost(); });
+  }, 60000);
+}
+function backFromLost() { clearTimeout(NET.lostTimer); if ($("lostWait")) { $("overlay").hidden = true; running = S.phase === "play"; } }
 function applyState(st) {
   const prevCols = S.ai.cols.map(c => c.slice());
   const rects = prevCols.map((c, k) => c.length ? aiCardRect(k) : null);
@@ -1971,17 +2013,14 @@ function guestPhase(st) {
   if (st.ph === "countdown") {
     if (S.round === 1) { startedAt = Date.now(); lastCounts = [26, 26]; }
     say("");
-    let n = 3;
-    showPanel(`<div class="countdown" id="cd">${n}</div>`); sfx("tick");
-    const step = () => { n--; if (n > 0 && $("cd")) { $("cd").outerHTML = `<div class="countdown" id="cd">${n}</div>`; sfx("tick"); setTimeout(step, 600); } };
-    setTimeout(step, 600);
+    countdown(null);
   } else if (st.ph === "play") { $("overlay").hidden = true; flashPile(0); flashPile(1); sfx("go"); dealIn(); }
   else if (st.ph === "choose") {
     sfx(me ? "round" : "roundOpp");
-    if (singlePile(S)) say(me ? "Dine bunker er tomme!" : "Modstanderen tømte sine bunker.");
+    if (singlePile(S)) say(me ? "Bunkerne er tomme!" : "Modstanderen tømte sine bunker.");
     else say(me ? "Bunkerne er tomme! Tryk på den mindste dynge." : "Modstanderen vælger dynge…");
   } else if (st.ph === "round") { say(""); showPanel(roundPanel() + "<p>Næste runde starter om lidt…</p>"); }
-  else if (st.ph === "over") finish(st.w === "g" ? true : st.w === "h" ? false : null);
+  else if (st.ph === "over") finish(st.w === "g" ? true : st.w === "h" ? false : null, st.hw);
 }
 
 // Protocol version: both phones must run the same page, or the game would look different on each.
@@ -1992,7 +2031,7 @@ function setMpLabels() {
   $("oppRes").textContent = NET ? "Modstanderens" : "Computerens";
 
   $("restart").hidden = isGuest();
-  document.querySelector("h1 small").textContent = NET ? "mod en anden telefon" + (NET.md ? " · " + modeName(NET.md) : "") : "du mod computeren";
+  document.querySelector("h1 small").textContent = NET ? "online" + (NET.md ? " · " + modeName(NET.md) : "") : "du mod computeren";
 }
 // Inside Claude the platform's room connects the phones. On the stand-alone website, PeerJS connects
 // them directly, with the same calls, so the rest of the game does not care which one it got.
@@ -2069,7 +2108,8 @@ function peerRoom(name, role) {
     // Switching app or locking the screen drops the link to the broker; come back to it with the same id.
     const revive = () => { if (peer.disconnected && !peer.destroyed) { try { peer.reconnect(); } catch (e) {} } };
     peer.on("disconnected", () => setTimeout(revive, 1000));
-    document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") { revive(); if (role === "guest" && ready) setTimeout(() => { if (!linked()) { connect(); keepTrying(); } }, 800); } });
+    const onShow = () => { if (document.visibilityState === "visible") { revive(); if (role === "guest" && ready) setTimeout(() => { if (!linked()) { connect(); keepTrying(); } }, 800); } };
+    document.addEventListener("visibilitychange", onShow);
     const api = {
       name,
       async presence(patch) {
@@ -2084,7 +2124,7 @@ function peerRoom(name, role) {
       connected: () => !peer.disconnected,
       linked,
       lastError: null,
-      async leave() { clearInterval(beat); peer.destroy(); }
+      async leave() { clearInterval(beat); clearInterval(knock); document.removeEventListener("visibilitychange", onShow); peer.destroy(); }
     };
     peer.on("open", id => {
       myId = id;
@@ -2105,15 +2145,15 @@ function peerRoom(name, role) {
 }
 function mpMenu(note) {
   const lobby = !window.claude && !!window.Peer;
-  showPanel(`<h2>Mod en anden telefon</h2>
+  showPanel(`<h2>Online</h2>
     ${note ? `<p><strong>${note}</strong></p>` : ""}
-    <div class="modepick" role="group" aria-label="Spil"><button type="button" class="mode" data-mode="normal">Normal</button><button type="button" class="mode" data-mode="skjult">Skjulte bunker</button></div>
+    ${MODE_PICK}
     ${lobby ? `<div class="lobby"><p class="lobbystat" id="lobbyStat">Kigger efter spillere online…</p>
     <button class="primary" id="lobbyFind" type="button">Spil mod en tilfældig</button></div>
     <h3 class="sethead">Mod en du kender</h3>` : ""}
     <p>Den ene opretter et spil og får en kode. Den anden skriver koden og deltager.</p>
     <button class="primary" id="mpHost" type="button">Opret spil</button>
-    <label class="label" for="mpCode">Kode fra din modspiller</label>
+    <label class="label" for="mpCode">Kode fra din modstander</label>
     <input id="mpCode" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="0000">
     <div class="btnrow"><button class="primary alt" id="mpJoin" type="button">Deltag</button><button id="mpBack" type="button">Tilbage</button></div>`);
   $("mpHost").addEventListener("click", hostGame);
@@ -2164,17 +2204,18 @@ function scanLobby(enough) {
     });
   });
 }
-let lobbyTimer = null;
+let lobbyTimer = null, lobbyGen = 0;
 async function showLobby() {
   clearTimeout(lobbyTimer);
+  const gen = ++lobbyGen;  // only the newest look counts; older ones still running are ignored
   const scan = await scanLobby();
-  const el = $("lobbyStat"); if (!el) return;
+  const el = $("lobbyStat"); if (!el || gen !== lobbyGen) return;
   const vals = Object.values(scan);
   const me = Settings.mode === "skjult" ? "skjult" : "normal", them = me === "skjult" ? "normal" : "skjult";
   const waiting = vals.filter(v => v === "waiting-" + me).length, other = vals.filter(v => v === "waiting-" + them).length, busy = vals.filter(v => v === "busy").length;
   const otherTxt = other ? ` ${other} venter på ${modeName(them)}.` : "";
   el.textContent = waiting ? `${waiting === 1 ? "1 spiller venter" : waiting + " spillere venter"} på ${modeName(me)} nu.${otherTxt}${busy ? ` ${busy} spil i gang.` : ""}`
-    : other ? `Ingen venter på ${modeName(me)}, men ${other} venter på ${modeName(them)}. Skift spil i menuen, eller stil dig i kø.`
+    : other ? `Ingen venter på ${modeName(me)}, men ${other} venter på ${modeName(them)}. Skift spil ovenfor, eller stil dig i kø.`
     : busy ? `Ingen venter lige nu, men ${busy} spil er i gang. Stil dig i kø, så kan andre finde dig.`
     : "Ingen er online lige nu. Stil dig i kø, så kan andre finde dig.";
   el.classList.toggle("live", waiting > 0);
@@ -2183,8 +2224,8 @@ async function showLobby() {
 // Join someone who waits, or wait in the first free place. Two players who both wait merge:
 // the one in the later place joins the one in the earlier place.
 async function findGame() {
-  clearTimeout(lobbyTimer);
-  showPanel(`<h2>Finder en modspiller…</h2><p>Kigger efter nogen, der vil spille ${modeName(Settings.mode)}.</p>`);
+  clearTimeout(lobbyTimer); lobbyGen++;
+  showPanel(`<h2>Finder en modstander…</h2><p>Kigger efter nogen, der vil spille ${modeName(Settings.mode)}.</p><button class="leave" type="button">Annullér</button>`);
   const want = "waiting-" + (Settings.mode === "skjult" ? "skjult" : "normal");
   const scan = await scanLobby(o => Object.values(o).includes(want));
   const wait = LOBBY.find(id => scan[id] === want);
@@ -2195,9 +2236,8 @@ async function findGame() {
   mpMenu("Lobbyen er fuld lige nu. Prøv igen om lidt, eller spil med en kode.");
 }
 function lobbyWait(id) {
-  showPanel(`<h2>Venter på en modspiller…</h2><p>Du venter på et spil <strong>${modeName(NET.md)}</strong>. Andre kan se dig i lobbyen. Spillet starter, så snart nogen deltager.</p>
-    <p class="newbietxt">Hold siden åben imens.</p><button id="lobbyCancel" type="button">Annullér</button>`);
-  $("lobbyCancel").addEventListener("click", () => location.reload());
+  showPanel(`<h2>Venter på en modstander…</h2><p>Du venter på et spil <strong>${modeName(NET.md)}</strong>. Andre kan se dig i lobbyen. Spillet starter, så snart nogen deltager.</p>
+    <p class="newbietxt">Hold siden åben imens.</p><button class="leave" type="button">Annullér</button>`);
   const look = async () => {
     if (!NET || NET.role !== "host" || NET.guest || NET.room.name !== id) return;
     const want = "waiting-" + NET.md;
@@ -2216,7 +2256,6 @@ async function hostRoom(name, how) {
   let r;
   try { r = await room.join(name, "host"); } catch (e) { return null; }
   NET = { role: "host", room: r, how, lastN: 0, guest: null, v: 0 };
-  setMpLabels();
   NET.md = Settings.mode === "skjult" ? "skjult" : "normal";
   setMpLabels();
   r.presence({ role: "host", dz: myDz(), pv: PV, md: NET.md }).catch(() => {});
@@ -2229,9 +2268,9 @@ async function hostGame() {
   const code = String(1000 + Math.floor(Math.random() * 9000));
   if (!(await hostRoom("pismarie-dks-" + code, "code"))) { mpMenu("Kunne ikke oprette spillet. Prøv igen."); return; }
   showPanel(`<h2>Din spilkode</h2><div class="code">${code}</div>
-    <p>I spiller <strong>${modeName(NET.md)}</strong>. Vil du spille noget andet, så skift i menuen først.</p>
-    <p>Bed din modspiller åbne Pismarie, vælge <strong>Mod en anden telefon</strong> og skrive koden. Spillet starter, så snart I begge er inde.</p>
-    <p class="newbietxt">Hold siden åben imens. Sig koden højt, eller kom tilbage hertil lige efter, du har sendt den. I skal begge bruge hjemmesiden.</p>`);
+    <p>I spiller <strong>${modeName(NET.md)}</strong>. Vil du spille noget andet, så tryk Annullér og skift spil.</p>
+    <p>Bed din modstander åbne Pismarie, vælge <strong>Online og mod venner</strong> og skrive koden. Spillet starter, så snart I begge er inde.</p>
+    <p class="newbietxt">Hold siden åben imens. Sig koden højt, eller kom tilbage hertil lige efter, du har sendt den. I skal begge bruge hjemmesiden.</p><button class="leave" type="button">Annullér</button>`);
 }
 async function joinRoom(name, how) {
   const room = await getRoom();
@@ -2243,7 +2282,7 @@ async function joinRoom(name, how) {
   r.presence({ role: "guest", acts: [], dz: myDz(), pv: PV }).catch(() => {});
   r.onPeers(guestPeers);
   if (how === "lobby") {
-    showPanel(`<h2>Forbinder…</h2><p>Der var en, der ventede. Forbinder til spillet.</p>`);
+    showPanel(`<h2>Forbinder…</h2><p>Der var en, der ventede. Forbinder til spillet.</p><button class="leave" type="button">Annullér</button>`);
     // Someone else may have got there first: then look again.
     setTimeout(() => { if (NET && NET.room === r && !NET.seenHost) { r.leave(); NET = null; findGame(); } }, 20000);
   }
@@ -2254,12 +2293,12 @@ async function joinGame(code) {
   clearTimeout(lobbyTimer);
   const r = await joinRoom("pismarie-dks-" + code, "code");
   if (!r) return;
-  showPanel(`<h2>Forbinder…</h2><p>Venter på spillet med kode <strong>${code}</strong>.</p>`);
+  showPanel(`<h2>Forbinder…</h2><p>Venter på spillet med kode <strong>${code}</strong>.</p><button class="leave" type="button">Annullér</button>`);
   setTimeout(() => {
     if (!NET || NET.role !== "guest" || NET.seenHost) return;
     const missing = r.lastError === "peer-unavailable";
     showPanel(missing
-      ? `<h2>Ingen spil fundet</h2><p>Der er ingen spil med koden <strong>${code}</strong> lige nu. Tjek koden, og bed din modspiller have Pismarie åben på skærmen, mens du deltager.</p><p class="newbietxt">I skal begge bruge hjemmesiden, ikke den ene i Claude-appen.</p><button class="primary" id="mpRetry" type="button">Prøv igen</button>`
+      ? `<h2>Ingen spil fundet</h2><p>Der er ingen spil med koden <strong>${code}</strong> lige nu. Tjek koden, og bed din modstander have Pismarie åben på skærmen, mens du deltager.</p><p class="newbietxt">I skal begge bruge hjemmesiden, ikke den ene i Claude-appen.</p><button class="primary" id="mpRetry" type="button">Prøv igen</button>`
       : `<h2>Ingen forbindelse</h2><p>Spillet med koden <strong>${code}</strong> findes, men telefonerne kunne ikke få forbindelse til hinanden. Prøv igen, eller kom på det samme wifi.</p><button class="primary" id="mpRetry" type="button">Prøv igen</button>`);
     $("mpRetry").addEventListener("click", () => location.reload());
   }, 20000);
