@@ -9,6 +9,11 @@ on:
 permissions:
   contents: write
 
+# One build at a time, so an older build never overwrites a newer APK on the release
+concurrency:
+  group: android-release
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
