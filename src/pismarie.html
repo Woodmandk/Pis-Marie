@@ -620,6 +620,7 @@ button.alt { background: transparent; color: var(--brass); border: 2px solid var
     <label class="setrow" for="volMusic"><span>Musik</span><input type="range" id="volMusic" min="0" max="100" step="5"><output id="outMusic"></output></label>
     <label class="setrow" for="volSfx"><span>Lydeffekter</span><input type="range" id="volSfx" min="0" max="100" step="5"><output id="outSfx"></output></label>
     <label class="setrow check" for="optVibe"><span>Vibration</span><input type="checkbox" id="optVibe"></label>
+    <label class="setrow check" for="optSame"><span>Modstander i mit design</span><input type="checkbox" id="optSame"></label>
     <h3 class="sethead">Spil</h3>
     <div class="modepick" role="group" aria-label="Spil"><button type="button" class="mode" data-mode="normal">Normal</button><button type="button" class="mode" data-mode="skjult">Skjulte bunker</button></div>
     <p class="modeinfo"></p>
@@ -1039,7 +1040,7 @@ function play(pl, k, i) {
   if (pl === S.you) selected = null;
   afterChange(pl);
   if (S.over) return true;
-  if (from) fly(card, from, $("pile" + i), false, oppDz);
+  if (from) fly(card, from, $("pile" + i), false, oppShown());
   flashPile(i, pl === S.ai);
   sfx(pl === S.you ? "card" : "cardOpp");
   return true;
@@ -1120,7 +1121,7 @@ function playHand(pl, j, i) {
   if (pl === S.you) selected = null;
   afterChange(pl);
   if (S.over) return true;
-  if (from) fly(card, from, $("pile" + i), false, oppDz);
+  if (from) fly(card, from, $("pile" + i), false, oppShown());
   flashPile(i, pl === S.ai);
   sfx(pl === S.you ? "card" : "cardOpp");
   return true;
@@ -1636,7 +1637,7 @@ $("coachSkip").addEventListener("click", () => { endTutorial(true); showMenu(); 
 
 /* ---------- Sound: everything is synthesised, so there are no sound files to ship ---------- */
 const Settings = (() => {
-  const d = { music: 35, sfx: 75, vibe: true, design: "klassisk", owned: [], mode: "normal", tutorialDone: false, speed: 1200 };
+  const d = { music: 35, sfx: 75, vibe: true, sameDz: false, design: "klassisk", owned: [], mode: "normal", tutorialDone: false, speed: 1200 };
   try { return Object.assign(d, JSON.parse(localStorage.getItem("pismarie.settings") || "{}")); } catch (e) { return d; }
 })();
 function saveSettings() { try { localStorage.setItem("pismarie.settings", JSON.stringify(Settings)); } catch (e) {} }
@@ -1673,8 +1674,10 @@ function pickOppDz() {
   const free = DESIGNS.filter(d => !d.shop && d.id !== myDz());
   oppDz = free[Math.floor(Math.random() * free.length)].id;
 }
+// "Modstanderen i mit design": some find two colourful designs on one table hard to read.
+const oppShown = () => Settings.sameDz ? myDz() : dzOk(oppDz);
 function applyDesigns() {
-  const me = myDz(), op = dzOk(oppDz);
+  const me = myDz(), op = oppShown();
   for (const el of [document.querySelector(".zone.mine"), $("side0"), $("pile1")]) if (el.dataset.dz !== me) el.dataset.dz = me;
   for (const el of [document.querySelector(".zone.opp"), $("side1"), $("pile0")]) if (el.dataset.dz !== op) el.dataset.dz = op;
 }
@@ -1816,6 +1819,7 @@ function syncSettingsUI() {
   $("volMusic").value = Settings.music; $("outMusic").textContent = Settings.music;
   $("volSfx").value = Settings.sfx; $("outSfx").textContent = Settings.sfx;
   $("optVibe").checked = Settings.vibe;
+  $("optSame").checked = !!Settings.sameDz;
   $("dzNote").textContent = "";
   renderDzGrid(); syncModeUI();
 }
@@ -1841,6 +1845,7 @@ function wireSettings() {
   $("volSfx").addEventListener("input", e => { Settings.sfx = +e.target.value; $("outSfx").textContent = Settings.sfx; Sound.levels(); saveSettings(); });
   $("volSfx").addEventListener("change", () => sfx("card"));
   $("optVibe").addEventListener("change", e => { Settings.vibe = e.target.checked; saveSettings(); buzz(30); });
+  $("optSame").addEventListener("change", e => { Settings.sameDz = e.target.checked; saveSettings(); applyDesigns(); });
   $("dzGrid").addEventListener("click", e => { const b = e.target.closest(".dz"); if (b) setMyDz(b.dataset.id); });
   $("setMenu").addEventListener("click", () => { if (NET) { location.reload(); return; } pausedForSettings = false; $("settings").hidden = true; showMenu(); });
   $("setRules").addEventListener("click", () => {
@@ -1947,7 +1952,7 @@ function applyState(st) {
     const t = pileTop(S, i);
     if (!t || t === prevPile[i]) continue;
     const k = prevCols.findIndex(c => c.includes(t));
-    if (k >= 0 && rects[k]) { fly(t, rects[k], $("pile" + i), false, oppDz); flashPile(i, true); sfx("cardOpp"); }
+    if (k >= 0 && rects[k]) { fly(t, rects[k], $("pile" + i), false, oppShown()); flashPile(i, true); sfx("cardOpp"); }
   }
   for (let k = 0; k < 5; k++) if (!prevOpen[k] && S.ai.open[k] && S.ai.cols[k].length) { const c = aiColEl(k).querySelector(".card"); if (c) c.classList.add("flipped"); }
   if (st.e && st.e.id !== NET.lastEv) {
@@ -1980,7 +1985,7 @@ function guestPhase(st) {
 }
 
 // Protocol version: both phones must run the same page, or the game would look different on each.
-const PV = 4;
+const PV = 5;
 const modeName = m => MODES[m === "skjult" ? "skjult" : "normal"];
 function setMpLabels() {
   $("oppName").textContent = NET ? "Modstanderen" : "Computeren";
@@ -2020,28 +2025,44 @@ function peerRoom(name, role) {
       conns.add(conn);
       conn.on("open", () => conn.send({ presence: mine }));
       conn.on("data", d => {
+        seen.set(conn, Date.now());
         if (!d || typeof d !== "object" || !d.presence || typeof d.presence !== "object") return;
+        // The host plays one opponent at a time; a second phone that wants to play is turned away.
+        if (role === "host" && d.presence.role === "guest" && [...remote.keys()].some(id => id !== conn.peer && [...conns].some(c => c.open && c.peer === id))) { conn.close(); return; }
         const ex = remote.get(conn.peer), p = mk(conn.peer, d.presence, false);
         remote.set(conn.peer, p);
         deliver(ex ? [] : [p], [], ex ? [p] : []);
       });
-      const gone = () => {
-        if (!conns.delete(conn)) return;
-        const ex = remote.get(conn.peer);
-        if (ex && ![...conns].some(c => c.open && c.peer === conn.peer)) { remote.delete(conn.peer); deliver([], [ex], []); }
-        if (role === "guest") keepTrying();  // the link dropped (screen lock, network change): find the host again
-      };
-      conn.on("close", gone); conn.on("error", gone);
+      conn.on("close", () => gone(conn)); conn.on("error", () => gone(conn));
     };
+    const gone = conn => {
+      if (!conns.delete(conn)) return;
+      const ex = remote.get(conn.peer);
+      if (ex && ![...conns].some(c => c.open && c.peer === conn.peer)) { remote.delete(conn.peer); deliver([], [ex], []); }
+      if (role === "guest") keepTrying();  // the link dropped (screen lock, network change): find the host again
+    };
+    // A heartbeat both ways: a phone that went silent without closing the link (screen locked, lost signal)
+    // is noticed within seconds, so the guest starts knocking again instead of waiting for nothing.
+    const seen = new Map();
+    const beat = setInterval(() => {
+      if (peer.destroyed) { clearInterval(beat); return; }
+      conns.forEach(c => {
+        if (!c.open) return;
+        try { c.send({ hb: 1 }); } catch (e) {}
+        if (!seen.has(c)) seen.set(c, Date.now());
+        else if (Date.now() - seen.get(c) > 12000) { seen.delete(c); try { c.close(); } catch (e) {} gone(c); }
+      });
+    }, 2000);
     // The guest keeps knocking for a while, because the host may be reconnecting to the broker.
     let tries = 0, knock = null;
-    const linked = () => [...conns].some(c => c.open);
+    // Only a link to a phone that has said who it is counts; lobby lookups connect without a word.
+    const linked = () => [...conns].some(c => c.open && remote.has(c.peer));
     const connect = () => { if (!peer.destroyed && !peer.disconnected && !linked()) wire(peer.connect(name, { reliable: true })); };
     const keepTrying = () => {
       if (knock || peer.destroyed) return;
       tries = 0;
       knock = setInterval(() => {
-        if (peer.destroyed || linked() || ++tries > 10) { clearInterval(knock); knock = null; return; }
+        if (peer.destroyed || linked() || ++tries > 40) { clearInterval(knock); knock = null; return; }
         connect();
       }, 3000);
     };
@@ -2063,13 +2084,15 @@ function peerRoom(name, role) {
       connected: () => !peer.disconnected,
       linked,
       lastError: null,
-      async leave() { peer.destroy(); }
+      async leave() { clearInterval(beat); peer.destroy(); }
     };
     peer.on("open", id => {
       myId = id;
       if (role === "host" && !ready) {
         // One opponent at a time; a phone that reloads may come back once the old link is gone.
-        peer.on("connection", c => { if ([...conns].some(x => x.open)) { c.on("open", () => c.close()); return; } wire(c); });
+        // Everyone may knock: players looking through the lobby get an answer and leave again, and a
+        // link that never says who it is gets closed, so it cannot keep the real opponent out.
+        peer.on("connection", c => { wire(c); c.on("open", () => setTimeout(() => { if (!remote.has(c.peer)) { try { c.close(); } catch (e) {} gone(c); } }, 8000)); });
       } else if (role === "guest" && !linked()) { connect(); keepTrying(); }
       if (!ready) { ready = true; resolve(api); }
     });
@@ -2222,7 +2245,7 @@ async function joinRoom(name, how) {
   if (how === "lobby") {
     showPanel(`<h2>Forbinder…</h2><p>Der var en, der ventede. Forbinder til spillet.</p>`);
     // Someone else may have got there first: then look again.
-    setTimeout(() => { if (NET && NET.room === r && !NET.seenHost) { r.leave(); NET = null; findGame(); } }, 10000);
+    setTimeout(() => { if (NET && NET.room === r && !NET.seenHost) { r.leave(); NET = null; findGame(); } }, 20000);
   }
   return r;
 }
