@@ -914,6 +914,7 @@ function syncModeUI() {
 document.addEventListener("click", e => {
   const b = e.target.closest(".mode"); if (!b) return;
   Settings.mode = b.dataset.mode; saveSettings(); syncModeUI(); sfx("card");
+  if ($("lobbyStat")) { $("lobbyStat").textContent = "Kigger efter spillere online…"; showLobby(); }
 });
 function showBubble() {
   document.querySelectorAll(".bubble").forEach(b => b.remove());
@@ -1241,7 +1242,7 @@ function start() {
   endTutorial(false);
   stopTimers();
   if (!NET) pickOppDz();
-  running = false; S = newGame(Settings.mode); S.mp = !!NET; selected = null; mood = 1; lastCounts = [26, 26]; render(); say("");
+  running = false; S = newGame(NET ? NET.md : Settings.mode); S.mp = !!NET; selected = null; mood = 1; lastCounts = [26, 26]; render(); say("");
   startedAt = Date.now();
   beginRound();
 }
@@ -1619,6 +1620,10 @@ function hostPeers(ch) {
   if (g.presence.dz && dzOk(g.presence.dz) !== oppDz) { oppDz = dzOk(g.presence.dz); applyDesigns(); }
   if (NET.guest && !ch.updated.includes(g) && !ch.joined.includes(g)) return;
   if (!NET.guest) {
+    if (g.presence.pv !== PV) {
+      showPanel(`<h2>Gammel version</h2><p>Din modspillers telefon har en ældre udgave af Pismarie. Bed dem genindlæse siden, så starter spillet.</p>`);
+      return;
+    }
     NET.guest = g.peer;
     const acts = Array.isArray(g.presence.acts) ? g.presence.acts : [];
     NET.lastN = acts.reduce((m, a) => Math.max(m, (a && a.n) | 0), 0);
@@ -1631,6 +1636,12 @@ function hostPeers(ch) {
 function guestPeers(ch) {
   const h = ch.peers.find(p => !p.isMe && p.presence && p.presence.role === "host");
   if (!h) { if (NET.seenHost && ch.left.length) { say("Forbindelsen blev afbrudt. Prøver igen…"); NET.lost = true; } return; }
+  if (h.presence.pv !== PV) {
+    if (!NET.oldHost) { NET.oldHost = true; showPanel(`<h2>Gammel version</h2><p>Den anden telefon har en ældre udgave af Pismarie. Bed dem genindlæse siden og oprette spillet igen.</p><button class="primary" id="mpRetry" type="button">Tilbage</button>`); $("mpRetry").addEventListener("click", () => location.reload()); }
+    return;
+  }
+  if (!NET.seenHost && !h.presence.st) showPanel(`<h2>Forbundet</h2><p>I spiller <strong>${modeName(h.presence.md)}</strong>. Spillet starter om lidt…</p>`);
+  if (NET.md !== h.presence.md) { NET.md = h.presence.md === "skjult" ? "skjult" : "normal"; setMpLabels(); }
   NET.seenHost = true;
   if (NET.lost) { NET.lost = false; say(""); }
   if (h.presence.dz && dzOk(h.presence.dz) !== oppDz) { oppDz = dzOk(h.presence.dz); applyDesigns(); }
@@ -1688,12 +1699,15 @@ function guestPhase(st) {
   else if (st.ph === "over") finish(st.w === "g" ? true : st.w === "h" ? false : null);
 }
 
+// Protocol version: both phones must run the same page, or the game would look different on each.
+const PV = 4;
+const modeName = m => MODES[m === "skjult" ? "skjult" : "normal"];
 function setMpLabels() {
   $("oppName").textContent = NET ? "Modstanderen" : "Computeren";
   $("oppRes").textContent = NET ? "Modstanderens" : "Computerens";
   $("speed").hidden = $("speedLabel").hidden = !!NET;
   $("restart").hidden = isGuest();
-  document.querySelector("h1 small").textContent = NET ? "mod en anden telefon" : "du mod computeren";
+  document.querySelector("h1 small").textContent = NET ? "mod en anden telefon" + (NET.md ? " · " + modeName(NET.md) : "") : "du mod computeren";
 }
 // Inside Claude the platform's room connects the phones. On the stand-alone website, PeerJS connects
 // them directly, with the same calls, so the rest of the game does not care which one it got.
@@ -1790,6 +1804,7 @@ function mpMenu(note) {
   const lobby = !window.claude && !!window.Peer;
   showPanel(`<h2>Mod en anden telefon</h2>
     ${note ? `<p><strong>${note}</strong></p>` : ""}
+    <div class="modepick" role="group" aria-label="Spil"><button type="button" class="mode" data-mode="normal">Normal</button><button type="button" class="mode" data-mode="skjult">Skjulte bunker</button></div>
     ${lobby ? `<div class="lobby"><p class="lobbystat" id="lobbyStat">Kigger efter spillere online…</p>
     <button class="primary" id="lobbyFind" type="button">Spil mod en tilfældig</button></div>
     <h3 class="sethead">Mod en du kender</h3>` : ""}
@@ -1802,6 +1817,7 @@ function mpMenu(note) {
   $("mpJoin").addEventListener("click", () => joinGame($("mpCode").value.trim()));
   $("mpCode").addEventListener("keydown", e => { if (e.key === "Enter") joinGame($("mpCode").value.trim()); });
   $("mpBack").addEventListener("click", () => { clearTimeout(lobbyTimer); showMenu(); });
+  syncModeUI();
   if (lobby) { $("lobbyFind").addEventListener("click", findGame); showLobby(); }
 }
 
@@ -1830,7 +1846,11 @@ function scanLobby(enough) {
       for (const id of LOBBY) {
         const conn = peer.connect(id, { reliable: true });
         if (!conn) { settle(id, "free"); continue; }
-        conn.on("data", d => settle(id, d && d.presence && d.presence.role === "host" && !d.presence.st ? "waiting" : "busy", conn));
+        conn.on("data", d => {
+          const pr = d && d.presence;
+          const waits = pr && pr.role === "host" && !pr.st && pr.pv === PV;  // an older page is no match
+          settle(id, waits ? "waiting-" + (pr.md === "skjult" ? "skjult" : "normal") : "busy", conn);
+        });
         conn.on("close", () => settle(id, "busy", conn));
       }
     });
@@ -1847,8 +1867,11 @@ async function showLobby() {
   const scan = await scanLobby();
   const el = $("lobbyStat"); if (!el) return;
   const vals = Object.values(scan);
-  const waiting = vals.filter(v => v === "waiting").length, busy = vals.filter(v => v === "busy").length;
-  el.textContent = waiting ? `${waiting === 1 ? "1 spiller venter" : waiting + " spillere venter"} på en modstander nu.${busy ? ` ${busy} spil i gang.` : ""}`
+  const me = Settings.mode === "skjult" ? "skjult" : "normal", them = me === "skjult" ? "normal" : "skjult";
+  const waiting = vals.filter(v => v === "waiting-" + me).length, other = vals.filter(v => v === "waiting-" + them).length, busy = vals.filter(v => v === "busy").length;
+  const otherTxt = other ? ` ${other} venter på ${modeName(them)}.` : "";
+  el.textContent = waiting ? `${waiting === 1 ? "1 spiller venter" : waiting + " spillere venter"} på ${modeName(me)} nu.${otherTxt}${busy ? ` ${busy} spil i gang.` : ""}`
+    : other ? `Ingen venter på ${modeName(me)}, men ${other} venter på ${modeName(them)}. Skift spil i menuen, eller stil dig i kø.`
     : busy ? `Ingen venter lige nu, men ${busy} spil er i gang. Stil dig i kø, så kan andre finde dig.`
     : "Ingen er online lige nu. Stil dig i kø, så kan andre finde dig.";
   el.classList.toggle("live", waiting > 0);
@@ -1858,9 +1881,10 @@ async function showLobby() {
 // the one in the later place joins the one in the earlier place.
 async function findGame() {
   clearTimeout(lobbyTimer);
-  showPanel(`<h2>Finder en modspiller…</h2><p>Kigger i lobbyen.</p>`);
-  const scan = await scanLobby(o => Object.values(o).includes("waiting"));
-  const wait = LOBBY.find(id => scan[id] === "waiting");
+  showPanel(`<h2>Finder en modspiller…</h2><p>Kigger efter nogen, der vil spille ${modeName(Settings.mode)}.</p>`);
+  const want = "waiting-" + (Settings.mode === "skjult" ? "skjult" : "normal");
+  const scan = await scanLobby(o => Object.values(o).includes(want));
+  const wait = LOBBY.find(id => scan[id] === want);
   if (wait) { joinRoom(wait, "lobby"); return; }
   for (const id of LOBBY.filter(id => !scan[id] || scan[id] === "free")) {
     if (await hostRoom(id, "lobby")) { lobbyWait(id); return; }
@@ -1868,14 +1892,15 @@ async function findGame() {
   mpMenu("Lobbyen er fuld lige nu. Prøv igen om lidt, eller spil med en kode.");
 }
 function lobbyWait(id) {
-  showPanel(`<h2>Venter på en modspiller…</h2><p>Andre kan se dig i lobbyen. Spillet starter, så snart nogen deltager.</p>
-    <p class="modeinfo">Hold siden åben imens.</p><button id="lobbyCancel" type="button">Annullér</button>`);
+  showPanel(`<h2>Venter på en modspiller…</h2><p>Du venter på et spil <strong>${modeName(NET.md)}</strong>. Andre kan se dig i lobbyen. Spillet starter, så snart nogen deltager.</p>
+    <p class="newbietxt">Hold siden åben imens.</p><button id="lobbyCancel" type="button">Annullér</button>`);
   $("lobbyCancel").addEventListener("click", () => location.reload());
   const look = async () => {
     if (!NET || NET.role !== "host" || NET.guest || NET.room.name !== id) return;
-    const scan = await scanLobby(o => LOBBY.slice(0, LOBBY.indexOf(id)).some(x => o[x] === "waiting"));
+    const want = "waiting-" + NET.md;
+    const scan = await scanLobby(o => LOBBY.slice(0, LOBBY.indexOf(id)).some(x => o[x] === want));
     if (!NET || NET.guest) return;
-    const earlier = LOBBY.slice(0, LOBBY.indexOf(id)).find(x => scan[x] === "waiting");
+    const earlier = LOBBY.slice(0, LOBBY.indexOf(id)).find(x => scan[x] === want);
     if (earlier) { NET.room.leave(); NET = null; joinRoom(earlier, "lobby"); return; }
     setTimeout(look, 6000 + Math.random() * 4000);
   };
@@ -1889,7 +1914,9 @@ async function hostRoom(name, how) {
   try { r = await room.join(name, "host"); } catch (e) { return null; }
   NET = { role: "host", room: r, how, lastN: 0, guest: null, v: 0 };
   setMpLabels();
-  r.presence({ role: "host", dz: myDz() }).catch(() => {});
+  NET.md = Settings.mode === "skjult" ? "skjult" : "normal";
+  setMpLabels();
+  r.presence({ role: "host", dz: myDz(), pv: PV, md: NET.md }).catch(() => {});
   r.onPeers(hostPeers);
   return r;
 }
@@ -1899,8 +1926,9 @@ async function hostGame() {
   const code = String(1000 + Math.floor(Math.random() * 9000));
   if (!(await hostRoom("pismarie-dks-" + code, "code"))) { mpMenu("Kunne ikke oprette spillet. Prøv igen."); return; }
   showPanel(`<h2>Din spilkode</h2><div class="code">${code}</div>
+    <p>I spiller <strong>${modeName(NET.md)}</strong>. Vil du spille noget andet, så skift i menuen først.</p>
     <p>Bed din modspiller åbne Pismarie, vælge <strong>Mod en anden telefon</strong> og skrive koden. Spillet starter, så snart I begge er inde.</p>
-    <p class="modeinfo">Hold siden åben imens. Sig koden højt, eller kom tilbage hertil lige efter, du har sendt den. I skal begge bruge hjemmesiden.</p>`);
+    <p class="newbietxt">Hold siden åben imens. Sig koden højt, eller kom tilbage hertil lige efter, du har sendt den. I skal begge bruge hjemmesiden.</p>`);
 }
 async function joinRoom(name, how) {
   const room = await getRoom();
@@ -1909,7 +1937,7 @@ async function joinRoom(name, how) {
   try { r = await room.join(name, "guest"); } catch (e) { mpMenu("Kunne ikke deltage. Prøv igen."); return null; }
   NET = { role: "guest", room: r, how, n: 0, acts: [], ver: -1, lastPh: null, lastEv: null, seenHost: false };
   setMpLabels();
-  r.presence({ role: "guest", acts: [], dz: myDz() }).catch(() => {});
+  r.presence({ role: "guest", acts: [], dz: myDz(), pv: PV }).catch(() => {});
   r.onPeers(guestPeers);
   if (how === "lobby") {
     showPanel(`<h2>Forbinder…</h2><p>Der var en, der ventede. Forbinder til spillet.</p>`);
@@ -1928,7 +1956,7 @@ async function joinGame(code) {
     if (!NET || NET.role !== "guest" || NET.seenHost) return;
     const missing = r.lastError === "peer-unavailable";
     showPanel(missing
-      ? `<h2>Ingen spil fundet</h2><p>Der er ingen spil med koden <strong>${code}</strong> lige nu. Tjek koden, og bed din modspiller have Pismarie åben på skærmen, mens du deltager.</p><p class="modeinfo">I skal begge bruge hjemmesiden, ikke den ene i Claude-appen.</p><button class="primary" id="mpRetry" type="button">Prøv igen</button>`
+      ? `<h2>Ingen spil fundet</h2><p>Der er ingen spil med koden <strong>${code}</strong> lige nu. Tjek koden, og bed din modspiller have Pismarie åben på skærmen, mens du deltager.</p><p class="newbietxt">I skal begge bruge hjemmesiden, ikke den ene i Claude-appen.</p><button class="primary" id="mpRetry" type="button">Prøv igen</button>`
       : `<h2>Ingen forbindelse</h2><p>Spillet med koden <strong>${code}</strong> findes, men telefonerne kunne ikke få forbindelse til hinanden. Prøv igen, eller kom på det samme wifi.</p><button class="primary" id="mpRetry" type="button">Prøv igen</button>`);
     $("mpRetry").addEventListener("click", () => location.reload());
   }, 20000);
