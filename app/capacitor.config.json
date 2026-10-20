@@ -1,0 +1,7 @@
+{
+  "appId": "dk.woodmandk.pismarie",
+  "appName": "Pismarie",
+  "webDir": "www",
+  "backgroundColor": "#113a2d",
+  "android": { "allowMixedContent": false }
+}

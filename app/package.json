@@ -1,0 +1,17 @@
+{
+  "name": "pismarie-app",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "web": "sh ../build.sh && mkdir -p www && cp ../peerjs.min.js web/ads.js www/ && sed 's|</body>|<script src=\"ads.js\"></script></body>|' ../index.html > www/index.html",
+    "sync": "npm run web && npx cap sync android"
+  },
+  "dependencies": {
+    "@capacitor-community/admob": "^8.2.1",
+    "@capacitor/android": "^8.5.3",
+    "@capacitor/core": "^8.5.3"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.5.3"
+  }
+}

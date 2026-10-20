@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Pismarie</string>
+    <string name="title_activity_main">Pismarie</string>
+    <string name="package_name">dk.woodmandk.pismarie</string>
+    <string name="custom_url_scheme">dk.woodmandk.pismarie</string>
+    <!-- Google's test app id. Replace with the real AdMob app id (ca-app-pub-...~...) before release. -->
+    <string name="admob_app_id">ca-app-pub-3940256099942544~3347511713</string>
+</resources>
