@@ -396,6 +396,58 @@ button.alt { background: transparent; color: var(--brass); border: 2px solid var
 .card.k11 .big::before { content: var(--fig11); }
 .card.k12 .big::before { content: var(--fig12); }
 .card.k13 .big::before { content: var(--fig13); }
+
+/* Layouts: a design changes where things sit on the card, not just the colours. */
+/* Real-card look: corner index top left and upside down bottom right, the suit in the middle. */
+:is([data-dz="klassisk"], [data-dz="skov"], [data-dz="trae"]) .card:not(.back):not(.empty) .big { right: auto; bottom: auto; left: 50%; top: 54%; transform: translate(-50%, -50%); }
+:is([data-dz="klassisk"], [data-dz="skov"], [data-dz="trae"]) .card:not(.back):not(.empty)::after { content: attr(data-r) "\A" attr(data-s); white-space: pre; position: absolute; right: 9%; bottom: 6%; transform: rotate(180deg); text-align: center;
+  font: var(--rank-weight, 400) calc(var(--w) * .2)/1 var(--rank-font, var(--rank)); }
+/* Big centre number: the rank is the picture. */
+:is([data-dz="neon"], [data-dz="lava"], [data-dz="rum"], [data-dz="regnbue"]) .card:not(.back):not(.empty) .r { top: 50%; left: 50%; transform: translate(-50%, -58%); font-size: calc(var(--w) * .56 * var(--rank-scale, 1)); }
+:is([data-dz="neon"], [data-dz="lava"], [data-dz="rum"], [data-dz="regnbue"]) .card:not(.back):not(.empty) .s { top: 7%; left: 9%; }
+:is([data-dz="neon"], [data-dz="lava"], [data-dz="rum"], [data-dz="regnbue"]) .card:not(.back):not(.empty) .big { right: 8%; bottom: 6%; font-size: calc(var(--w) * .26); }
+:is([data-dz="neon"], [data-dz="lava"], [data-dz="rum"], [data-dz="regnbue"]) .card.fig .big::before { font-size: calc(var(--w) * .3); }
+/* Badge: the rank sits in a round medallion at the top, the suit large below it. */
+:is([data-dz="hav"], [data-dz="slik"], [data-dz="is"]) .card:not(.back):not(.empty) .r { top: 7%; left: 50%; transform: translateX(-50%); width: calc(var(--w) * .46); height: calc(var(--w) * .46); border-radius: 50%;
+  border: 2px solid currentColor; display: grid; place-items: center; font-size: calc(var(--w) * .24 * var(--rank-scale, 1)); background: rgba(255,255,255,.55); box-sizing: border-box; }
+:is([data-dz="hav"], [data-dz="slik"], [data-dz="is"]) .card:not(.back):not(.empty) .s { visibility: hidden; }
+:is([data-dz="hav"], [data-dz="slik"], [data-dz="is"]) .card:not(.back):not(.empty) .big { right: auto; bottom: 7%; left: 50%; transform: translateX(-50%); font-size: calc(var(--w) * .5); }
+/* Stripe: a coloured band down the left edge carries rank and suit. */
+:is([data-dz="tiger"], [data-dz="dannebrog"], [data-dz="pixel"]) .card:not(.back):not(.empty) .r,
+:is([data-dz="tiger"], [data-dz="dannebrog"], [data-dz="pixel"]) .card:not(.back):not(.empty) .s { left: 0; width: 30%; text-align: center; color: var(--card); }
+:is([data-dz="tiger"], [data-dz="dannebrog"], [data-dz="pixel"]) .card:not(.back):not(.empty) .r { top: 0; bottom: 0; padding-top: 10%; box-sizing: border-box; font-size: calc(var(--w) * .26 * var(--rank-scale, 1)); }
+:is([data-dz="tiger"], [data-dz="dannebrog"], [data-dz="pixel"]) .card.red:not(.back) .r { background: var(--red); }
+:is([data-dz="tiger"], [data-dz="dannebrog"], [data-dz="pixel"]) .card.black:not(.back) .r { background: var(--black); }
+:is([data-dz="tiger"], [data-dz="dannebrog"], [data-dz="pixel"]) .card:not(.back):not(.empty) .s { top: 44%; }
+:is([data-dz="tiger"], [data-dz="dannebrog"], [data-dz="pixel"]) .card:not(.back):not(.empty) .big { right: auto; left: 65%; bottom: auto; top: 52%; transform: translate(-50%, -50%); }
+:is([data-dz="tiger"], [data-dz="dannebrog"], [data-dz="pixel"]) .card:not(.back):not(.empty) .r { border-radius: calc(var(--w) * var(--radius, .1)) 0 0 calc(var(--w) * var(--radius, .1)); }
+/* Framed: an inner frame, the rank at top and bottom centre, the suit in the middle. */
+:is([data-dz="guld"], [data-dz="marmor"], [data-dz="nat"], [data-dz="pirat"]) .card:not(.back):not(.empty)::before { inset: 5%; border: 1px solid var(--card-edge); border-radius: calc(var(--w) * .05); }
+:is([data-dz="guld"], [data-dz="marmor"], [data-dz="nat"], [data-dz="pirat"]) .card:not(.back):not(.empty) .r { top: 9%; left: 50%; transform: translateX(-50%); font-size: calc(var(--w) * .24 * var(--rank-scale, 1)); }
+:is([data-dz="guld"], [data-dz="marmor"], [data-dz="nat"], [data-dz="pirat"]) .card:not(.back):not(.empty) .s { visibility: hidden; }
+:is([data-dz="guld"], [data-dz="marmor"], [data-dz="nat"], [data-dz="pirat"]) .card:not(.back):not(.empty) .big { right: auto; bottom: auto; left: 50%; top: 54%; transform: translate(-50%, -50%); font-size: calc(var(--w) * .42); }
+:is([data-dz="guld"], [data-dz="marmor"], [data-dz="nat"], [data-dz="pirat"]) .card:not(.back):not(.empty)::after { content: attr(data-r); position: absolute; bottom: 9%; left: 50%; transform: translateX(-50%) rotate(180deg);
+  font: var(--rank-weight, 400) calc(var(--w) * .18 * var(--rank-scale, 1))/1 var(--rank-font, var(--rank)); opacity: .8; }
+.card .times { z-index: 2; }
+
+/* The rare (shop) designs move. */
+@keyframes flicker { 0%, 88%, 92%, 100% { opacity: 1; } 90% { opacity: .35; } }
+@keyframes breathe { 50% { transform: translate(-50%, -50%) scale(1.08); } }
+@keyframes gleam { 50% { filter: brightness(1.35) drop-shadow(0 0 4px rgba(255,220,120,.8)); } }
+@keyframes drift { to { background-position: 40px 30px, -30px 20px, 20px -40px, 0 0; } }
+@keyframes wobble { 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(6deg); } }
+@keyframes huespin { to { filter: hue-rotate(360deg); } }
+@keyframes ember { 50% { text-shadow: 0 0 12px rgba(255,140,40,1), 0 0 22px rgba(255,80,0,.7); } }
+[data-dz="neon"] .card:not(.back):not(.empty) .r { animation: flicker 4s linear infinite; }
+[data-dz="lava"] .card:not(.back):not(.empty) .r { animation: ember 2s ease-in-out infinite; }
+[data-dz="rum"] .card:not(.back):not(.empty) { animation: drift 18s linear infinite alternate; }
+[data-dz="regnbue"] .card:not(.back):not(.empty) .r, [data-dz="regnbue"] .card:not(.back):not(.empty) .big { animation: huespin 6s linear infinite; }
+:is([data-dz="guld"], [data-dz="marmor"]) .card:not(.back):not(.empty) .big { animation: gleam 3s ease-in-out infinite; }
+[data-dz="tiger"] .card:not(.back):not(.empty) .big { animation: breathe 2.4s ease-in-out infinite; }
+[data-dz="pirat"] .card.back::before { animation: wobble 2.2s ease-in-out infinite; }
+[data-dz="dannebrog"] .card.back { animation: flagwave 3s ease-in-out infinite; }
+@keyframes flagwave { 50% { filter: brightness(1.12); background-position: 4px 0, 0 3px, 0 0; } }
+[data-dz="marmor"] .card.back { animation: shimmer 6s linear infinite; }
 /* Shop designs earn their price: glow, shimmer, gold leaf */
 [data-dz="neon"] .card:not(.back):not(.empty) .r, [data-dz="neon"] .card:not(.back):not(.empty) .s, [data-dz="neon"] .card:not(.back):not(.empty) .big { text-shadow: 0 0 4px currentColor, 0 0 10px currentColor; }
 [data-dz="neon"] .card:not(.back):not(.empty) { filter: drop-shadow(0 0 5px rgba(255,60,172,.55)); }
@@ -785,6 +837,7 @@ function cardEl(c) {
   if (!c) { d.className = "card empty"; return d; }
   const fig = FIGURES[c.r];
   d.className = `card ${c.c}` + (fig ? ` fig k${c.r}` : "");
+  d.dataset.r = RANKS[c.r]; d.dataset.s = c.s;  // layouts that repeat the corner read these
   // Court cards show a figure (knight, queen, king) instead of the big suit, so D never reads as a 2.
   d.innerHTML = `<span class="r">${RANKS[c.r]}</span><span class="s">${c.s}</span><span class="big">${fig ? fig + "\uFE0E" : c.s}</span>`;
   d.setAttribute("aria-label", ["", "es", "2", "3", "4", "5", "6", "7", "8", "9", "10", "knægt", "dame", "konge"][c.r] + " " + c.s);
