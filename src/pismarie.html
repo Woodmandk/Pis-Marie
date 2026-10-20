@@ -185,63 +185,111 @@ button.alt { background: transparent; color: var(--brass); border: 2px solid var
 .setrow input[type=range] { width: 100%; accent-color: var(--brass); min-width: 0; }
 .setrow input[type=checkbox] { width: 22px; height: 22px; accent-color: var(--brass); }
 #settings { z-index: 40; }
-/* Card designs. Each player's own cards, reserve and dynge wear that player's design (data-dz). */
+/* Card designs. Each player's own cards, reserve and dynge wear that player's design (data-dz).
+   A design sets colours, fonts, the back (pattern, frame, emblem), a face decoration and its court figures. */
 :root, [data-dz="klassisk"] {
   --rank-font: "Rozha One", Georgia, serif; --rank-weight: 400; --rank-scale: 1; --rank-track: 0;
-  --face-fig: linear-gradient(160deg, #fffdf7 0%, #f6ecd6 100%);
   --card: #fbf8f0; --card-edge: #d9d2bf; --red: #c0312b; --black: #1d2321;
   --face: linear-gradient(160deg, #fffdf7 0%, #fbf8f0 60%, #f1ecdf 100%);
+  --face-fig: linear-gradient(160deg, #fffdf7 0%, #f6ecd6 100%);
   --back: #7a2335; --back-edge: #fbf8f0; --back-ink: #fbf8f0;
-  --back-pat: radial-gradient(circle at 50% 50%, rgba(255,255,255,.12) 0 18%, transparent 19%), repeating-linear-gradient(45deg, transparent 0 5px, rgba(255,255,255,.08) 5px 10px), #7a2335;
+  --back-pat: repeating-linear-gradient(45deg, rgba(255,255,255,.1) 0 2px, transparent 2px 7px), repeating-linear-gradient(-45deg, rgba(255,255,255,.1) 0 2px, transparent 2px 7px), radial-gradient(circle at 50% 50%, #9a2f45 0%, #7a2335 70%);
+  --back-frame: 1px solid rgba(251,248,240,.7); --emblem: "\2660\FE0E"; --emblem-size: .38;
+  --deco: none; --radius: .1;
+  --fig11: "\265E\FE0E"; --fig12: "\265B\FE0E"; --fig13: "\265A\FE0E";
 }
 [data-dz="hav"] {
   --rank-font: "Fredoka", system-ui, sans-serif; --rank-weight: 600; --rank-scale: .95;
-  --face-fig: linear-gradient(160deg, #ffffff 0%, #e4eef7 100%);
-  --card: #f4f8fb; --card-edge: #c9d6e0; --red: #d0453a; --black: #14324a;
-  --face: linear-gradient(160deg, #ffffff 0%, #eef4f9 70%, #dfe9f2 100%);
-  --back: #1d4e7a; --back-edge: #f4f8fb; --back-ink: #f4f8fb;
-  --back-pat: repeating-radial-gradient(circle at 50% 115%, rgba(255,255,255,.16) 0 3px, transparent 3px 8px), #1d4e7a;
+  --card: #f2f8fc; --card-edge: #b8cfdf; --red: #e0533f; --black: #0f3a5a;
+  --face: linear-gradient(180deg, #ffffff 0%, #eef6fb 62%, #cfe6f4 62.5%, #e3f1f9 100%);
+  --face-fig: linear-gradient(180deg, #ffffff 0%, #e8f3fa 62%, #bcdcf0 62.5%, #d6ebf7 100%);
+  --back: #0f3a5a; --back-edge: #e9f5fc; --back-ink: #bfe6ff;
+  --back-pat: repeating-radial-gradient(circle at 50% 120%, rgba(191,230,255,.28) 0 2px, transparent 2px 9px), linear-gradient(180deg, #1d6fa3 0%, #0f3a5a 100%);
+  --back-frame: 2px dotted rgba(191,230,255,.55); --emblem: "\2693\FE0E"; --emblem-size: .44;
+  --deco: radial-gradient(circle at 85% 90%, rgba(29,111,163,.18) 0 18%, transparent 19%);
+  --radius: .2;
+  --fig11: "\2693\FE0E"; --fig12: "\2655\FE0E"; --fig13: "\2646\FE0E";
 }
 [data-dz="nat"] {
-  --rank-font: "Playfair Display", Georgia, serif; --rank-weight: 800;
-  --face-fig: linear-gradient(160deg, #3a3326 0%, #232a2b 100%);
-  --card: #252c2e; --card-edge: #3d484b; --red: #ff6f61; --black: #f1e9d4;
-  --face: linear-gradient(160deg, #303839 0%, #232a2b 70%, #1b2122 100%);
-  --back: #111517; --back-edge: #e2b54a; --back-ink: #e2b54a;
-  --back-pat: repeating-linear-gradient(0deg, transparent 0 6px, rgba(226,181,74,.3) 6px 7px), repeating-linear-gradient(90deg, transparent 0 6px, rgba(226,181,74,.3) 6px 7px), #111517;
+  --rank-font: "Playfair Display", Georgia, serif; --rank-weight: 800; --rank-scale: 1;
+  --card: #1d2224; --card-edge: #c9a24a; --red: #ff6f61; --black: #f3e7c6;
+  --face: radial-gradient(circle at 30% 20%, #2f3739 0%, #1d2224 60%, #151a1b 100%);
+  --face-fig: radial-gradient(circle at 30% 20%, #3a3424 0%, #1d2224 70%);
+  --back: #0d1012; --back-edge: #c9a24a; --back-ink: #e2b54a;
+  --back-pat: repeating-conic-gradient(from 0deg at 50% 100%, rgba(226,181,74,.35) 0deg 4deg, transparent 4deg 14deg), radial-gradient(circle at 50% 100%, #2a2416 0%, #0d1012 70%);
+  --back-frame: 1px solid #e2b54a; --emblem: "\2605"; --emblem-size: .36;
+  --deco: none; --radius: .06;
+  --fig11: "\2658\FE0E"; --fig12: "\2655\FE0E"; --fig13: "\2654\FE0E";
 }
 [data-dz="skov"] {
   --rank-font: "Alfa Slab One", Georgia, serif; --rank-scale: .9;
-  --face-fig: linear-gradient(160deg, #fffcf2 0%, #e9efd8 100%);
-  --card: #fbf7ea; --card-edge: #d6cfb5; --red: #b8452a; --black: #23331f;
-  --face: linear-gradient(160deg, #fffcf2 0%, #fbf7ea 60%, #efe8d2 100%);
-  --back: #2f5a2a; --back-edge: #fbf7ea; --back-ink: #fbf7ea;
-  --back-pat: conic-gradient(rgba(255,255,255,.12) 25%, transparent 0 50%, rgba(255,255,255,.12) 0 75%, transparent 0) 0 0 / 12px 12px, #2f5a2a;
+  --card: #fbf6e6; --card-edge: #b9ae86; --red: #b8452a; --black: #24401f;
+  --face: linear-gradient(160deg, #fffcf0 0%, #f7f0da 100%);
+  --face-fig: linear-gradient(160deg, #fffcf0 0%, #e6eecf 100%);
+  --back: #2f5a2a; --back-edge: #f3ead0; --back-ink: #f3ead0;
+  --back-pat: repeating-linear-gradient(0deg, rgba(0,0,0,.22) 0 4px, transparent 4px 12px), repeating-linear-gradient(90deg, rgba(0,0,0,.22) 0 4px, transparent 4px 12px), repeating-linear-gradient(0deg, rgba(240,200,90,.25) 0 1px, transparent 1px 12px), #3b6a33;
+  --back-frame: 2px solid rgba(243,234,208,.75); --emblem: "\2663\FE0E"; --emblem-size: .42;
+  --deco: linear-gradient(135deg, transparent 0 82%, rgba(59,106,51,.25) 82% 100%);
+  --radius: .08;
+  --fig11: "\27B6\FE0E"; --fig12: "\2740\FE0E"; --fig13: "\265A\FE0E";
 }
 [data-dz="dannebrog"] {
   --rank-font: "Bebas Neue", Impact, sans-serif; --rank-scale: 1.2; --rank-track: .02em;
-  --face-fig: linear-gradient(160deg, #ffffff 0%, #fbe6e6 100%);
-  --card: #fffaf3; --card-edge: #e3d7c6; --red: #c8102e; --black: #1a1a1a;
-  --face: linear-gradient(160deg, #ffffff 0%, #fffaf3 60%, #f5ebdc 100%);
+  --card: #fffaf3; --card-edge: #c8102e; --red: #c8102e; --black: #1a1a1a;
+  --face: linear-gradient(160deg, #ffffff 0%, #fffaf3 100%);
+  --face-fig: linear-gradient(160deg, #ffffff 0%, #fde8e8 100%);
   --back: #c8102e; --back-edge: #ffffff; --back-ink: #ffffff;
-  --back-pat: linear-gradient(90deg, transparent 0 30%, #fff 30% 43%, transparent 43%), linear-gradient(0deg, transparent 0 43%, #fff 43% 57%, transparent 57%), #c8102e;
+  --back-pat: linear-gradient(90deg, transparent 0 30%, #fff 30% 43%, transparent 43%), linear-gradient(0deg, transparent 0 43%, #fff 43% 57%, transparent 57%), linear-gradient(160deg, #e01a3a 0%, #b00d27 100%);
+  --back-frame: none; --emblem: ""; --emblem-size: .3;
+  --deco: linear-gradient(90deg, transparent 0 30%, #fff 30% 42%, transparent 42%) right 8% top 6% / 30% 15% no-repeat, linear-gradient(0deg, transparent 0 40%, #fff 40% 60%, transparent 60%) right 8% top 6% / 30% 15% no-repeat, linear-gradient(#c8102e, #c8102e) right 8% top 6% / 30% 15% no-repeat;
+  --radius: .1; --face-border: 3px solid #c8102e;
+  --fig11: "\265E\FE0E"; --fig12: "\265B\FE0E"; --fig13: "\2654\FE0E";
 }
 [data-dz="neon"] {
   --rank-font: "Righteous", system-ui, sans-serif; --rank-scale: .95;
-  --face-fig: linear-gradient(160deg, #ffffff 0%, #f1e4ff 100%);
-  --card: #ffffff; --card-edge: #e2d6f5; --red: #e0218a; --black: #4b2bd6;
-  --face: linear-gradient(160deg, #ffffff 0%, #fbf7ff 60%, #efe6fb 100%);
-  --back: #784ba0; --back-edge: #ffffff; --back-ink: #ffffff;
-  --back-pat: radial-gradient(circle at 30% 25%, rgba(255,255,255,.35) 0 12%, transparent 13%), linear-gradient(140deg, #ff3cac 0%, #784ba0 50%, #2b86c5 100%);
+  --card: #140b2e; --card-edge: #ff3cac; --red: #ff4fb8; --black: #3ef0ff;
+  --face: radial-gradient(circle at 50% 0%, #2a1660 0%, #140b2e 70%);
+  --face-fig: radial-gradient(circle at 50% 0%, #3a1a70 0%, #140b2e 70%);
+  --back: #2b0b4f; --back-edge: #ff3cac; --back-ink: #ffffff;
+  --back-pat: linear-gradient(180deg, transparent 0 55%, rgba(255,60,172,.9) 55% 56%, transparent 56%), repeating-linear-gradient(90deg, rgba(62,240,255,.55) 0 1px, transparent 1px 10px) bottom / 100% 44% no-repeat, radial-gradient(circle at 50% 55%, #ffb347 0 16%, #ff3cac 17% 19%, transparent 20%), linear-gradient(180deg, #12002b 0%, #3d0d6b 55%, #1a0533 56%, #0b0018 100%);
+  --back-frame: none; --emblem: ""; --emblem-size: .3;
+  --deco: none; --radius: .14; --glow: 1;
+  --fig11: "\2658\FE0E"; --fig12: "\2655\FE0E"; --fig13: "\2654\FE0E";
 }
 [data-dz="guld"] {
   --rank-font: "Cinzel", Georgia, serif; --rank-weight: 700; --rank-scale: .9;
-  --face-fig: linear-gradient(160deg, #fffdf6 0%, #f3e2b4 100%);
-  --card: #fffaf0; --card-edge: #e6d3a3; --red: #a8322a; --black: #2a2014;
-  --face: linear-gradient(160deg, #fffdf6 0%, #fffaf0 60%, #f3e6c6 100%);
-  --back: #c9962e; --back-edge: #fff6dc; --back-ink: #2a2014;
-  --back-pat: radial-gradient(circle at 50% 50%, #fff6dc 0 14%, transparent 15%), repeating-linear-gradient(135deg, #e2b54a 0 4px, #c9962e 4px 8px);
+  --card: #fffaf0; --card-edge: #c9962e; --red: #a8322a; --black: #3a2a10;
+  --face: linear-gradient(160deg, #fffdf6 0%, #fff6e2 60%, #f3e2b4 100%);
+  --face-fig: linear-gradient(160deg, #fffdf6 0%, #f1d98f 100%);
+  --back: #c9962e; --back-edge: #fff3cf; --back-ink: #4a3410;
+  --back-pat: linear-gradient(115deg, transparent 35%, rgba(255,255,255,.65) 48%, transparent 60%) 0 0 / 250% 100%, repeating-linear-gradient(60deg, rgba(255,255,255,.18) 0 2px, transparent 2px 8px), repeating-linear-gradient(-60deg, rgba(120,80,10,.18) 0 2px, transparent 2px 8px), linear-gradient(160deg, #f6d77a 0%, #c9962e 50%, #8f6418 100%);
+  --back-frame: 2px double #fff3cf; --emblem: "\265B\FE0E"; --emblem-size: .4;
+  --deco: none; --radius: .1; --face-border: 2px solid #c9962e;
+  --fig11: "\265E\FE0E"; --fig12: "\265B\FE0E"; --fig13: "\265A\FE0E";
 }
+/* What every design draws with those variables */
+.card { border-radius: calc(var(--w) * var(--radius, .1)); }
+.card:not(.back):not(.empty) { border: var(--face-border, 1px solid var(--card-edge)); }
+.card:not(.back):not(.empty)::before { content: ""; position: absolute; inset: 0; border-radius: inherit; background: var(--deco); pointer-events: none; }
+.card.back::before { content: var(--emblem); position: absolute; inset: 7%; border: var(--back-frame); border-radius: calc(var(--w) * var(--radius, .1) * .7);
+  display: grid; place-items: center; color: var(--back-ink); font: calc(var(--w) * var(--emblem-size)) / 1 "Segoe UI Symbol", "Noto Sans Symbols 2", "DejaVu Sans", serif; opacity: .9; pointer-events: none; }
+.card.back:has(.n)::before { opacity: .35; }
+.card.fig .big { font-size: 0 !important; }
+.card.fig .big::before { font-size: calc(var(--w) * .56); line-height: .8; }
+.card.k11 .big::before { content: var(--fig11); }
+.card.k12 .big::before { content: var(--fig12); }
+.card.k13 .big::before { content: var(--fig13); }
+/* Shop designs earn their price: glow, shimmer, gold leaf */
+[data-dz="neon"] .card:not(.back):not(.empty) .r, [data-dz="neon"] .card:not(.back):not(.empty) .s, [data-dz="neon"] .card:not(.back):not(.empty) .big { text-shadow: 0 0 4px currentColor, 0 0 10px currentColor; }
+[data-dz="neon"] .card:not(.back):not(.empty) { filter: drop-shadow(0 0 5px rgba(255,60,172,.55)); }
+[data-dz="neon"] .card.back { animation: neonhue 5s ease-in-out infinite alternate; }
+@keyframes neonhue { to { filter: hue-rotate(45deg) saturate(1.2); } }
+[data-dz="guld"] .card.back { animation: shimmer 3.2s linear infinite; }
+@keyframes shimmer { from { background-position: 150% 0, 0 0, 0 0, 0 0; } to { background-position: -150% 0, 0 0, 0 0, 0 0; } }
+[data-dz="guld"] .card:not(.back):not(.empty) .r { background: linear-gradient(180deg, #e9c25a, #8f6418); -webkit-background-clip: text; background-clip: text; color: transparent; }
+[data-dz="guld"] .card.red:not(.back) .r { background-image: linear-gradient(180deg, #d9534a, #7a1a14); }
+[data-dz="nat"] .card.black:not(.back):not(.fig) .big, [data-dz="nat"] .card.black:not(.back) .s { color: transparent; -webkit-text-stroke: 1.3px var(--black); }
+[data-dz="nat"] .card.red:not(.back) .s { color: transparent; -webkit-text-stroke: 1.3px var(--red); }
 .dzgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 8px; }
 .dz { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 8px 4px 6px; border-radius: 12px; background: var(--felt); border: 1px solid var(--felt-line); color: var(--ink); cursor: pointer; font: 500 .8rem var(--display); }
 .dz .pair { display: flex; gap: 4px; }
@@ -619,7 +667,7 @@ function cardEl(c) {
   const d = document.createElement("div");
   if (!c) { d.className = "card empty"; return d; }
   const fig = FIGURES[c.r];
-  d.className = `card ${c.c}` + (fig ? " fig" : "");
+  d.className = `card ${c.c}` + (fig ? ` fig k${c.r}` : "");
   // Court cards show a figure (knight, queen, king) instead of the big suit, so D never reads as a 2.
   d.innerHTML = `<span class="r">${RANKS[c.r]}</span><span class="s">${c.s}</span><span class="big">${fig ? fig + "\uFE0E" : c.s}</span>`;
   d.setAttribute("aria-label", ["", "es", "2", "3", "4", "5", "6", "7", "8", "9", "10", "knægt", "dame", "konge"][c.r] + " " + c.s);
