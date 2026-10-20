@@ -66,7 +66,7 @@ button:focus-visible, select:focus-visible, .col:focus-visible { outline: 3px so
   --w: clamp(40px, min(15vw, 9.5vh), 84px);
   width: var(--w); aspect-ratio: 5 / 7; max-width: 100%;
   border-radius: calc(var(--w) * .1);
-  background: linear-gradient(160deg, #fffdf7 0%, var(--card) 60%, #f1ecdf 100%);
+  background: var(--face);
   border: 1px solid var(--card-edge);
   box-shadow: 0 2px 0 rgba(0,0,0,.15), 0 6px 14px rgba(0,0,0,.25);
   position: relative; user-select: none; -webkit-user-select: none; box-sizing: border-box;
@@ -78,13 +78,11 @@ button:focus-visible, select:focus-visible, .col:focus-visible { outline: 3px so
 .card { overflow: visible; }
 .card.red { color: var(--red); } .card.black { color: var(--black); }
 .card.back {
-  background:
-    radial-gradient(circle at 50% 50%, rgba(255,255,255,.12) 0 18%, transparent 19%),
-    repeating-linear-gradient(45deg, transparent 0 5px, rgba(255,255,255,.08) 5px 10px), var(--back);
-  border: 3px solid var(--card);
+  background: var(--back-pat);
+  border: 3px solid var(--back-edge);
 }
 .card.empty { background: transparent; border: 2px dashed var(--felt-line); box-shadow: none; }
-.card .n { position: absolute; inset: 0; display: grid; place-items: center; font: 800 1rem var(--display); color: var(--card); text-shadow: 0 1px 2px rgba(0,0,0,.6); }
+.card .n { position: absolute; inset: 0; display: grid; place-items: center; font: 800 1rem var(--display); color: var(--back-ink); text-shadow: 0 1px 2px rgba(0,0,0,.6); }
 .card.stacked .s { visibility: hidden; }
 .card .times {
   position: absolute; top: 37%; left: 6%; min-width: 20px; height: 18px; padding: 0 4px; box-sizing: border-box;
@@ -95,7 +93,7 @@ button:focus-visible, select:focus-visible, .col:focus-visible { outline: 3px so
 /* A column: face-down cards peek out above the top card */
 .col { position: relative; -webkit-user-select: none; user-select: none; display: flex; flex-direction: column; align-items: center; border-radius: 10px; touch-action: none; padding: 2px; }
 .col .under { height: 6px; width: 90%; }
-.col .under span { display: block; height: 100%; margin: 0 auto; width: 92%; border-radius: 4px 4px 0 0; background: var(--back); border: 1px solid var(--card); border-bottom: 0; box-sizing: border-box; }
+.col .under span { display: block; height: 100%; margin: 0 auto; width: 92%; border-radius: 4px 4px 0 0; background: var(--back); border: 1px solid var(--back-edge); border-bottom: 0; box-sizing: border-box; }
 .opp .col { flex-direction: column-reverse; }
 .opp .col .under span { border-radius: 0 0 4px 4px; border-top: 0; border-bottom: 1px solid var(--card); }
 .opp .card { --w: clamp(30px, min(10vw, 6.5vh), 58px); }
@@ -104,7 +102,7 @@ button:focus-visible, select:focus-visible, .col:focus-visible { outline: 3px so
 .mine .card.playable { box-shadow: 0 0 0 2px var(--brass), 0 6px 14px rgba(0,0,0,.3); }
 .mine .card.flipme, .mine .card.fillme { cursor: pointer; box-shadow: 0 0 0 2px var(--ink), 0 6px 14px rgba(0,0,0,.3); }
 .mine .card.flipme::after, .mine .card.fillme::after { position: absolute; inset: 0; display: grid; place-items: center; font: 800 .85rem var(--display); letter-spacing: .06em; text-align: center; }
-.mine .card.flipme::after { content: "Vend"; color: var(--card); }
+.mine .card.flipme::after { content: "Vend"; color: var(--back-ink); }
 .mine .card.fillme { border-color: var(--ink-dim); }
 .mine .card.fillme::after { content: "Læg ud"; color: var(--ink-dim); font-size: .75rem; }
 .mine .card.lifted { visibility: hidden; }
@@ -185,6 +183,60 @@ button.alt { background: transparent; color: var(--brass); border: 2px solid var
 .setrow input[type=range] { width: 100%; accent-color: var(--brass); min-width: 0; }
 .setrow input[type=checkbox] { width: 22px; height: 22px; accent-color: var(--brass); }
 #settings { z-index: 40; }
+/* Card designs. Each player's own cards, reserve and dynge wear that player's design (data-dz). */
+:root, [data-dz="klassisk"] {
+  --card: #fbf8f0; --card-edge: #d9d2bf; --red: #c0312b; --black: #1d2321;
+  --face: linear-gradient(160deg, #fffdf7 0%, #fbf8f0 60%, #f1ecdf 100%);
+  --back: #7a2335; --back-edge: #fbf8f0; --back-ink: #fbf8f0;
+  --back-pat: radial-gradient(circle at 50% 50%, rgba(255,255,255,.12) 0 18%, transparent 19%), repeating-linear-gradient(45deg, transparent 0 5px, rgba(255,255,255,.08) 5px 10px), #7a2335;
+}
+[data-dz="hav"] {
+  --card: #f4f8fb; --card-edge: #c9d6e0; --red: #d0453a; --black: #14324a;
+  --face: linear-gradient(160deg, #ffffff 0%, #eef4f9 70%, #dfe9f2 100%);
+  --back: #1d4e7a; --back-edge: #f4f8fb; --back-ink: #f4f8fb;
+  --back-pat: repeating-radial-gradient(circle at 50% 115%, rgba(255,255,255,.16) 0 3px, transparent 3px 8px), #1d4e7a;
+}
+[data-dz="nat"] {
+  --card: #252c2e; --card-edge: #3d484b; --red: #ff6f61; --black: #f1e9d4;
+  --face: linear-gradient(160deg, #303839 0%, #232a2b 70%, #1b2122 100%);
+  --back: #111517; --back-edge: #e2b54a; --back-ink: #e2b54a;
+  --back-pat: repeating-linear-gradient(0deg, transparent 0 6px, rgba(226,181,74,.3) 6px 7px), repeating-linear-gradient(90deg, transparent 0 6px, rgba(226,181,74,.3) 6px 7px), #111517;
+}
+[data-dz="skov"] {
+  --card: #fbf7ea; --card-edge: #d6cfb5; --red: #b8452a; --black: #23331f;
+  --face: linear-gradient(160deg, #fffcf2 0%, #fbf7ea 60%, #efe8d2 100%);
+  --back: #2f5a2a; --back-edge: #fbf7ea; --back-ink: #fbf7ea;
+  --back-pat: conic-gradient(rgba(255,255,255,.12) 25%, transparent 0 50%, rgba(255,255,255,.12) 0 75%, transparent 0) 0 0 / 12px 12px, #2f5a2a;
+}
+[data-dz="dannebrog"] {
+  --card: #fffaf3; --card-edge: #e3d7c6; --red: #c8102e; --black: #1a1a1a;
+  --face: linear-gradient(160deg, #ffffff 0%, #fffaf3 60%, #f5ebdc 100%);
+  --back: #c8102e; --back-edge: #ffffff; --back-ink: #ffffff;
+  --back-pat: linear-gradient(90deg, transparent 0 30%, #fff 30% 43%, transparent 43%), linear-gradient(0deg, transparent 0 43%, #fff 43% 57%, transparent 57%), #c8102e;
+}
+[data-dz="neon"] {
+  --card: #ffffff; --card-edge: #e2d6f5; --red: #e0218a; --black: #4b2bd6;
+  --face: linear-gradient(160deg, #ffffff 0%, #fbf7ff 60%, #efe6fb 100%);
+  --back: #784ba0; --back-edge: #ffffff; --back-ink: #ffffff;
+  --back-pat: radial-gradient(circle at 30% 25%, rgba(255,255,255,.35) 0 12%, transparent 13%), linear-gradient(140deg, #ff3cac 0%, #784ba0 50%, #2b86c5 100%);
+}
+[data-dz="guld"] {
+  --card: #fffaf0; --card-edge: #e6d3a3; --red: #a8322a; --black: #2a2014;
+  --face: linear-gradient(160deg, #fffdf6 0%, #fffaf0 60%, #f3e6c6 100%);
+  --back: #c9962e; --back-edge: #fff6dc; --back-ink: #2a2014;
+  --back-pat: radial-gradient(circle at 50% 50%, #fff6dc 0 14%, transparent 15%), repeating-linear-gradient(135deg, #e2b54a 0 4px, #c9962e 4px 8px);
+}
+.dzgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 8px; }
+.dz { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 8px 4px 6px; border-radius: 12px; background: var(--felt); border: 1px solid var(--felt-line); color: var(--ink); cursor: pointer; font: 500 .8rem var(--display); }
+.dz .pair { display: flex; gap: 4px; }
+.dz .card { --w: 30px; box-shadow: 0 2px 4px rgba(0,0,0,.3); }
+.dz.on { border-color: var(--brass); box-shadow: 0 0 0 2px var(--brass); }
+.dz.locked { opacity: .7; }
+.dz .tag { font-size: .66rem; color: var(--ink-dim); text-transform: uppercase; letter-spacing: .08em; }
+.dz.on .tag { color: var(--brass); }
+.sethead { margin: 6px 0 0; font: 800 .8rem var(--display); text-transform: uppercase; letter-spacing: .12em; color: var(--ink-dim); }
+.dznote { min-height: 1.2em; margin: 0; font-size: .85rem; color: var(--ink-dim); }
+
 #gear { font-size: 1.1rem; line-height: 1; padding: 6px 10px; }
 .cols.deal .col { animation: dealin .38s cubic-bezier(.2,.8,.3,1.2) backwards; animation-delay: calc(var(--i) * 70ms); }
 @keyframes dealin { from { transform: translateY(-40px) scale(.7) rotate(-8deg); opacity: 0; } }
@@ -264,6 +316,9 @@ button.alt { background: transparent; color: var(--brass); border: 2px solid var
     <label class="setrow" for="volMusic"><span>Musik</span><input type="range" id="volMusic" min="0" max="100" step="5"><output id="outMusic"></output></label>
     <label class="setrow" for="volSfx"><span>Lydeffekter</span><input type="range" id="volSfx" min="0" max="100" step="5"><output id="outSfx"></output></label>
     <label class="setrow check" for="optVibe"><span>Vibration</span><input type="checkbox" id="optVibe"></label>
+    <h3 class="sethead">Dine kort</h3>
+    <div class="dzgrid" id="dzGrid"></div>
+    <p class="dznote" id="dzNote"></p>
     <div class="btnrow"><button class="primary" id="setClose" type="button">Luk</button><button id="setRules" type="button">Vis reglerne</button></div>
   </div>
 </div>
@@ -286,6 +341,7 @@ button.alt { background: transparent; color: var(--brass); border: 2px solid var
     <div class="btnrow">
       <button class="primary" id="startBtn" type="button">Mod computeren</button>
       <button class="primary alt" id="mpBtn" type="button">Mod en anden telefon</button>
+      <button id="dzBtn" type="button">Vælg dine kort</button>
     </div>
   </div>
 </div>
@@ -502,6 +558,7 @@ function colEl(pl, k, mine) {
 
 let lastCounts = [26, 26];
 function render() {
+  applyDesigns();
   const cols = $("cols"); cols.innerHTML = "";
   for (let k = 0; k < 5; k++) cols.appendChild(colEl(S.you, k, true));
   const ai = $("aiCols"); ai.innerHTML = "";
@@ -553,10 +610,12 @@ function say(t, big) {
 function buzz(ms) { if (!Settings.vibe) return; try { navigator.vibrate && navigator.vibrate(ms); } catch (e) {} }
 
 // The computer's card flies from its bunke to the dynge it lands on.
-function fly(card, from, toEl, faceDown) {
+function fly(card, from, toEl, faceDown, dz) {
   if (reduceMotion || !toEl || !toEl.querySelector(".card")) return;
   const to = toEl.querySelector(".card").getBoundingClientRect();
   const f = faceDown ? backEl(0) : cardEl(card); f.classList.add("flyer");
+  const home = toEl.closest("[data-dz]");
+  f.dataset.dz = dz || (home ? home.dataset.dz : myDz());
   f.style.transform = "rotate(" + (Math.random() * 16 - 8) + "deg)";
   f.style.width = from.width + "px"; f.style.left = from.left + "px"; f.style.top = from.top + "px";
   document.body.appendChild(f);
@@ -590,7 +649,7 @@ function play(pl, k, i) {
   if (pl === S.you) selected = null;
   afterChange(pl);
   if (S.over) return true;
-  if (from) fly(card, from, $("pile" + i));
+  if (from) fly(card, from, $("pile" + i), false, oppDz);
   flashPile(i, pl === S.ai);
   sfx(pl === S.you ? "card" : "cardOpp");
   return true;
@@ -696,7 +755,7 @@ function startDrag(e, k, el) {
   if (!pl.open[k]) { flip(pl, k); return; }
   const r = el.getBoundingClientRect();
   const ghost = cardEl(topOf(pl, k));
-  ghost.classList.add("ghost");
+  ghost.classList.add("ghost"); ghost.dataset.dz = myDz();
   ghost.style.width = r.width + "px"; ghost.style.left = r.left + "px"; ghost.style.top = r.top + "px";
   document.body.appendChild(ghost);
   drag = { k, card: topOf(pl, k), ghost, dx: e.clientX - r.left, dy: e.clientY - r.top, home: r, moved: false, sx: e.clientX, sy: e.clientY, x: e.clientX, y: e.clientY, id: e.pointerId };
@@ -920,6 +979,7 @@ function showPanel(html) { $("panel").innerHTML = html; $("overlay").hidden = fa
 function start() {
   if (isGuest()) return;
   stopTimers();
+  if (!NET) pickOppDz();
   running = false; S = newGame(); S.mp = !!NET; selected = null; mood = 1; lastCounts = [26, 26]; render(); say("");
   startedAt = Date.now();
   beginRound();
@@ -927,10 +987,63 @@ function start() {
 
 /* ---------- Sound: everything is synthesised, so there are no sound files to ship ---------- */
 const Settings = (() => {
-  const d = { music: 35, sfx: 75, vibe: true };
+  const d = { music: 35, sfx: 75, vibe: true, design: "klassisk", owned: [] };
   try { return Object.assign(d, JSON.parse(localStorage.getItem("pismarie.settings") || "{}")); } catch (e) { return d; }
 })();
 function saveSettings() { try { localStorage.setItem("pismarie.settings", JSON.stringify(Settings)); } catch (e) {} }
+
+/* ---------- Card designs: the free ones now, the shop ones once the app has a shop ---------- */
+const DESIGNS = [
+  { id: "klassisk", name: "Klassisk" },
+  { id: "hav", name: "Hav" },
+  { id: "nat", name: "Nat" },
+  { id: "skov", name: "Skov" },
+  { id: "dannebrog", name: "Dannebrog", shop: true },
+  { id: "neon", name: "Neon", shop: true },
+  { id: "guld", name: "Guld", shop: true },
+];
+// A shop design is yours once its id is in Settings.owned; the app's shop will add it there.
+function owns(d) { return !d.shop || (Array.isArray(Settings.owned) && Settings.owned.includes(d.id)); }
+function dzOk(id) { return DESIGNS.some(d => d.id === id) ? id : "klassisk"; }
+function myDz() { const d = DESIGNS.find(x => x.id === Settings.design); return d && owns(d) ? d.id : "klassisk"; }
+let oppDz = "hav";
+// The computer always plays with a free design that differs from yours.
+function pickOppDz() {
+  const free = DESIGNS.filter(d => !d.shop && d.id !== myDz());
+  oppDz = free[Math.floor(Math.random() * free.length)].id;
+}
+function applyDesigns() {
+  const me = myDz(), op = dzOk(oppDz);
+  for (const el of [document.querySelector(".zone.mine"), $("side0"), $("pile1")]) if (el.dataset.dz !== me) el.dataset.dz = me;
+  for (const el of [document.querySelector(".zone.opp"), $("side1"), $("pile0")]) if (el.dataset.dz !== op) el.dataset.dz = op;
+}
+function setMyDz(id) {
+  const d = DESIGNS.find(x => x.id === id);
+  if (!d) return;
+  if (!owns(d)) { $("dzNote").textContent = `${d.name} kommer i butikken, når Pismarie bliver en app.`; sfx("nope"); return; }
+  Settings.design = d.id; saveSettings();
+  if (!NET && oppDz === d.id) pickOppDz();
+  if (NET) NET.room.presence({ dz: d.id }).catch(() => {});
+  $("dzNote").textContent = "";
+  renderDzGrid(); applyDesigns(); sfx("card");
+}
+function renderDzGrid() {
+  const g = $("dzGrid"); if (!g) return;
+  g.innerHTML = "";
+  for (const d of DESIGNS) {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "dz" + (d.id === myDz() ? " on" : "") + (owns(d) ? "" : " locked");
+    b.dataset.id = d.id; b.dataset.dz = d.id;
+    b.setAttribute("aria-pressed", String(d.id === myDz()));
+    const pair = document.createElement("span"); pair.className = "pair";
+    pair.append(backEl(0), cardEl({ r: 1, s: "♥", c: "red" }), cardEl({ r: 13, s: "♠", c: "black" }));
+    const tag = document.createElement("span"); tag.className = "tag";
+    tag.textContent = d.id === myDz() ? "Valgt" : owns(d) ? "Gratis" : "🔒 Butik";
+    const nm = document.createElement("span"); nm.textContent = d.name;
+    b.append(pair, nm, tag);
+    g.appendChild(b);
+  }
+}
 
 const Sound = (() => {
   let ctx = null, sfxBus = null, musicBus = null, noiseBuf = null, nextBeat = 0, beat = 0, timer = null;
@@ -1042,6 +1155,8 @@ function syncSettingsUI() {
   $("volMusic").value = Settings.music; $("outMusic").textContent = Settings.music;
   $("volSfx").value = Settings.sfx; $("outSfx").textContent = Settings.sfx;
   $("optVibe").checked = Settings.vibe;
+  $("dzNote").textContent = "";
+  renderDzGrid();
 }
 function openSettings() {
   syncSettingsUI();
@@ -1056,6 +1171,7 @@ function closeSettings() {
   }
 }
 $("gear").addEventListener("click", openSettings);
+$("dzBtn").addEventListener("click", openSettings);
 $("settings").addEventListener("click", e => { if (e.target === $("settings")) closeSettings(); });
 const SETTINGS_HTML = $("settings").querySelector(".panel").innerHTML;
 const RULES_HTML = document.querySelector("#panel ul").outerHTML;
@@ -1065,6 +1181,7 @@ function wireSettings() {
   $("volSfx").addEventListener("input", e => { Settings.sfx = +e.target.value; $("outSfx").textContent = Settings.sfx; Sound.levels(); saveSettings(); });
   $("volSfx").addEventListener("change", () => sfx("card"));
   $("optVibe").addEventListener("change", e => { Settings.vibe = e.target.checked; saveSettings(); buzz(30); });
+  $("dzGrid").addEventListener("click", e => { const b = e.target.closest(".dz"); if (b) setMyDz(b.dataset.id); });
   $("setRules").addEventListener("click", () => {
     $("settings").querySelector(".panel").innerHTML = `<h2>Regler</h2><div class="scroll">${RULES_HTML}</div><div class="btnrow"><button class="primary" id="rulesBack" type="button">Tilbage</button></div>`;
     $("rulesBack").addEventListener("click", () => { $("settings").querySelector(".panel").innerHTML = SETTINGS_HTML; wireSettings(); syncSettingsUI(); });
@@ -1086,12 +1203,12 @@ function broadcast() {
   if (key === NET.lastSent) return;  // unchanged: sending it again would only echo back here
   NET.lastSent = key;
   st.v = NET.v = (NET.v || 0) + 1;
-  NET.room.presence({ role: "host", st }).catch(() => {});
+  NET.room.presence({ role: "host", st, dz: myDz() }).catch(() => {});
 }
 function send(a) {
   NET.n++;
   NET.acts = [...NET.acts.slice(-15), { ...a, n: NET.n }];
-  NET.room.presence({ role: "guest", acts: NET.acts }).catch(() => {});
+  NET.room.presence({ role: "guest", acts: NET.acts, dz: myDz() }).catch(() => {});
 }
 // Host: apply the guest's numbered moves that are new. The guest sits in the computer's seat.
 function hostTakeActs(acts) {
@@ -1111,6 +1228,7 @@ function hostPeers(ch) {
   const g = ch.peers.find(p => !p.isMe && p.presence && p.presence.role === "guest" && (!NET.guest || p.peer === NET.guest));
   if (NET.guest && ch.left.some(p => p.peer === NET.guest)) say("Din modspiller har forladt spillet.");
   if (!g) return;
+  if (g.presence.dz && dzOk(g.presence.dz) !== oppDz) { oppDz = dzOk(g.presence.dz); applyDesigns(); }
   if (NET.guest && !ch.updated.includes(g) && !ch.joined.includes(g)) return;
   if (!NET.guest) {
     NET.guest = g.peer;
@@ -1126,6 +1244,7 @@ function guestPeers(ch) {
   const h = ch.peers.find(p => !p.isMe && p.presence && p.presence.role === "host");
   if (!h) { if (NET.seenHost && ch.left.length) say("Din modspiller har forladt spillet."); return; }
   NET.seenHost = true;
+  if (h.presence.dz && dzOk(h.presence.dz) !== oppDz) { oppDz = dzOk(h.presence.dz); applyDesigns(); }
   const st = h.presence.st;
   if (!st || typeof st.v !== "number" || st.v <= NET.ver) return;
   NET.ver = st.v;
@@ -1147,7 +1266,7 @@ function applyState(st) {
     const t = pileTop(S, i);
     if (!t || t === prevPile[i]) continue;
     const k = prevTops.indexOf(t);
-    if (k >= 0 && rects[k]) { fly(t, rects[k], $("pile" + i)); flashPile(i, true); sfx("cardOpp"); }
+    if (k >= 0 && rects[k]) { fly(t, rects[k], $("pile" + i), false, oppDz); flashPile(i, true); sfx("cardOpp"); }
   }
   for (let k = 0; k < 5; k++) if (!prevOpen[k] && S.ai.open[k] && S.ai.cols[k].length) { const c = aiColEl(k).querySelector(".card"); if (c) c.classList.add("flipped"); }
   if (st.e && st.e.id !== NET.lastEv) {
@@ -1263,7 +1382,7 @@ async function hostGame() {
   try { r = await room.join("pismarie-dks-" + code, "host"); } catch (e) { mpMenu("Kunne ikke oprette spillet. Prøv igen."); return; }
   NET = { role: "host", room: r, code, lastN: 0, guest: null, v: 0 };
   setMpLabels();
-  r.presence({ role: "host" }).catch(() => {});
+  r.presence({ role: "host", dz: myDz() }).catch(() => {});
   r.onPeers(hostPeers);
   showPanel(`<h2>Din spilkode</h2><div class="code">${code}</div>
     <p>Bed din modspiller åbne Pismarie, vælge <strong>Mod en anden telefon</strong> og skrive koden. Spillet starter, så snart I begge er inde.</p>`);
@@ -1276,7 +1395,7 @@ async function joinGame(code) {
   try { r = await room.join("pismarie-dks-" + code, "guest"); } catch (e) { mpMenu("Kunne ikke deltage. Prøv igen."); return; }
   NET = { role: "guest", room: r, code, n: 0, acts: [], ver: -1, lastPh: null, lastEv: null, seenHost: false };
   setMpLabels();
-  r.presence({ role: "guest", acts: [] }).catch(() => {});
+  r.presence({ role: "guest", acts: [], dz: myDz() }).catch(() => {});
   r.onPeers(guestPeers);
   showPanel(`<h2>Forbinder…</h2><p>Venter på spillet med kode <strong>${code}</strong>.</p>`);
   setTimeout(() => { if (NET && NET.role === "guest" && !NET.seenHost) showPanel(`<h2>Ingen spil fundet</h2><p>Der er ingen med koden <strong>${code}</strong> lige nu. Tjek koden, eller bed din modspiller oprette spillet igen.</p><button class="primary" id="mpRetry" type="button">Tilbage</button>`) || $("mpRetry").addEventListener("click", () => location.reload()); }, 8000);
