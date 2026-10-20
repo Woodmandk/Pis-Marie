@@ -1,6 +1,6 @@
 <!doctype html><html lang="da"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#113a2d"><style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}</style><script src="peerjs.min.js"></script></head><body><title>Pismarie</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Rozha+One&family=Fredoka:wght@600&family=Playfair+Display:wght@800&family=Alfa+Slab+One&family=Bebas+Neue&family=Righteous&family=Cinzel:wght@700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Rozha+One&family=Fredoka:wght@600&family=Playfair+Display:wght@800&family=Alfa+Slab+One&family=Bebas+Neue&family=Righteous&family=Cinzel:wght@700&family=Bungee&family=Silkscreen&display=swap">
 <style>
 /* Layout: one-screen card table. Opponent's five bunker on top, two middle dynger with the Pismarie button, your five bunker at the bottom. Single felt look by choice. */
 :root {
@@ -267,6 +267,123 @@ button.alt { background: transparent; color: var(--brass); border: 2px solid var
   --deco: none; --radius: .1; --face-border: 2px solid #c9962e;
   --fig11: "\265E\FE0E"; --fig12: "\265B\FE0E"; --fig13: "\265A\FE0E";
 }
+[data-dz="lava"] {
+  --rank-font: "Bungee", Impact, sans-serif; --rank-scale: .85;
+  --card: #1a0d08; --card-edge: #ff6a1a; --red: #ff7a2a; --black: #ffd166;
+  --face: radial-gradient(circle at 50% 110%, #5a1a06 0%, #1a0d08 60%);
+  --face-fig: radial-gradient(circle at 50% 110%, #7a2408 0%, #1a0d08 65%);
+  --back: #2a0e05; --back-edge: #ff6a1a; --back-ink: #ffd166;
+  --back-pat: radial-gradient(ellipse at 30% 70%, #ff8a1a 0 8%, transparent 22%), radial-gradient(ellipse at 70% 35%, #ff4d00 0 7%, transparent 20%), radial-gradient(ellipse at 55% 90%, #ffb347 0 5%, transparent 16%), repeating-linear-gradient(120deg, rgba(0,0,0,.45) 0 3px, transparent 3px 11px), #3a1206;
+  --back-frame: none; --emblem: "\2668\FE0E"; --emblem-size: .42;
+  --deco: radial-gradient(circle at 50% 120%, rgba(255,106,26,.35) 0 30%, transparent 55%); --radius: .1;
+  --fig11: "\2658\FE0E"; --fig12: "\2655\FE0E"; --fig13: "\2654\FE0E";
+}
+[data-dz="is"] {
+  --rank-font: "Fredoka", system-ui, sans-serif; --rank-weight: 600; --rank-scale: .95;
+  --card: #f4fbff; --card-edge: #9fd3f2; --red: #d63a6a; --black: #2a5d8a;
+  --face: linear-gradient(160deg, #ffffff 0%, #eaf7ff 55%, #d4eefc 100%);
+  --face-fig: linear-gradient(160deg, #ffffff 0%, #cfeafb 100%);
+  --back: #7cc4ec; --back-edge: #ffffff; --back-ink: #ffffff;
+  --back-pat: linear-gradient(60deg, rgba(255,255,255,.35) 25%, transparent 25.5% 75%, rgba(255,255,255,.35) 75.5%) 0 0 / 14px 24px, linear-gradient(-60deg, rgba(255,255,255,.35) 25%, transparent 25.5% 75%, rgba(255,255,255,.35) 75.5%) 0 0 / 14px 24px, linear-gradient(180deg, #a9dcf5 0%, #4fa3d6 100%);
+  --back-frame: 1px solid rgba(255,255,255,.8); --emblem: "\2744\FE0E"; --emblem-size: .46;
+  --deco: linear-gradient(135deg, rgba(255,255,255,.9) 0 8%, transparent 8% 92%, rgba(159,211,242,.4) 92%); --radius: .14;
+  --fig11: "\2744\FE0E"; --fig12: "\2655\FE0E"; --fig13: "\2654\FE0E";
+}
+[data-dz="rum"] {
+  --rank-font: "Righteous", system-ui, sans-serif; --rank-scale: .95;
+  --card: #0b1030; --card-edge: #6c7bff; --red: #ff6b8b; --black: #cfe0ff;
+  --face: radial-gradient(1px 1px at 20% 30%, #fff 50%, transparent), radial-gradient(1px 1px at 70% 60%, #fff 50%, transparent), radial-gradient(1px 1px at 40% 80%, #fff 50%, transparent), radial-gradient(circle at 80% 15%, #2a3478 0%, #0b1030 60%);
+  --face-fig: radial-gradient(circle at 50% 70%, #3a2a78 0%, #0b1030 70%);
+  --back: #070a22; --back-edge: #9aa6ff; --back-ink: #ffe28a;
+  --back-pat: radial-gradient(1.5px 1.5px at 15% 20%, #fff 50%, transparent), radial-gradient(1px 1px at 60% 12%, #fff 50%, transparent), radial-gradient(1.5px 1.5px at 85% 45%, #fff 50%, transparent), radial-gradient(1px 1px at 30% 75%, #fff 50%, transparent), radial-gradient(1px 1px at 75% 85%, #fff 50%, transparent), radial-gradient(circle at 62% 58%, #f4a259 0 14%, transparent 15%), radial-gradient(ellipse 34% 7% at 62% 58%, transparent 60%, #ffe28a 62% 70%, transparent 72%), linear-gradient(160deg, #1b1f5e 0%, #070a22 100%);
+  --back-frame: none; --emblem: ""; --emblem-size: .3;
+  --deco: none; --radius: .12;
+  --fig11: "\2604\FE0E"; --fig12: "\2605"; --fig13: "\2609\FE0E";
+}
+[data-dz="pixel"] {
+  --rank-font: "Silkscreen", monospace; --rank-scale: .75;
+  --card: #f0f0e0; --card-edge: #222; --red: #e03c28; --black: #222034;
+  --face: #f0f0e0;
+  --face-fig: repeating-conic-gradient(#e8e8d4 0 25%, #f0f0e0 0 50%) 0 0 / 8px 8px;
+  --back: #3b5dc9; --back-edge: #222034; --back-ink: #ffffff;
+  --back-pat: repeating-conic-gradient(#3b5dc9 0 25%, #41a6f6 0 50%) 0 0 / 10px 10px;
+  --back-frame: 2px solid #ffffff; --emblem: "\2665\FE0E"; --emblem-size: .4;
+  --deco: none; --radius: 0; --face-border: 3px solid #222034;
+  --fig11: "\265E\FE0E"; --fig12: "\265B\FE0E"; --fig13: "\265A\FE0E";
+}
+[data-dz="slik"] {
+  --rank-font: "Bungee", Impact, sans-serif; --rank-scale: .85;
+  --card: #fff5fa; --card-edge: #ff8fc2; --red: #e8337f; --black: #6a3cc9;
+  --face: linear-gradient(160deg, #ffffff 0%, #ffeef6 100%);
+  --face-fig: linear-gradient(160deg, #ffffff 0%, #ffd9ec 100%);
+  --back: #ff6fb1; --back-edge: #ffffff; --back-ink: #ffffff;
+  --back-pat: repeating-linear-gradient(45deg, #ff6fb1 0 7px, #ffffff 7px 11px, #8fd3ff 11px 18px, #ffffff 18px 22px);
+  --back-frame: none; --emblem: "\2665\FE0E"; --emblem-size: .5;
+  --deco: radial-gradient(circle at 88% 10%, #ffd166 0 5%, transparent 6%), radial-gradient(circle at 80% 18%, #8fd3ff 0 4%, transparent 5%); --radius: .22;
+  --fig11: "\2740\FE0E"; --fig12: "\2661\FE0E"; --fig13: "\2654\FE0E";
+}
+[data-dz="tiger"] {
+  --rank-font: "Alfa Slab One", Georgia, serif; --rank-scale: .9;
+  --card: #fff8ec; --card-edge: #e07a1f; --red: #c2410c; --black: #1c1208;
+  --face: linear-gradient(160deg, #fffaf0 0%, #fbe9cc 100%);
+  --face-fig: linear-gradient(160deg, #fff4dc 0%, #f6c98a 100%);
+  --back: #e07a1f; --back-edge: #1c1208; --back-ink: #1c1208;
+  --back-pat: repeating-linear-gradient(100deg, transparent 0 9px, #1c1208 9px 12px, transparent 12px 15px, #1c1208 15px 16px, transparent 16px 26px), linear-gradient(180deg, #f59e2c 0%, #d26a12 100%);
+  --back-frame: none; --emblem: ""; --emblem-size: .3;
+  --deco: linear-gradient(100deg, transparent 0 86%, rgba(224,122,31,.35) 86% 89%, transparent 89% 93%, rgba(224,122,31,.35) 93% 95%, transparent 95%); --radius: .1;
+  --fig11: "\265E\FE0E"; --fig12: "\265B\FE0E"; --fig13: "\265A\FE0E";
+}
+[data-dz="marmor"] {
+  --rank-font: "Cinzel", Georgia, serif; --rank-weight: 700; --rank-scale: .9;
+  --card: #fbfaf7; --card-edge: #1d1d1d; --red: #9e1b32; --black: #111111;
+  --face: linear-gradient(115deg, transparent 40%, rgba(0,0,0,.05) 41%, transparent 43%), linear-gradient(160deg, #ffffff 0%, #f1efe9 100%);
+  --face-fig: linear-gradient(160deg, #ffffff 0%, #e5e1d6 100%);
+  --back: #151515; --back-edge: #c9a24a; --back-ink: #e2c27a;
+  --back-pat: linear-gradient(118deg, transparent 30%, rgba(255,255,255,.22) 31%, transparent 33%), linear-gradient(64deg, transparent 55%, rgba(255,255,255,.14) 56%, transparent 58%), linear-gradient(150deg, transparent 70%, rgba(201,162,74,.4) 71%, transparent 72.5%), radial-gradient(circle at 30% 30%, #2c2c2c 0%, #121212 80%);
+  --back-frame: 1px solid #c9a24a; --emblem: "\2726"; --emblem-size: .36;
+  --deco: none; --radius: .06; --face-border: 2px solid #1d1d1d;
+  --fig11: "\2658\FE0E"; --fig12: "\2655\FE0E"; --fig13: "\2654\FE0E";
+}
+[data-dz="trae"] {
+  --rank-font: "Playfair Display", Georgia, serif; --rank-weight: 800;
+  --card: #f6ecd9; --card-edge: #8a5a2b; --red: #a3361f; --black: #3b2412;
+  --face: linear-gradient(160deg, #fbf3e3 0%, #efdfc1 100%);
+  --face-fig: linear-gradient(160deg, #fbf3e3 0%, #e4c995 100%);
+  --back: #7a4a22; --back-edge: #f6ecd9; --back-ink: #f6ecd9;
+  --back-pat: repeating-radial-gradient(ellipse 160% 40% at 50% 130%, #8e5a2b 0 3px, #6e4019 3px 5px, #8a5527 5px 9px), #7a4a22;
+  --back-frame: 2px solid rgba(246,236,217,.6); --emblem: "\2618\FE0E"; --emblem-size: .42;
+  --deco: none; --radius: .08;
+  --fig11: "\265E\FE0E"; --fig12: "\265B\FE0E"; --fig13: "\265A\FE0E";
+}
+[data-dz="pirat"] {
+  --rank-font: "Playfair Display", Georgia, serif; --rank-weight: 800;
+  --card: #f1e2bd; --card-edge: #6b4a1f; --red: #9b1c1c; --black: #1f1a14;
+  --face: radial-gradient(circle at 20% 15%, rgba(139,90,43,.18) 0 10%, transparent 30%), radial-gradient(circle at 85% 85%, rgba(139,90,43,.22) 0 12%, transparent 35%), linear-gradient(160deg, #f6e8c6 0%, #e6cf98 100%);
+  --face-fig: linear-gradient(160deg, #f6e8c6 0%, #d9b877 100%);
+  --back: #141414; --back-edge: #e6cf98; --back-ink: #f1e2bd;
+  --back-pat: repeating-linear-gradient(45deg, rgba(255,255,255,.05) 0 2px, transparent 2px 8px), radial-gradient(circle at 50% 50%, #2a2a2a 0%, #0c0c0c 80%);
+  --back-frame: 1px dashed rgba(241,226,189,.7); --emblem: "\2620\FE0E"; --emblem-size: .5;
+  --deco: none; --radius: .07;
+  --fig11: "\2693\FE0E"; --fig12: "\2694\FE0E"; --fig13: "\2620\FE0E";
+}
+[data-dz="regnbue"] {
+  --rank-font: "Bungee", Impact, sans-serif; --rank-scale: .85;
+  --card: #ffffff; --card-edge: #b07cff; --red: #ff3b6b; --black: #2b2bd6;
+  --face: linear-gradient(160deg, #ffffff 0%, #f6f0ff 100%);
+  --face-fig: linear-gradient(160deg, #fff6f0 0%, #f0f6ff 50%, #f6fff0 100%);
+  --back: #b07cff; --back-edge: #ffffff; --back-ink: #ffffff;
+  --back-pat: radial-gradient(circle at 50% 50%, rgba(255,255,255,.55) 0 16%, transparent 17%), linear-gradient(160deg, #ff3b6b 0%, #ff9f1c 20%, #ffe14d 38%, #3ddc84 56%, #3b9bff 74%, #9b5cff 100%);
+  --back-frame: none; --emblem: "\2605"; --emblem-size: .32;
+  --deco: linear-gradient(90deg, #ff3b6b, #ff9f1c, #ffe14d, #3ddc84, #3b9bff, #9b5cff) bottom / 100% 5% no-repeat; --radius: .14;
+  --fig11: "\265E\FE0E"; --fig12: "\265B\FE0E"; --fig13: "\265A\FE0E";
+}
+[data-dz="lava"] .card:not(.back):not(.empty) .r, [data-dz="lava"] .card:not(.back):not(.empty) .big { text-shadow: 0 0 6px rgba(255,106,26,.8); }
+[data-dz="lava"] .card.back { animation: lavaglow 2.6s ease-in-out infinite alternate; }
+@keyframes lavaglow { to { filter: brightness(1.3) saturate(1.3); } }
+[data-dz="regnbue"] .card.back { animation: neonhue 4s linear infinite alternate; }
+[data-dz="rum"] .card:not(.back):not(.empty) .r { text-shadow: 0 0 6px rgba(207,224,255,.6); }
+[data-dz="pixel"] .card { image-rendering: pixelated; }
+[data-dz="is"] .card.back { animation: shimmer 4.5s linear infinite; }
 /* What every design draws with those variables */
 .card { border-radius: calc(var(--w) * var(--radius, .1)); }
 .card:not(.back):not(.empty) { border: var(--face-border, 1px solid var(--card-edge)); }
@@ -848,7 +965,14 @@ function afterChange(pl) {
   checkStuck();
 }
 
+// The tutorial's Pismarie step waits for the shout: playing on first would break up the pair.
+function tutLocked(pl) {
+  if (!TUT || pl !== S.you || !TUT_STEPS[TUT.step].lock) return false;
+  say("Tryk på Pismarie! først.", true);
+  return true;
+}
 function play(pl, k, i) {
+  if (tutLocked(pl)) return false;
   if (isGuest()) {
     if (pl !== S.you || !running || !doPlay(S, pl, k, i)) return false;
     selected = null; render(); flashPile(i); sfx("card");
@@ -868,6 +992,7 @@ function play(pl, k, i) {
   return true;
 }
 function flip(pl, k) {
+  if (tutLocked(pl)) return false;
   if (isGuest()) {
     if (pl !== S.you || !running || !doFlip(pl, k)) return false;
     render(); myCard(k).classList.add("flipped"); sfx("flip");
@@ -890,6 +1015,7 @@ function fill(pl, k) {
   return true;
 }
 function shift(pl, from, to) {
+  if (tutLocked(pl)) return false;
   if (isGuest()) {
     if (pl !== S.you || !running || !doShift(pl, from, to)) return false;
     render(); sfx("slide");
@@ -1378,7 +1504,7 @@ const TUT_STEPS = [
     done: () => S.you.cols[0].length > 0, hi: () => [myCard(0)] },
   { text: "Se, der ligger to 8'ere i midten! Tryk på Pismarie! før modstanderen, så får modstanderen begge dynger.",
     enter: () => { S.piles[0].push(TUT.extra); render(); flashPile(0, true); sfx("cardOpp"); },
-    done: () => S.you.shouts > 0 && !S.pending, hi: () => [$("shout")] },
+    lock: true, done: () => S.you.shouts > 0 && !S.pending, hi: () => [$("shout")] },
   { text: "Modstanderen fik begge dynger, og I har hver vendt et kort fra jeres reserve. Det sker også, når ingen af jer kan lægge noget.",
     next: "Næste", hi: () => [$("side0").querySelector(".card"), $("side1").querySelector(".card")] },
   { text: "Tøm dine 5 bunker før modstanderen. Så vælger du en af dyngerne i midten: tag den mindste. Den, der først er helt løbet tør for kort, vinder spillet.",
@@ -1451,9 +1577,21 @@ const DESIGNS = [
   { id: "dannebrog", name: "Dannebrog", shop: true },
   { id: "neon", name: "Neon", shop: true },
   { id: "guld", name: "Guld", shop: true },
+  { id: "lava", name: "Lava", shop: true },
+  { id: "is", name: "Is" },
+  { id: "rum", name: "Rummet", shop: true },
+  { id: "pixel", name: "Pixel" },
+  { id: "slik", name: "Slik" },
+  { id: "tiger", name: "Tiger", shop: true },
+  { id: "marmor", name: "Marmor", shop: true },
+  { id: "trae", name: "Træ" },
+  { id: "pirat", name: "Pirat", shop: true },
+  { id: "regnbue", name: "Regnbue", shop: true },
 ];
+// Everything is unlocked for now. Set this to false when the app gets its shop.
+const UNLOCK_ALL = true;
 // A shop design is yours once its id is in Settings.owned; the app's shop will add it there.
-function owns(d) { return !d.shop || (Array.isArray(Settings.owned) && Settings.owned.includes(d.id)); }
+function owns(d) { return UNLOCK_ALL || !d.shop || (Array.isArray(Settings.owned) && Settings.owned.includes(d.id)); }
 function dzOk(id) { return DESIGNS.some(d => d.id === id) ? id : "klassisk"; }
 function myDz() { const d = DESIGNS.find(x => x.id === Settings.design); return d && owns(d) ? d.id : "klassisk"; }
 let oppDz = "hav";
@@ -1488,7 +1626,7 @@ function renderDzGrid() {
     const pair = document.createElement("span"); pair.className = "pair";
     pair.append(backEl(0), cardEl({ r: 12, s: "♥", c: "red" }), cardEl({ r: 7, s: "♠", c: "black" }));
     const tag = document.createElement("span"); tag.className = "tag";
-    tag.textContent = d.id === myDz() ? "Valgt" : owns(d) ? "Gratis" : "🔒 Butik";
+    tag.textContent = d.id === myDz() ? "Valgt" : !owns(d) ? "🔒 Butik" : d.shop ? "Butik · åben" : "Gratis";
     const nm = document.createElement("span"); nm.textContent = d.name;
     b.append(pair, nm, tag);
     g.appendChild(b);
