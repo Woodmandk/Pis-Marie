@@ -260,6 +260,10 @@ button.alt { background: transparent; color: var(--brass); border: 2px solid var
 #cols.hand .card { animation: handin .18s ease-out backwards; }
 @keyframes handin { from { transform: translateY(14px) scale(.9); opacity: .4; } }
 #putBack { background: var(--brass); color: var(--black); border-color: var(--brass); font-weight: 800; padding: 4px 14px; }
+.lobby { display: flex; flex-direction: column; gap: 8px; padding: 12px; border-radius: 12px; background: var(--felt); border: 1px solid var(--felt-line); }
+.lobbystat { margin: 0; color: var(--ink-dim); font-size: .9rem; }
+.lobbystat.live { color: var(--brass); font-weight: 800; }
+.lobbystat.live::before { content: "● "; }
 .sethead { margin: 6px 0 0; font: 800 .8rem var(--display); text-transform: uppercase; letter-spacing: .12em; color: var(--ink-dim); }
 .dznote { min-height: 1.2em; margin: 0; font-size: .85rem; color: var(--ink-dim); }
 
@@ -1641,9 +1645,13 @@ function peerRoom(name, role) {
   });
 }
 function mpMenu(note) {
+  const lobby = !window.claude && !!window.Peer;
   showPanel(`<h2>Mod en anden telefon</h2>
-    <p>Den ene opretter et spil og får en kode. Den anden skriver koden og deltager.</p>
     ${note ? `<p><strong>${note}</strong></p>` : ""}
+    ${lobby ? `<div class="lobby"><p class="lobbystat" id="lobbyStat">Kigger efter spillere online…</p>
+    <button class="primary" id="lobbyFind" type="button">Spil mod en tilfældig</button></div>
+    <h3 class="sethead">Mod en du kender</h3>` : ""}
+    <p>Den ene opretter et spil og får en kode. Den anden skriver koden og deltager.</p>
     <button class="primary" id="mpHost" type="button">Opret spil</button>
     <label class="label" for="mpCode">Kode fra din modspiller</label>
     <input id="mpCode" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="0000">
@@ -1652,32 +1660,127 @@ function mpMenu(note) {
   $("mpJoin").addEventListener("click", () => joinGame($("mpCode").value.trim()));
   $("mpCode").addEventListener("keydown", e => { if (e.key === "Enter") joinGame($("mpCode").value.trim()); });
   $("mpBack").addEventListener("click", () => location.reload());
+  if (lobby) { $("lobbyFind").addEventListener("click", findGame); showLobby(); }
+}
+
+/* ---------- Lobby: play a stranger, without accounts or a server of our own ----------
+   There are a few well-known lobby places. A player waiting for an opponent holds a free place,
+   so anyone can look through the places and see who is waiting and which games are being played. */
+const LOBBY = Array.from({ length: 6 }, (_, i) => "pismarie-dks-lobby-" + (i + 1));
+// Looks at every place: "free", "waiting" (someone hosts and waits), "busy" (a game is on) or "unknown".
+// Asks every place at once; the broker takes a few seconds to say a place is empty, so stop
+// early as soon as `enough` says the answer is good enough.
+function scanLobby(enough) {
+  return new Promise(resolve => {
+    const opts = Object.assign({ config: { iceServers: ICE } }, window.PEER_OPTS || {});
+    const peer = new Peer(opts);
+    const out = {};
+    let done = false;
+    const finish = () => { if (done) return; done = true; setTimeout(() => { try { peer.destroy(); } catch (e) {} }, 300); resolve(out); };
+    const settle = (id, st, conn) => {
+      if (done || out[id]) return;
+      out[id] = st;
+      try { conn && conn.close(); } catch (e) {}
+      if (LOBBY.every(x => out[x]) || (enough && enough(out))) finish();
+    };
+    setTimeout(finish, 8000);
+    peer.on("open", () => {
+      for (const id of LOBBY) {
+        const conn = peer.connect(id, { reliable: true });
+        if (!conn) { settle(id, "free"); continue; }
+        conn.on("data", d => settle(id, d && d.presence && d.presence.role === "host" && !d.presence.st ? "waiting" : "busy", conn));
+        conn.on("close", () => settle(id, "busy", conn));
+      }
+    });
+    peer.on("error", err => {
+      const id = err && err.type === "peer-unavailable" && LOBBY.find(x => String(err.message || "").endsWith(x));
+      if (id) settle(id, "free");
+      else if (err && err.type !== "peer-unavailable") finish();
+    });
+  });
+}
+let lobbyTimer = null;
+async function showLobby() {
+  clearTimeout(lobbyTimer);
+  const scan = await scanLobby();
+  const el = $("lobbyStat"); if (!el) return;
+  const vals = Object.values(scan);
+  const waiting = vals.filter(v => v === "waiting").length, busy = vals.filter(v => v === "busy").length;
+  el.textContent = waiting ? `${waiting === 1 ? "1 spiller venter" : waiting + " spillere venter"} på en modstander nu.${busy ? ` ${busy} spil i gang.` : ""}`
+    : busy ? `Ingen venter lige nu, men ${busy} spil er i gang. Stil dig i kø, så kan andre finde dig.`
+    : "Ingen er online lige nu. Stil dig i kø, så kan andre finde dig.";
+  el.classList.toggle("live", waiting > 0);
+  lobbyTimer = setTimeout(() => { if ($("lobbyStat")) showLobby(); }, 10000);
+}
+// Join someone who waits, or wait in the first free place. Two players who both wait merge:
+// the one in the later place joins the one in the earlier place.
+async function findGame() {
+  clearTimeout(lobbyTimer);
+  showPanel(`<h2>Finder en modspiller…</h2><p>Kigger i lobbyen.</p>`);
+  const scan = await scanLobby(o => Object.values(o).includes("waiting"));
+  const wait = LOBBY.find(id => scan[id] === "waiting");
+  if (wait) { joinRoom(wait, "lobby"); return; }
+  for (const id of LOBBY.filter(id => !scan[id] || scan[id] === "free")) {
+    if (await hostRoom(id, "lobby")) { lobbyWait(id); return; }
+  }
+  mpMenu("Lobbyen er fuld lige nu. Prøv igen om lidt, eller spil med en kode.");
+}
+function lobbyWait(id) {
+  showPanel(`<h2>Venter på en modspiller…</h2><p>Andre kan se dig i lobbyen. Spillet starter, så snart nogen deltager.</p>
+    <p class="modeinfo">Hold siden åben imens.</p><button id="lobbyCancel" type="button">Annullér</button>`);
+  $("lobbyCancel").addEventListener("click", () => location.reload());
+  const look = async () => {
+    if (!NET || NET.role !== "host" || NET.guest || NET.room.name !== id) return;
+    const scan = await scanLobby(o => LOBBY.slice(0, LOBBY.indexOf(id)).some(x => o[x] === "waiting"));
+    if (!NET || NET.guest) return;
+    const earlier = LOBBY.slice(0, LOBBY.indexOf(id)).find(x => scan[x] === "waiting");
+    if (earlier) { NET.room.leave(); NET = null; joinRoom(earlier, "lobby"); return; }
+    setTimeout(look, 6000 + Math.random() * 4000);
+  };
+  setTimeout(look, 3000 + Math.random() * 3000);
 }
 const NO_ROOM = window.claude ? "Det virker kun, når spillet er åbnet i Claude, og I begge er logget ind og har adgang til spillet." : "Kunne ikke forbinde. Tjek internetforbindelsen, og prøv igen.";
-async function hostGame() {
+async function hostRoom(name, how) {
   const room = await getRoom();
-  if (!room) { mpMenu(NO_ROOM); return; }
-  const code = String(1000 + Math.floor(Math.random() * 9000));
+  if (!room) return null;
   let r;
-  try { r = await room.join("pismarie-dks-" + code, "host"); } catch (e) { mpMenu("Kunne ikke oprette spillet. Prøv igen."); return; }
-  NET = { role: "host", room: r, code, lastN: 0, guest: null, v: 0 };
+  try { r = await room.join(name, "host"); } catch (e) { return null; }
+  NET = { role: "host", room: r, how, lastN: 0, guest: null, v: 0 };
   setMpLabels();
   r.presence({ role: "host", dz: myDz() }).catch(() => {});
   r.onPeers(hostPeers);
+  return r;
+}
+async function hostGame() {
+  clearTimeout(lobbyTimer);
+  if (!(await getRoom())) { mpMenu(NO_ROOM); return; }
+  const code = String(1000 + Math.floor(Math.random() * 9000));
+  if (!(await hostRoom("pismarie-dks-" + code, "code"))) { mpMenu("Kunne ikke oprette spillet. Prøv igen."); return; }
   showPanel(`<h2>Din spilkode</h2><div class="code">${code}</div>
     <p>Bed din modspiller åbne Pismarie, vælge <strong>Mod en anden telefon</strong> og skrive koden. Spillet starter, så snart I begge er inde.</p>
     <p class="modeinfo">Hold siden åben imens. Sig koden højt, eller kom tilbage hertil lige efter, du har sendt den. I skal begge bruge hjemmesiden.</p>`);
 }
-async function joinGame(code) {
-  if (!/^\d{4}$/.test(code)) { shake($("mpCode")); return; }
+async function joinRoom(name, how) {
   const room = await getRoom();
-  if (!room) { mpMenu(NO_ROOM); return; }
+  if (!room) { mpMenu(NO_ROOM); return null; }
   let r;
-  try { r = await room.join("pismarie-dks-" + code, "guest"); } catch (e) { mpMenu("Kunne ikke deltage. Prøv igen."); return; }
-  NET = { role: "guest", room: r, code, n: 0, acts: [], ver: -1, lastPh: null, lastEv: null, seenHost: false };
+  try { r = await room.join(name, "guest"); } catch (e) { mpMenu("Kunne ikke deltage. Prøv igen."); return null; }
+  NET = { role: "guest", room: r, how, n: 0, acts: [], ver: -1, lastPh: null, lastEv: null, seenHost: false };
   setMpLabels();
   r.presence({ role: "guest", acts: [], dz: myDz() }).catch(() => {});
   r.onPeers(guestPeers);
+  if (how === "lobby") {
+    showPanel(`<h2>Forbinder…</h2><p>Der var en, der ventede. Forbinder til spillet.</p>`);
+    // Someone else may have got there first: then look again.
+    setTimeout(() => { if (NET && NET.room === r && !NET.seenHost) { r.leave(); NET = null; findGame(); } }, 10000);
+  }
+  return r;
+}
+async function joinGame(code) {
+  if (!/^\d{4}$/.test(code)) { shake($("mpCode")); return; }
+  clearTimeout(lobbyTimer);
+  const r = await joinRoom("pismarie-dks-" + code, "code");
+  if (!r) return;
   showPanel(`<h2>Forbinder…</h2><p>Venter på spillet med kode <strong>${code}</strong>.</p>`);
   setTimeout(() => {
     if (!NET || NET.role !== "guest" || NET.seenHost) return;
