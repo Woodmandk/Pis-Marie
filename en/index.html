@@ -1,0 +1,2313 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#113a2d"><style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}</style><script src="../peerjs.min.js"></script></head><body><title>Pismarie</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Rozha+One&family=Fredoka:wght@600&family=Playfair+Display:wght@800&family=Alfa+Slab+One&family=Bebas+Neue&family=Righteous&family=Cinzel:wght@700&family=Bungee&family=Silkscreen&display=swap">
+<style>
+/* Layout: one-screen card table. Opponent's five bunker on top, two middle dynger with the Pismarie button, your five bunker at the bottom. Single felt look by choice. */
+:root {
+  --felt: #1f5e49;
+  --felt-deep: #113a2d;
+  --felt-line: #2f7a60;
+  --ink: #f3efe2;
+  --ink-dim: #b9cfc4;
+  --card: #fbf8f0;
+  --card-edge: #d9d2bf;
+  --red: #c0312b;
+  --black: #1d2321;
+  --brass: #e2b54a;
+  --brass-soft: rgba(226,181,74,.18);
+  --back: #7a2335;
+  --display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --rank: "Rozha One", Georgia, "Times New Roman", serif;
+  color-scheme: dark;
+}
+[hidden] { display: none !important; }
+html, body { height: 100%; overscroll-behavior: none; }
+body {
+  background:
+    radial-gradient(ellipse at 50% 45%, rgba(255,255,255,.06) 0%, transparent 60%),
+    radial-gradient(ellipse at 50% 45%, var(--felt) 0%, var(--felt-deep) 85%);
+  background-color: var(--felt-deep);
+  color: var(--ink);
+  font-family: var(--display);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 12px;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  margin: 0;
+  display: flex; flex-direction: column;
+}
+.table > * { flex-shrink: 0; }
+.table > .middle { flex-shrink: 1; }
+.table { max-width: 720px; width: 100%; margin: 0 auto; flex: 1 0 auto; display: flex; flex-direction: column; gap: 10px; }
+header { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+h1 { font: 400 1.9rem/1 var(--rank); margin: 0; color: var(--brass); }
+body.atmenu #menuBtn, body.atmenu #restart { visibility: hidden; }
+h1 small { font: 500 .8rem var(--display); color: var(--ink-dim); margin-left: 10px; letter-spacing: .04em; }
+.controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+select, button {
+  font: 500 .9rem var(--display); color: var(--ink); background: var(--felt-deep);
+  border: 1px solid var(--felt-line); border-radius: 8px; padding: 7px 12px; cursor: pointer;
+}
+button.primary { background: var(--brass); color: var(--black); border-color: var(--brass); font-weight: 800; font-size: 1rem; padding: 10px 16px; }
+button:focus-visible, select:focus-visible, .col:focus-visible { outline: 3px solid var(--brass); outline-offset: 2px; }
+
+.seat { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.label { font-size: .72rem; text-transform: uppercase; letter-spacing: .12em; color: var(--ink-dim); }
+.count { font-variant-numeric: tabular-nums; font-weight: 800; font-size: 1.15rem; }
+.count.bump { animation: bump .4s ease-out; }
+@keyframes bump { 30% { transform: scale(1.5); color: var(--brass); } }
+.zone { display: flex; flex-direction: column; gap: 8px; align-items: center; }
+.cols { display: grid; grid-template-columns: repeat(5, auto); gap: 8px; justify-content: center; align-items: end; }
+.opp .cols { align-items: start; }
+
+.card {
+  --w: clamp(40px, min(15vw, 9.5vh), 84px);
+  width: var(--w); aspect-ratio: 5 / 7; max-width: 100%;
+  border-radius: calc(var(--w) * .1);
+  background: var(--face);
+  border: 1px solid var(--card-edge);
+  box-shadow: 0 2px 0 rgba(0,0,0,.15), 0 6px 14px rgba(0,0,0,.25);
+  position: relative; user-select: none; -webkit-user-select: none; box-sizing: border-box;
+  transition: transform .12s ease, box-shadow .12s ease;
+}
+.card .r { position: absolute; top: 6%; left: 9%; font: var(--rank-weight, 400) calc(var(--w) * .3 * var(--rank-scale, 1))/1 var(--rank-font, var(--rank)); letter-spacing: var(--rank-track, 0); }
+.card.fig .big { font-family: "Segoe UI Symbol", "Noto Sans Symbols 2", "DejaVu Sans", serif; font-size: calc(var(--w) * .56); }
+.card.fig { background: var(--face-fig, var(--face)); }
+.card .s { position: absolute; top: 39%; left: 9%; font-size: calc(var(--w) * .2); line-height: 1; }
+.card .big { position: absolute; right: 8%; bottom: 6%; font-size: calc(var(--w) * .46); line-height: .8; opacity: .9; }
+.card { overflow: visible; }
+.card.red { color: var(--red); } .card.black { color: var(--black); }
+.card.back {
+  background: var(--back-pat);
+  border: 3px solid var(--back-edge);
+}
+.card.empty { background: transparent; border: 2px dashed var(--felt-line); box-shadow: none; }
+.card .n { position: absolute; inset: 0; display: grid; place-items: center; font: 800 1rem var(--display); color: var(--back-ink); text-shadow: 0 1px 2px rgba(0,0,0,.6); }
+.card.stacked .s { visibility: hidden; }
+.card .times {
+  position: absolute; top: 37%; left: 6%; min-width: 20px; height: 18px; padding: 0 4px; box-sizing: border-box;
+  border-radius: 9px; background: var(--brass); color: var(--black); font: 800 .72rem/18px var(--display); text-align: center;
+}
+.card.stacked { box-shadow: 3px -3px 0 -1px var(--card), 3px -3px 0 0 var(--card-edge), 0 6px 14px rgba(0,0,0,.25); }
+
+/* A column: face-down cards peek out above the top card */
+.col { position: relative; -webkit-user-select: none; user-select: none; display: flex; flex-direction: column; align-items: center; border-radius: 10px; touch-action: none; padding: 2px; }
+.col .under { height: 6px; width: 90%; }
+.col .under span { display: block; height: 100%; margin: 0 auto; width: 92%; border-radius: 4px 4px 0 0; background: var(--back); border: 1px solid var(--back-edge); border-bottom: 0; box-sizing: border-box; }
+.opp .col { flex-direction: column-reverse; }
+.opp .col .under span { border-radius: 0 0 4px 4px; border-top: 0; border-bottom: 1px solid var(--card); }
+.opp .card { --w: clamp(30px, min(10vw, 6.5vh), 58px); }
+.opp .card .times { min-width: 16px; height: 15px; font-size: .6rem; line-height: 15px; }
+.mine .card:not(.empty) { cursor: grab; }
+.mine .card.playable { box-shadow: 0 0 0 2px var(--brass), 0 6px 14px rgba(0,0,0,.3); }
+.mine .card.flipme { cursor: pointer; box-shadow: 0 0 0 2px var(--ink), 0 6px 14px rgba(0,0,0,.3); }
+.mine .card.flipme::after { position: absolute; inset: 0; display: grid; place-items: center; font: 800 .85rem var(--display); letter-spacing: .06em; text-align: center; }
+.mine .card.flipme::after { content: "Flip"; color: var(--back-ink); }
+.mine .card.lifted { visibility: hidden; }
+.mine .col.selected .card { transform: translateY(-12px); box-shadow: 0 0 0 3px var(--brass), 0 10px 18px rgba(0,0,0,.35); }
+.col.drop-ok { background: var(--brass-soft); box-shadow: 0 0 0 2px var(--brass); }
+.col.hover { background: rgba(226,181,74,.32); }
+.key { font-size: .7rem; color: var(--ink-dim); font-variant-numeric: tabular-nums; }
+
+.ghost { position: fixed; z-index: 20; pointer-events: none; margin: 0; transform: rotate(-4deg) scale(1.06); box-shadow: 0 14px 28px rgba(0,0,0,.45); transition: none; }
+.ghost.back-home { transition: left .18s ease, top .18s ease, transform .18s ease; transform: none; }
+.flyer { position: fixed; z-index: 15; pointer-events: none; margin: 0; transition: left .3s cubic-bezier(.3,.7,.4,1), top .3s cubic-bezier(.3,.7,.4,1), width .3s, transform .3s; box-shadow: 0 16px 30px rgba(0,0,0,.45); }
+.opp { position: relative; }
+.opp .card.aim { transform: translateY(12px) scale(1.14) rotate(-3deg); box-shadow: 0 0 0 2px var(--ink-dim), 0 12px 22px rgba(0,0,0,.45); z-index: 2; }
+.opp .card.flipped { animation: flip .28s ease-out; }
+.bubble {
+  position: absolute; left: 50%; bottom: -14px; z-index: 12; transform: translateX(-50%);
+  background: var(--card); color: var(--red); font: 400 1.5rem/1 var(--rank); padding: 10px 18px; border-radius: 18px;
+  box-shadow: 0 10px 24px rgba(0,0,0,.4); white-space: nowrap; pointer-events: none;
+  animation: shoutpop 1.3s ease-out forwards;
+}
+.bubble::after { content: ""; position: absolute; left: 50%; top: -9px; margin-left: -9px; border: 9px solid transparent; border-top: 0; border-bottom-color: var(--card); }
+@keyframes shoutpop { 0% { transform: translateX(-50%) scale(.3) rotate(-8deg); opacity: 0; } 15% { transform: translateX(-50%) scale(1.15) rotate(3deg); opacity: 1; } 25% { transform: translateX(-50%) scale(1); } 80% { opacity: 1; } 100% { opacity: 0; transform: translateX(-50%) translateY(-8px); } }
+.pile.slam .card { animation: slam .4s ease-out; }
+@keyframes slam { 0% { transform: scale(1); } 30% { transform: scale(.88) rotate(2deg); } 60% { transform: scale(1.05) rotate(-2deg); } 100% { transform: none; } }
+.opp .seat.thinking .label:first-child { animation: think 1s ease-in-out infinite; }
+@keyframes think { 50% { color: var(--brass); } }
+
+.middle { flex: 1; display: grid; grid-template-columns: auto 1fr 1fr auto; align-items: center; gap: 10px; justify-items: center; min-height: 0; }
+.pile { border-radius: 12px; padding: 6px; transition: background .12s, box-shadow .12s; }
+.pile .card { --w: clamp(52px, min(20vw, 14vh), 112px); }
+.pile.drop-ok { box-shadow: 0 0 0 2px var(--brass); background: var(--brass-soft); }
+.pile.hover { box-shadow: 0 0 0 4px var(--brass); background: rgba(226,181,74,.32); }
+.pile.flash .card { animation: land .25s ease-out; }
+.pile.flash.by-ai .card { box-shadow: 0 0 0 3px var(--ink-dim), 0 6px 14px rgba(0,0,0,.25); }
+.pile.same .card { box-shadow: 0 0 0 4px var(--brass), 0 0 28px rgba(226,181,74,.6); }
+.pile { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.pile .pc { font-size: .7rem; color: var(--ink-dim); letter-spacing: .08em; text-transform: uppercase; font-variant-numeric: tabular-nums; }
+.pile.off { opacity: .35; }
+.pile.choose { cursor: pointer; box-shadow: 0 0 0 3px var(--brass); background: var(--brass-soft); animation: pulse .6s ease-in-out infinite alternate; }
+.pile.choose.smallest .pc { color: var(--brass); font-weight: 800; }
+.side { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: .68rem; color: var(--ink-dim); text-transform: uppercase; letter-spacing: .1em; text-align: center; }
+.side .card { --w: clamp(26px, min(8vw, 6vh), 50px); }
+@keyframes land { from { transform: scale(1.12) rotate(-3deg); } to { transform: none; } }
+.shake { animation: shake .3s; }
+@keyframes shake { 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+.flipped { animation: flip .2s ease-out; }
+@keyframes flip { from { transform: rotateY(90deg); } to { transform: none; } }
+
+.callrow { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+#shout {
+  font: 400 1.4rem var(--rank); letter-spacing: .02em; padding: 8px 30px; border-radius: 999px;
+  background: var(--felt-deep); color: var(--ink-dim); border: 2px solid var(--felt-line); cursor: default; opacity: .7;
+}
+#shout.live { background: var(--brass); color: var(--black); border-color: var(--brass); cursor: pointer; opacity: 1; animation: pulse .6s ease-in-out infinite alternate; }
+@keyframes pulse { from { transform: scale(1); box-shadow: 0 0 0 0 rgba(226,181,74,.5); } to { transform: scale(1.08); box-shadow: 0 0 0 10px rgba(226,181,74,0); } }
+.msg { text-align: center; min-height: 1.5em; font-weight: 500; color: var(--brass); }
+.msg.big { font: 400 1.3rem var(--rank); animation: pop .35s ease-out; }
+@keyframes pop { from { transform: scale(.6); opacity: 0; } }
+.overlay { position: fixed; inset: 0; display: grid; place-items: center; background: rgba(10, 30, 23, .76); padding: 16px; z-index: 30; }
+.panel { background: var(--felt-deep); border: 1px solid var(--felt-line); border-radius: 16px; padding: 24px; max-width: 460px; display: flex; flex-direction: column; gap: 12px; max-height: 90%; overflow-y: auto; box-sizing: border-box; box-shadow: 0 20px 60px rgba(0,0,0,.5); }
+.panel h2 { margin: 0; font: 400 2rem/1.1 var(--rank); color: var(--brass); text-wrap: balance; }
+.panel p, .panel li { color: var(--ink-dim); line-height: 1.5; margin: 0; }
+.panel ul { margin: 0; padding-left: 1.2em; display: flex; flex-direction: column; gap: 5px; }
+.panel strong { color: var(--ink); font-weight: 800; }
+.stats { display: grid; grid-template-columns: 1fr auto auto; gap: 4px 16px; font-variant-numeric: tabular-nums; }
+.stats span:nth-child(3n+1) { color: var(--ink-dim); }
+.stats .h { font-size: .72rem; text-transform: uppercase; letter-spacing: .12em; color: var(--ink-dim); }
+.btnrow { display: flex; gap: 8px; flex-wrap: wrap; }
+.btnrow > * { flex: 1 1 140px; }
+button.alt { background: transparent; color: var(--brass); border: 2px solid var(--brass); }
+.code { font: 400 3rem/1 var(--rank); color: var(--brass); letter-spacing: .15em; text-align: center; }
+#mpCode { font: 800 1.6rem var(--display); letter-spacing: .3em; text-align: center; padding: 8px; border-radius: 8px; border: 1px solid var(--felt-line); background: var(--felt); color: var(--ink); width: 100%; box-sizing: border-box; }
+.setrow { display: grid; grid-template-columns: 7.5em 1fr 2.6em; align-items: center; gap: 10px; color: var(--ink); font-weight: 500; }
+.setrow.check { grid-template-columns: 7.5em auto; justify-content: start; }
+.setrow output { color: var(--ink-dim); font-variant-numeric: tabular-nums; text-align: right; }
+.setrow input[type=range] { width: 100%; accent-color: var(--brass); min-width: 0; }
+.setrow input[type=checkbox] { width: 22px; height: 22px; accent-color: var(--brass); }
+#settings { z-index: 40; }
+/* Card designs. Each player's own cards, reserve and dynge wear that player's design (data-dz).
+   A design sets colours, fonts, the back (pattern, frame, emblem), a face decoration and its court figures. */
+:root, [data-dz="klassisk"] {
+  --rank-font: "Rozha One", Georgia, serif; --rank-weight: 400; --rank-scale: 1; --rank-track: 0;
+  --card: #fbf8f0; --card-edge: #d9d2bf; --red: #c0312b; --black: #1d2321;
+  --face: linear-gradient(160deg, #fffdf7 0%, #fbf8f0 60%, #f1ecdf 100%);
+  --face-fig: linear-gradient(160deg, #fffdf7 0%, #f6ecd6 100%);
+  --back: #7a2335; --back-edge: #fbf8f0; --back-ink: #fbf8f0;
+  --back-pat: repeating-linear-gradient(45deg, rgba(255,255,255,.1) 0 2px, transparent 2px 7px), repeating-linear-gradient(-45deg, rgba(255,255,255,.1) 0 2px, transparent 2px 7px), radial-gradient(circle at 50% 50%, #9a2f45 0%, #7a2335 70%);
+  --back-frame: 1px solid rgba(251,248,240,.7); --emblem: "\2660\FE0E"; --emblem-size: .38;
+  --deco: none; --radius: .1;
+  --fig11: "\265E\FE0E"; --fig12: "\265B\FE0E"; --fig13: "\265A\FE0E";
+}
+[data-dz="hav"] {
+  --rank-font: "Fredoka", system-ui, sans-serif; --rank-weight: 600; --rank-scale: .95;
+  --card: #f2f8fc; --card-edge: #b8cfdf; --red: #e0533f; --black: #0f3a5a;
+  --face: linear-gradient(180deg, #ffffff 0%, #eef6fb 62%, #cfe6f4 62.5%, #e3f1f9 100%);
+  --face-fig: linear-gradient(180deg, #ffffff 0%, #e8f3fa 62%, #bcdcf0 62.5%, #d6ebf7 100%);
+  --back: #0f3a5a; --back-edge: #e9f5fc; --back-ink: #bfe6ff;
+  --back-pat: repeating-radial-gradient(circle at 50% 120%, rgba(191,230,255,.28) 0 2px, transparent 2px 9px), linear-gradient(180deg, #1d6fa3 0%, #0f3a5a 100%);
+  --back-frame: 2px dotted rgba(191,230,255,.55); --emblem: "\2693\FE0E"; --emblem-size: .44;
+  --deco: radial-gradient(circle at 85% 90%, rgba(29,111,163,.18) 0 18%, transparent 19%);
+  --radius: .2;
+  --fig11: "\2693\FE0E"; --fig12: "\2655\FE0E"; --fig13: "\2646\FE0E";
+}
+[data-dz="nat"] {
+  --rank-font: "Playfair Display", Georgia, serif; --rank-weight: 800; --rank-scale: 1;
+  --card: #1d2224; --card-edge: #c9a24a; --red: #ff6f61; --black: #f3e7c6;
+  --face: radial-gradient(circle at 30% 20%, #2f3739 0%, #1d2224 60%, #151a1b 100%);
+  --face-fig: radial-gradient(circle at 30% 20%, #3a3424 0%, #1d2224 70%);
+  --back: #0d1012; --back-edge: #c9a24a; --back-ink: #e2b54a;
+  --back-pat: repeating-conic-gradient(from 0deg at 50% 100%, rgba(226,181,74,.35) 0deg 4deg, transparent 4deg 14deg), radial-gradient(circle at 50% 100%, #2a2416 0%, #0d1012 70%);
+  --back-frame: 1px solid #e2b54a; --emblem: "\2605"; --emblem-size: .36;
+  --deco: none; --radius: .06;
+  --fig11: "\2658\FE0E"; --fig12: "\2655\FE0E"; --fig13: "\2654\FE0E";
+}
+[data-dz="skov"] {
+  --rank-font: "Alfa Slab One", Georgia, serif; --rank-scale: .9;
+  --card: #fbf6e6; --card-edge: #b9ae86; --red: #b8452a; --black: #24401f;
+  --face: linear-gradient(160deg, #fffcf0 0%, #f7f0da 100%);
+  --face-fig: linear-gradient(160deg, #fffcf0 0%, #e6eecf 100%);
+  --back: #2f5a2a; --back-edge: #f3ead0; --back-ink: #f3ead0;
+  --back-pat: repeating-linear-gradient(0deg, rgba(0,0,0,.22) 0 4px, transparent 4px 12px), repeating-linear-gradient(90deg, rgba(0,0,0,.22) 0 4px, transparent 4px 12px), repeating-linear-gradient(0deg, rgba(240,200,90,.25) 0 1px, transparent 1px 12px), #3b6a33;
+  --back-frame: 2px solid rgba(243,234,208,.75); --emblem: "\2663\FE0E"; --emblem-size: .42;
+  --deco: linear-gradient(135deg, transparent 0 82%, rgba(59,106,51,.25) 82% 100%);
+  --radius: .08;
+  --fig11: "\27B6\FE0E"; --fig12: "\2740\FE0E"; --fig13: "\265A\FE0E";
+}
+[data-dz="dannebrog"] {
+  --rank-font: "Bebas Neue", Impact, sans-serif; --rank-scale: 1.2; --rank-track: .02em;
+  --card: #fffaf3; --card-edge: #c8102e; --red: #c8102e; --black: #1a1a1a;
+  --face: linear-gradient(160deg, #ffffff 0%, #fffaf3 100%);
+  --face-fig: linear-gradient(160deg, #ffffff 0%, #fde8e8 100%);
+  --back: #c8102e; --back-edge: #ffffff; --back-ink: #ffffff;
+  --back-pat: linear-gradient(90deg, transparent 0 30%, #fff 30% 43%, transparent 43%), linear-gradient(0deg, transparent 0 43%, #fff 43% 57%, transparent 57%), linear-gradient(160deg, #e01a3a 0%, #b00d27 100%);
+  --back-frame: none; --emblem: ""; --emblem-size: .3;
+  --deco: linear-gradient(90deg, transparent 0 30%, #fff 30% 42%, transparent 42%) right 8% top 6% / 30% 15% no-repeat, linear-gradient(0deg, transparent 0 40%, #fff 40% 60%, transparent 60%) right 8% top 6% / 30% 15% no-repeat, linear-gradient(#c8102e, #c8102e) right 8% top 6% / 30% 15% no-repeat;
+  --radius: .1; --face-border: 3px solid #c8102e;
+  --fig11: "\265E\FE0E"; --fig12: "\265B\FE0E"; --fig13: "\2654\FE0E";
+}
+[data-dz="neon"] {
+  --rank-font: "Righteous", system-ui, sans-serif; --rank-scale: .95;
+  --card: #140b2e; --card-edge: #ff3cac; --red: #ff4fb8; --black: #3ef0ff;
+  --face: radial-gradient(circle at 50% 0%, #2a1660 0%, #140b2e 70%);
+  --face-fig: radial-gradient(circle at 50% 0%, #3a1a70 0%, #140b2e 70%);
+  --back: #2b0b4f; --back-edge: #ff3cac; --back-ink: #ffffff;
+  --back-pat: linear-gradient(180deg, transparent 0 55%, rgba(255,60,172,.9) 55% 56%, transparent 56%), repeating-linear-gradient(90deg, rgba(62,240,255,.55) 0 1px, transparent 1px 10px) bottom / 100% 44% no-repeat, radial-gradient(circle at 50% 55%, #ffb347 0 16%, #ff3cac 17% 19%, transparent 20%), linear-gradient(180deg, #12002b 0%, #3d0d6b 55%, #1a0533 56%, #0b0018 100%);
+  --back-frame: none; --emblem: ""; --emblem-size: .3;
+  --deco: none; --radius: .14;
+  --fig11: "\2658\FE0E"; --fig12: "\2655\FE0E"; --fig13: "\2654\FE0E";
+}
+[data-dz="guld"] {
+  --rank-font: "Cinzel", Georgia, serif; --rank-weight: 700; --rank-scale: .9;
+  --card: #fffaf0; --card-edge: #c9962e; --red: #a8322a; --black: #3a2a10;
+  --face: linear-gradient(160deg, #fffdf6 0%, #fff6e2 60%, #f3e2b4 100%);
+  --face-fig: linear-gradient(160deg, #fffdf6 0%, #f1d98f 100%);
+  --back: #c9962e; --back-edge: #fff3cf; --back-ink: #4a3410;
+  --back-pat: linear-gradient(115deg, transparent 35%, rgba(255,255,255,.65) 48%, transparent 60%) 0 0 / 250% 100%, repeating-linear-gradient(60deg, rgba(255,255,255,.18) 0 2px, transparent 2px 8px), repeating-linear-gradient(-60deg, rgba(120,80,10,.18) 0 2px, transparent 2px 8px), linear-gradient(160deg, #f6d77a 0%, #c9962e 50%, #8f6418 100%);
+  --back-frame: 2px double #fff3cf; --emblem: "\265B\FE0E"; --emblem-size: .4;
+  --deco: none; --radius: .1; --face-border: 2px solid #c9962e;
+  --fig11: "\265E\FE0E"; --fig12: "\265B\FE0E"; --fig13: "\265A\FE0E";
+}
+[data-dz="lava"] {
+  --rank-font: "Bungee", Impact, sans-serif; --rank-scale: .85;
+  --card: #1a0d08; --card-edge: #ff6a1a; --red: #ff7a2a; --black: #ffd166;
+  --face: radial-gradient(circle at 50% 110%, #5a1a06 0%, #1a0d08 60%);
+  --face-fig: radial-gradient(circle at 50% 110%, #7a2408 0%, #1a0d08 65%);
+  --back: #2a0e05; --back-edge: #ff6a1a; --back-ink: #ffd166;
+  --back-pat: radial-gradient(ellipse at 30% 70%, #ff8a1a 0 8%, transparent 22%), radial-gradient(ellipse at 70% 35%, #ff4d00 0 7%, transparent 20%), radial-gradient(ellipse at 55% 90%, #ffb347 0 5%, transparent 16%), repeating-linear-gradient(120deg, rgba(0,0,0,.45) 0 3px, transparent 3px 11px), #3a1206;
+  --back-frame: none; --emblem: "\2668\FE0E"; --emblem-size: .42;
+  --deco: radial-gradient(circle at 50% 120%, rgba(255,106,26,.35) 0 30%, transparent 55%); --radius: .1;
+  --fig11: "\2658\FE0E"; --fig12: "\2655\FE0E"; --fig13: "\2654\FE0E";
+}
+[data-dz="is"] {
+  --rank-font: "Fredoka", system-ui, sans-serif; --rank-weight: 600; --rank-scale: .95;
+  --card: #f4fbff; --card-edge: #9fd3f2; --red: #d63a6a; --black: #2a5d8a;
+  --face: linear-gradient(160deg, #ffffff 0%, #eaf7ff 55%, #d4eefc 100%);
+  --face-fig: linear-gradient(160deg, #ffffff 0%, #cfeafb 100%);
+  --back: #7cc4ec; --back-edge: #ffffff; --back-ink: #ffffff;
+  --back-pat: linear-gradient(60deg, rgba(255,255,255,.35) 25%, transparent 25.5% 75%, rgba(255,255,255,.35) 75.5%) 0 0 / 14px 24px, linear-gradient(-60deg, rgba(255,255,255,.35) 25%, transparent 25.5% 75%, rgba(255,255,255,.35) 75.5%) 0 0 / 14px 24px, linear-gradient(180deg, #a9dcf5 0%, #4fa3d6 100%);
+  --back-frame: 1px solid rgba(255,255,255,.8); --emblem: "\2744\FE0E"; --emblem-size: .46;
+  --deco: linear-gradient(135deg, rgba(255,255,255,.9) 0 8%, transparent 8% 92%, rgba(159,211,242,.4) 92%); --radius: .14;
+  --fig11: "\2744\FE0E"; --fig12: "\2655\FE0E"; --fig13: "\2654\FE0E";
+}
+[data-dz="rum"] {
+  --rank-font: "Righteous", system-ui, sans-serif; --rank-scale: .95;
+  --card: #0b1030; --card-edge: #6c7bff; --red: #ff6b8b; --black: #cfe0ff;
+  --face: radial-gradient(1px 1px at 20% 30%, #fff 50%, transparent), radial-gradient(1px 1px at 70% 60%, #fff 50%, transparent), radial-gradient(1px 1px at 40% 80%, #fff 50%, transparent), radial-gradient(circle at 80% 15%, #2a3478 0%, #0b1030 60%);
+  --face-fig: radial-gradient(circle at 50% 70%, #3a2a78 0%, #0b1030 70%);
+  --back: #070a22; --back-edge: #9aa6ff; --back-ink: #ffe28a;
+  --back-pat: radial-gradient(1.5px 1.5px at 15% 20%, #fff 50%, transparent), radial-gradient(1px 1px at 60% 12%, #fff 50%, transparent), radial-gradient(1.5px 1.5px at 85% 45%, #fff 50%, transparent), radial-gradient(1px 1px at 30% 75%, #fff 50%, transparent), radial-gradient(1px 1px at 75% 85%, #fff 50%, transparent), radial-gradient(circle at 62% 58%, #f4a259 0 14%, transparent 15%), radial-gradient(ellipse 34% 7% at 62% 58%, transparent 60%, #ffe28a 62% 70%, transparent 72%), linear-gradient(160deg, #1b1f5e 0%, #070a22 100%);
+  --back-frame: none; --emblem: ""; --emblem-size: .3;
+  --deco: none; --radius: .12;
+  --fig11: "\2604\FE0E"; --fig12: "\2605"; --fig13: "\2609\FE0E";
+}
+[data-dz="pixel"] {
+  --rank-font: "Silkscreen", monospace; --rank-scale: .75;
+  --card: #f0f0e0; --card-edge: #222; --red: #e03c28; --black: #222034;
+  --face: #f0f0e0;
+  --face-fig: repeating-conic-gradient(#e8e8d4 0 25%, #f0f0e0 0 50%) 0 0 / 8px 8px;
+  --back: #3b5dc9; --back-edge: #222034; --back-ink: #ffffff;
+  --back-pat: repeating-conic-gradient(#3b5dc9 0 25%, #41a6f6 0 50%) 0 0 / 10px 10px;
+  --back-frame: 2px solid #ffffff; --emblem: "\2665\FE0E"; --emblem-size: .4;
+  --deco: none; --radius: 0; --face-border: 3px solid #222034;
+  --fig11: "\265E\FE0E"; --fig12: "\265B\FE0E"; --fig13: "\265A\FE0E";
+}
+[data-dz="slik"] {
+  --rank-font: "Bungee", Impact, sans-serif; --rank-scale: .85;
+  --card: #fff5fa; --card-edge: #ff8fc2; --red: #e8337f; --black: #6a3cc9;
+  --face: linear-gradient(160deg, #ffffff 0%, #ffeef6 100%);
+  --face-fig: linear-gradient(160deg, #ffffff 0%, #ffd9ec 100%);
+  --back: #ff6fb1; --back-edge: #ffffff; --back-ink: #ffffff;
+  --back-pat: repeating-linear-gradient(45deg, #ff6fb1 0 7px, #ffffff 7px 11px, #8fd3ff 11px 18px, #ffffff 18px 22px);
+  --back-frame: none; --emblem: "\2665\FE0E"; --emblem-size: .5;
+  --deco: radial-gradient(circle at 88% 10%, #ffd166 0 5%, transparent 6%), radial-gradient(circle at 80% 18%, #8fd3ff 0 4%, transparent 5%); --radius: .22;
+  --fig11: "\2740\FE0E"; --fig12: "\2661\FE0E"; --fig13: "\2654\FE0E";
+}
+[data-dz="tiger"] {
+  --rank-font: "Alfa Slab One", Georgia, serif; --rank-scale: .9;
+  --card: #fff8ec; --card-edge: #e07a1f; --red: #c2410c; --black: #1c1208;
+  --face: linear-gradient(160deg, #fffaf0 0%, #fbe9cc 100%);
+  --face-fig: linear-gradient(160deg, #fff4dc 0%, #f6c98a 100%);
+  --back: #e07a1f; --back-edge: #1c1208; --back-ink: #1c1208;
+  --back-pat: repeating-linear-gradient(100deg, transparent 0 9px, #1c1208 9px 12px, transparent 12px 15px, #1c1208 15px 16px, transparent 16px 26px), linear-gradient(180deg, #f59e2c 0%, #d26a12 100%);
+  --back-frame: none; --emblem: ""; --emblem-size: .3;
+  --deco: linear-gradient(100deg, transparent 0 86%, rgba(224,122,31,.35) 86% 89%, transparent 89% 93%, rgba(224,122,31,.35) 93% 95%, transparent 95%); --radius: .1;
+  --fig11: "\265E\FE0E"; --fig12: "\265B\FE0E"; --fig13: "\265A\FE0E";
+}
+[data-dz="marmor"] {
+  --rank-font: "Cinzel", Georgia, serif; --rank-weight: 700; --rank-scale: .9;
+  --card: #fbfaf7; --card-edge: #1d1d1d; --red: #9e1b32; --black: #111111;
+  --face: linear-gradient(115deg, transparent 40%, rgba(0,0,0,.05) 41%, transparent 43%), linear-gradient(160deg, #ffffff 0%, #f1efe9 100%);
+  --face-fig: linear-gradient(160deg, #ffffff 0%, #e5e1d6 100%);
+  --back: #151515; --back-edge: #c9a24a; --back-ink: #e2c27a;
+  --back-pat: linear-gradient(118deg, transparent 30%, rgba(255,255,255,.22) 31%, transparent 33%), linear-gradient(64deg, transparent 55%, rgba(255,255,255,.14) 56%, transparent 58%), linear-gradient(150deg, transparent 70%, rgba(201,162,74,.4) 71%, transparent 72.5%), radial-gradient(circle at 30% 30%, #2c2c2c 0%, #121212 80%);
+  --back-frame: 1px solid #c9a24a; --emblem: "\2726"; --emblem-size: .36;
+  --deco: none; --radius: .06; --face-border: 2px solid #1d1d1d;
+  --fig11: "\2658\FE0E"; --fig12: "\2655\FE0E"; --fig13: "\2654\FE0E";
+}
+[data-dz="trae"] {
+  --rank-font: "Playfair Display", Georgia, serif; --rank-weight: 800;
+  --card: #f6ecd9; --card-edge: #8a5a2b; --red: #a3361f; --black: #3b2412;
+  --face: linear-gradient(160deg, #fbf3e3 0%, #efdfc1 100%);
+  --face-fig: linear-gradient(160deg, #fbf3e3 0%, #e4c995 100%);
+  --back: #7a4a22; --back-edge: #f6ecd9; --back-ink: #f6ecd9;
+  --back-pat: repeating-radial-gradient(ellipse 160% 40% at 50% 130%, #8e5a2b 0 3px, #6e4019 3px 5px, #8a5527 5px 9px), #7a4a22;
+  --back-frame: 2px solid rgba(246,236,217,.6); --emblem: "\2618\FE0E"; --emblem-size: .42;
+  --deco: none; --radius: .08;
+  --fig11: "\265E\FE0E"; --fig12: "\265B\FE0E"; --fig13: "\265A\FE0E";
+}
+[data-dz="pirat"] {
+  --rank-font: "Playfair Display", Georgia, serif; --rank-weight: 800;
+  --card: #f1e2bd; --card-edge: #6b4a1f; --red: #9b1c1c; --black: #1f1a14;
+  --face: radial-gradient(circle at 20% 15%, rgba(139,90,43,.18) 0 10%, transparent 30%), radial-gradient(circle at 85% 85%, rgba(139,90,43,.22) 0 12%, transparent 35%), linear-gradient(160deg, #f6e8c6 0%, #e6cf98 100%);
+  --face-fig: linear-gradient(160deg, #f6e8c6 0%, #d9b877 100%);
+  --back: #141414; --back-edge: #e6cf98; --back-ink: #f1e2bd;
+  --back-pat: repeating-linear-gradient(45deg, rgba(255,255,255,.05) 0 2px, transparent 2px 8px), radial-gradient(circle at 50% 50%, #2a2a2a 0%, #0c0c0c 80%);
+  --back-frame: 1px dashed rgba(241,226,189,.7); --emblem: "\2620\FE0E"; --emblem-size: .5;
+  --deco: none; --radius: .07;
+  --fig11: "\2693\FE0E"; --fig12: "\2694\FE0E"; --fig13: "\2620\FE0E";
+}
+[data-dz="regnbue"] {
+  --rank-font: "Bungee", Impact, sans-serif; --rank-scale: .85;
+  --card: #ffffff; --card-edge: #b07cff; --red: #ff3b6b; --black: #2b2bd6;
+  --face: linear-gradient(160deg, #ffffff 0%, #f6f0ff 100%);
+  --face-fig: linear-gradient(160deg, #fff6f0 0%, #f0f6ff 50%, #f6fff0 100%);
+  --back: #b07cff; --back-edge: #ffffff; --back-ink: #ffffff;
+  --back-pat: radial-gradient(circle at 50% 50%, rgba(255,255,255,.55) 0 16%, transparent 17%), linear-gradient(160deg, #ff3b6b 0%, #ff9f1c 20%, #ffe14d 38%, #3ddc84 56%, #3b9bff 74%, #9b5cff 100%);
+  --back-frame: none; --emblem: "\2605"; --emblem-size: .32;
+  --deco: linear-gradient(90deg, #ff3b6b, #ff9f1c, #ffe14d, #3ddc84, #3b9bff, #9b5cff) bottom / 100% 5% no-repeat; --radius: .14;
+  --fig11: "\265E\FE0E"; --fig12: "\265B\FE0E"; --fig13: "\265A\FE0E";
+}
+[data-dz="lava"] .card:not(.back):not(.empty) .r, [data-dz="lava"] .card:not(.back):not(.empty) .big { text-shadow: 0 0 6px rgba(255,106,26,.8); }
+[data-dz="lava"] .card.back { animation: lavaglow 2.6s ease-in-out infinite alternate; }
+@keyframes lavaglow { to { filter: brightness(1.3) saturate(1.3); } }
+[data-dz="regnbue"] .card.back { animation: neonhue 4s linear infinite alternate; }
+[data-dz="rum"] .card:not(.back):not(.empty) .r { text-shadow: 0 0 6px rgba(207,224,255,.6); }
+[data-dz="pixel"] .card { image-rendering: pixelated; }
+[data-dz="is"] .card.back { animation: shimmer 4.5s linear infinite; }
+/* What every design draws with those variables */
+.card { border-radius: calc(var(--w) * var(--radius, .1)); }
+.card:not(.back):not(.empty) { border: var(--face-border, 1px solid var(--card-edge)); }
+.card:not(.back):not(.empty)::before { content: ""; position: absolute; inset: 0; border-radius: inherit; background: var(--deco); pointer-events: none; }
+.card.back::before { content: var(--emblem); position: absolute; inset: 7%; border: var(--back-frame); border-radius: calc(var(--w) * var(--radius, .1) * .7);
+  display: grid; place-items: center; color: var(--back-ink); font: calc(var(--w) * var(--emblem-size)) / 1 "Segoe UI Symbol", "Noto Sans Symbols 2", "DejaVu Sans", serif; opacity: .9; pointer-events: none; }
+.card.back:has(.n)::before { opacity: .35; }
+.card.fig .big { font-size: 0 !important; }
+.card.fig .big::before { font-size: calc(var(--w) * .56); line-height: .8; }
+.card.k11 .big::before { content: var(--fig11); }
+.card.k12 .big::before { content: var(--fig12); }
+.card.k13 .big::before { content: var(--fig13); }
+
+/* Layouts: a design changes where things sit on the card, not just the colours. */
+/* Real-card look: corner index top left and upside down bottom right, the suit in the middle. */
+:is([data-dz="klassisk"], [data-dz="skov"], [data-dz="trae"]) .card:not(.back):not(.empty) .big { right: auto; bottom: auto; left: 50%; top: 54%; transform: translate(-50%, -50%); }
+:is([data-dz="klassisk"], [data-dz="skov"], [data-dz="trae"]) .card:not(.back):not(.empty)::after { content: attr(data-r) "\A" attr(data-s); white-space: pre; position: absolute; right: 9%; bottom: 6%; transform: rotate(180deg); text-align: center;
+  font: var(--rank-weight, 400) calc(var(--w) * .2)/1 var(--rank-font, var(--rank)); }
+/* Big centre number: the rank is the picture. */
+:is([data-dz="neon"], [data-dz="lava"], [data-dz="rum"], [data-dz="regnbue"]) .card:not(.back):not(.empty) .r { top: 50%; left: 50%; transform: translate(-50%, -58%); font-size: calc(var(--w) * .56 * var(--rank-scale, 1)); }
+:is([data-dz="neon"], [data-dz="lava"], [data-dz="rum"], [data-dz="regnbue"]) .card:not(.back):not(.empty) .s { top: 7%; left: 9%; }
+:is([data-dz="neon"], [data-dz="lava"], [data-dz="rum"], [data-dz="regnbue"]) .card:not(.back):not(.empty) .big { right: 8%; bottom: 6%; font-size: calc(var(--w) * .26); }
+:is([data-dz="neon"], [data-dz="lava"], [data-dz="rum"], [data-dz="regnbue"]) .card.fig .big::before { font-size: calc(var(--w) * .3); }
+/* Badge: the rank sits in a round medallion at the top, the suit large below it. */
+:is([data-dz="hav"], [data-dz="slik"], [data-dz="is"]) .card:not(.back):not(.empty) .r { top: 7%; left: 50%; transform: translateX(-50%); width: calc(var(--w) * .46); height: calc(var(--w) * .46); border-radius: 50%;
+  border: 2px solid currentColor; display: grid; place-items: center; font-size: calc(var(--w) * .24 * var(--rank-scale, 1)); background: rgba(255,255,255,.55); box-sizing: border-box; }
+:is([data-dz="hav"], [data-dz="slik"], [data-dz="is"]) .card:not(.back):not(.empty) .s { visibility: hidden; }
+:is([data-dz="hav"], [data-dz="slik"], [data-dz="is"]) .card:not(.back):not(.empty) .big { right: auto; bottom: 7%; left: 50%; transform: translateX(-50%); font-size: calc(var(--w) * .5); }
+/* Stripe: a coloured band down the left edge carries rank and suit. */
+:is([data-dz="tiger"], [data-dz="dannebrog"], [data-dz="pixel"]) .card:not(.back):not(.empty) .r,
+:is([data-dz="tiger"], [data-dz="dannebrog"], [data-dz="pixel"]) .card:not(.back):not(.empty) .s { left: 0; width: 30%; text-align: center; color: var(--card); }
+:is([data-dz="tiger"], [data-dz="dannebrog"], [data-dz="pixel"]) .card:not(.back):not(.empty) .r { top: 0; bottom: 0; padding-top: 10%; box-sizing: border-box; font-size: calc(var(--w) * .26 * var(--rank-scale, 1)); }
+:is([data-dz="tiger"], [data-dz="dannebrog"], [data-dz="pixel"]) .card.red:not(.back) .r { background: var(--red); }
+:is([data-dz="tiger"], [data-dz="dannebrog"], [data-dz="pixel"]) .card.black:not(.back) .r { background: var(--black); }
+:is([data-dz="tiger"], [data-dz="dannebrog"], [data-dz="pixel"]) .card:not(.back):not(.empty) .s { top: 44%; }
+:is([data-dz="tiger"], [data-dz="dannebrog"], [data-dz="pixel"]) .card:not(.back):not(.empty) .big { right: auto; left: 65%; bottom: auto; top: 52%; transform: translate(-50%, -50%); }
+:is([data-dz="tiger"], [data-dz="dannebrog"], [data-dz="pixel"]) .card:not(.back):not(.empty) .r { border-radius: calc(var(--w) * var(--radius, .1)) 0 0 calc(var(--w) * var(--radius, .1)); }
+/* Framed: an inner frame, the rank at top and bottom centre, the suit in the middle. */
+:is([data-dz="guld"], [data-dz="marmor"], [data-dz="nat"], [data-dz="pirat"]) .card:not(.back):not(.empty)::before { inset: 5%; border: 1px solid var(--card-edge); border-radius: calc(var(--w) * .05); }
+:is([data-dz="guld"], [data-dz="marmor"], [data-dz="nat"], [data-dz="pirat"]) .card:not(.back):not(.empty) .r { top: 9%; left: 50%; transform: translateX(-50%); font-size: calc(var(--w) * .24 * var(--rank-scale, 1)); }
+:is([data-dz="guld"], [data-dz="marmor"], [data-dz="nat"], [data-dz="pirat"]) .card:not(.back):not(.empty) .s { visibility: hidden; }
+:is([data-dz="guld"], [data-dz="marmor"], [data-dz="nat"], [data-dz="pirat"]) .card:not(.back):not(.empty) .big { right: auto; bottom: auto; left: 50%; top: 54%; transform: translate(-50%, -50%); font-size: calc(var(--w) * .42); }
+:is([data-dz="guld"], [data-dz="marmor"], [data-dz="nat"], [data-dz="pirat"]) .card:not(.back):not(.empty)::after { content: attr(data-r); position: absolute; bottom: 9%; left: 50%; transform: translateX(-50%) rotate(180deg);
+  font: var(--rank-weight, 400) calc(var(--w) * .18 * var(--rank-scale, 1))/1 var(--rank-font, var(--rank)); opacity: .8; }
+.card .times { z-index: 2; }
+
+/* The rare (shop) designs move. */
+@keyframes flicker { 0%, 88%, 92%, 100% { opacity: 1; } 90% { opacity: .35; } }
+@keyframes breathe { 50% { transform: translate(-50%, -50%) scale(1.08); } }
+@keyframes gleam { 50% { filter: brightness(1.35) drop-shadow(0 0 4px rgba(255,220,120,.8)); } }
+@keyframes drift { to { background-position: 40px 30px, -30px 20px, 20px -40px, 0 0; } }
+@keyframes wobble { 0%, 100% { transform: rotate(-6deg); } 50% { transform: rotate(6deg); } }
+@keyframes huespin { to { filter: hue-rotate(360deg); } }
+@keyframes ember { 50% { text-shadow: 0 0 12px rgba(255,140,40,1), 0 0 22px rgba(255,80,0,.7); } }
+[data-dz="neon"] .card:not(.back):not(.empty) .r { animation: flicker 4s linear infinite; }
+[data-dz="lava"] .card:not(.back):not(.empty) .r { animation: ember 2s ease-in-out infinite; }
+[data-dz="rum"] .card:not(.back):not(.empty) { animation: drift 18s linear infinite alternate; }
+[data-dz="regnbue"] .card:not(.back):not(.empty) .r, [data-dz="regnbue"] .card:not(.back):not(.empty) .big { animation: huespin 6s linear infinite; }
+:is([data-dz="guld"], [data-dz="marmor"]) .card:not(.back):not(.empty) .big { animation: gleam 3s ease-in-out infinite; }
+[data-dz="tiger"] .card:not(.back):not(.empty) .big { animation: breathe 2.4s ease-in-out infinite; }
+[data-dz="pirat"] .card.back::before { animation: wobble 2.2s ease-in-out infinite; }
+[data-dz="dannebrog"] .card.back { animation: flagwave 3s ease-in-out infinite; }
+@keyframes flagwave { 50% { filter: brightness(1.12); background-position: 4px 0, 0 3px, 0 0; } }
+[data-dz="marmor"] .card.back { animation: shimmer 6s linear infinite; }
+/* Shop designs earn their price: glow, shimmer, gold leaf */
+[data-dz="neon"] .card:not(.back):not(.empty) .r, [data-dz="neon"] .card:not(.back):not(.empty) .s, [data-dz="neon"] .card:not(.back):not(.empty) .big { text-shadow: 0 0 4px currentColor, 0 0 10px currentColor; }
+[data-dz="neon"] .card:not(.back):not(.empty) { filter: drop-shadow(0 0 5px rgba(255,60,172,.55)); }
+[data-dz="neon"] .card.back { animation: neonhue 5s ease-in-out infinite alternate; }
+@keyframes neonhue { to { filter: hue-rotate(45deg) saturate(1.2); } }
+[data-dz="guld"] .card.back { animation: shimmer 3.2s linear infinite; }
+/* "Rolige kort": the designs keep their look but stand still. */
+body.calm [data-dz] .card :is(.r, .big), body.calm [data-dz="rum"] .card:not(.back):not(.empty),
+body.calm :is([data-dz="is"], [data-dz="marmor"], [data-dz="guld"], [data-dz="dannebrog"]) .card.back, body.calm [data-dz="pirat"] .card.back::before { animation: none !important; }
+@keyframes shimmer { from { background-position: 150% 0, 0 0, 0 0, 0 0; } to { background-position: -150% 0, 0 0, 0 0, 0 0; } }
+[data-dz="guld"] .card:not(.back):not(.empty) .r { background: linear-gradient(180deg, #e9c25a, #8f6418); -webkit-background-clip: text; background-clip: text; color: transparent; }
+[data-dz="guld"] .card.red:not(.back) .r { background-image: linear-gradient(180deg, #d9534a, #7a1a14); }
+[data-dz="nat"] .card.black:not(.back):not(.fig) .big, [data-dz="nat"] .card.black:not(.back) .s { color: transparent; -webkit-text-stroke: 1.3px var(--black); }
+[data-dz="nat"] .card.red:not(.back) .s { color: transparent; -webkit-text-stroke: 1.3px var(--red); }
+.dzgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 8px; }
+.dz { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 8px 4px 6px; border-radius: 12px; background: var(--felt); border: 1px solid var(--felt-line); color: var(--ink); cursor: pointer; font: 500 .8rem var(--display); }
+.dz .pair { display: flex; gap: 4px; }
+.dz .card { --w: 30px; box-shadow: 0 2px 4px rgba(0,0,0,.3); }
+.dz.on { border-color: var(--brass); box-shadow: 0 0 0 2px var(--brass); }
+.dz.locked { opacity: .7; }
+.dz .tag { font-size: .66rem; color: var(--ink-dim); text-transform: uppercase; letter-spacing: .08em; }
+.dz.on .tag { color: var(--brass); }
+.modepick { display: flex; gap: 6px; }
+.mode { flex: 1; }
+.mode.on { background: var(--brass-soft); border-color: var(--brass); color: var(--ink); box-shadow: 0 0 0 1px var(--brass); }
+.modeinfo, .newbietxt { margin: 0; font-size: .85rem; color: var(--ink-dim); line-height: 1.4; }
+.mine .card.takeme { cursor: pointer; box-shadow: 0 0 0 2px var(--ink-dim), 0 6px 14px rgba(0,0,0,.3); }
+.card.held { opacity: .35; }
+.opp .card.held { opacity: 1; transform: translateY(10px) rotate(-4deg); box-shadow: 0 0 0 2px var(--brass), 0 12px 22px rgba(0,0,0,.45); }
+#cols.hand .card { animation: handin .18s ease-out backwards; }
+@keyframes handin { from { transform: translateY(14px) scale(.9); opacity: .4; } }
+#putBack { background: var(--brass); color: var(--black); border-color: var(--brass); font-weight: 800; padding: 4px 14px; }
+.lobby { display: flex; flex-direction: column; gap: 8px; padding: 12px; border-radius: 12px; background: var(--felt); border: 1px solid var(--felt-line); }
+.lobbystat { margin: 0; color: var(--ink-dim); font-size: .9rem; }
+.lobbystat.live { color: var(--brass); font-weight: 800; }
+.lobbystat.live::before { content: "● "; }
+.menutitle { font-size: 2.8rem !important; text-align: center; }
+.menusub { margin: -6px 0 2px; text-align: center; color: var(--ink-dim); }
+.menu { display: flex; flex-direction: column; gap: 8px; }
+.menu .big { font-size: 1.15rem; padding: 14px 16px; }
+.menu2 { display: flex; gap: 8px; flex-wrap: wrap; }
+.menu2 button { flex: 1 1 30%; }
+.lang { align-self: center; color: var(--ink-dim); font-size: .85rem; }
+.coach { position: fixed; z-index: 18; top: max(8px, env(safe-area-inset-top, 0px)); left: 50%; transform: translateX(-50%); width: min(460px, calc(100% - 24px)); box-sizing: border-box;
+  background: var(--felt-deep); border: 2px solid var(--brass); border-radius: 14px; padding: 12px 14px; box-shadow: 0 14px 40px rgba(0,0,0,.5); }
+.coach p { margin: 0 0 8px; font-size: .95rem; line-height: 1.4; }
+.coachrow { display: flex; gap: 8px; align-items: center; }
+.coachrow .label { margin-right: auto; }
+#coachNext { background: var(--brass); color: var(--black); border-color: var(--brass); font-weight: 800; }
+.coach.pop { animation: coachin .3s ease-out; }
+@keyframes coachin { from { transform: translateX(-50%) translateY(-10px) scale(.95); opacity: 0; } }
+.coach-hi { animation: coachpulse 1s ease-in-out infinite; position: relative; z-index: 3; }
+@keyframes coachpulse { 0%, 100% { box-shadow: 0 0 0 3px var(--brass), 0 6px 14px rgba(0,0,0,.3); } 50% { box-shadow: 0 0 0 8px rgba(226,181,74,.45), 0 6px 14px rgba(0,0,0,.3); } }
+.levels { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.level { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; text-align: left; padding: 10px 12px; }
+.level strong { font-size: 1.05rem; color: var(--ink); }
+.level span { font-size: .78rem; color: var(--ink-dim); line-height: 1.3; }
+.level.on { border-color: var(--brass); box-shadow: 0 0 0 1px var(--brass); background: var(--brass-soft); }
+.sethead { margin: 6px 0 0; font: 800 .8rem var(--display); text-transform: uppercase; letter-spacing: .12em; color: var(--ink-dim); }
+.dznote { min-height: 1.2em; margin: 0; font-size: .85rem; color: var(--ink-dim); }
+
+#gear { font-size: 1.1rem; line-height: 1; padding: 6px 10px; }
+.cols.deal .col { animation: dealin .38s cubic-bezier(.2,.8,.3,1.2) backwards; animation-delay: calc(var(--i) * 70ms); }
+@keyframes dealin { from { transform: translateY(-40px) scale(.7) rotate(-8deg); opacity: 0; } }
+.opp .cols.deal .col { animation-name: dealinopp; }
+@keyframes dealinopp { from { transform: translateY(40px) scale(.7) rotate(8deg); opacity: 0; } }
+.countdown { font: 6rem/1 var(--rank); color: var(--brass); text-align: center; animation: pop .3s ease-out; }
+
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+@media (max-width: 480px) {
+  h1 small { display: none; } h1 { font-size: 1.6rem; }
+  .middle { gap: 6px; } .cols { gap: 5px; }
+  .panel { padding: 18px; gap: 10px; }
+  .panel li, .panel p { font-size: .9rem; line-height: 1.4; }
+  .panel h2 { font-size: 1.7rem; }
+  .side { font-size: .6rem; }
+}
+.panel .scroll { overflow-y: auto; min-height: 0; flex: 1 1 auto; display: flex; flex-direction: column; gap: 10px; padding-right: 4px; }
+.panel > * { flex-shrink: 0; }
+.panel > .scroll { flex-shrink: 1; }
+@media (max-height: 640px) {
+  body { padding-block: 6px; }
+  .table { gap: 6px; }
+  h1 { font-size: 1.3rem; }
+  select, button { padding: 5px 9px; font-size: .8rem; }
+  #shout { font-size: 1.15rem; padding: 5px 22px; }
+  .zone { gap: 4px; }
+  .pile .card { --w: clamp(48px, min(20vw, 11.5vh), 112px); }
+  .mine .card { --w: clamp(40px, min(15vw, 8.6vh), 84px); }
+  .opp .card { --w: clamp(30px, min(10vw, 6vh), 58px); }
+  .menu .big { padding: 10px 14px; }
+  .menusub { display: none; }
+  .msg { min-height: 1.2em; font-size: .8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+}
+@media (hover: none) { .key { display: none; } }
+/* Phone on its side: the header becomes a slim column on the left, the Pismarie button sits beside the dynger,
+   and both players' counts sit beside their bunker. */
+@media (orientation: landscape) and (max-height: 540px) {
+  body { padding-block: 4px; }
+  .table {
+    max-width: 980px; display: grid; gap: 4px 14px; align-items: center;
+    grid-template-columns: auto 1fr auto; grid-template-rows: auto 1fr auto;
+    grid-template-areas: "head opp opp" "head mid call" "head mine mine";
+  }
+  header { grid-area: head; flex-direction: column; align-items: stretch; justify-content: flex-start; align-self: stretch; gap: 8px; width: 112px; flex-wrap: nowrap; padding-top: 4px; }
+  h1 { font-size: 1.25rem; } h1 small { display: none; }
+  .controls { flex-direction: column; align-items: stretch; gap: 5px; }
+  .controls .label { font-size: .6rem; }
+  select, button { padding: 5px 8px; font-size: .8rem; }
+  .zone.opp { grid-area: opp; flex-direction: row-reverse; justify-content: center; gap: 14px; }
+  .middle { grid-area: mid; min-height: 0; gap: 10px; }
+  .callrow { grid-area: call; width: 170px; }
+  .zone.mine { grid-area: mine; flex-direction: row; justify-content: center; gap: 14px; }
+  .seat { flex-direction: column; align-items: center; gap: 0; min-width: 76px; }
+  #youSeat { display: flex; flex-direction: column; align-items: center; }
+  .card { --w: clamp(34px, 15vh, 76px); }
+  .mine .card { --w: clamp(34px, 15vh, 76px); }
+  .opp .card { --w: clamp(24px, 10vh, 50px); }
+  .pile .card { --w: clamp(40px, 17.5vh, 88px); }
+  .side .card { --w: clamp(22px, 9vh, 44px); }
+  .pile { gap: 7px; padding: 4px; }
+  .msg { white-space: normal; text-align: center; font-size: .8rem; min-height: 2.4em; }
+  #shout { font-size: 1.2rem; padding: 6px 20px; }
+  .zone { gap: 4px; }
+  .panel { max-height: 94%; padding: 14px 18px; }
+  #panel { max-width: 620px; }
+  .menutitle { font-size: 1.9rem !important; }
+  .menusub { display: none; }
+  .menu { flex-direction: row; }
+  .menu .big { flex: 1; padding: 10px 12px; font-size: 1rem; }
+  #panel .modeinfo { display: none; }
+  #panel .lobby { padding: 8px 12px; gap: 6px; }
+}
+</style>
+
+<div class="table">
+  <header>
+    <h1>Pismarie <small>you vs the computer</small></h1>
+    <div class="controls">
+      <button id="menuBtn" type="button">Menu</button>
+      <button id="restart" type="button">New game</button>
+      <button id="gear" type="button" aria-label="Settings" title="Settings">⚙</button>
+    </div>
+  </header>
+
+  <section class="zone opp">
+    <div class="seat"><span class="label" id="oppName">Computer</span><span class="count" id="aiCount">26</span><span class="label">cards left</span></div>
+    <div class="cols" id="aiCols"></div>
+  </section>
+
+  <div class="middle">
+    <div class="side"><div id="side1"></div><span><span id="oppRes">Computer</span><br>reserve</span></div>
+    <div class="pile" id="pile0" aria-label="Left pile"></div>
+    <div class="pile" id="pile1" aria-label="Right pile"></div>
+    <div class="side"><div id="side0"></div><span>Your<br>reserve</span></div>
+  </div>
+
+  <div class="callrow">
+    <button id="shout" type="button" aria-disabled="true">Pismarie!</button>
+    <div class="msg" id="msg" aria-live="polite"></div>
+  </div>
+
+  <section class="zone mine">
+    <div class="cols" id="cols"></div>
+    <div class="seat"><span id="youSeat"><span class="label">You</span> <span class="count" id="youCount">26</span> <span class="label">cards left</span></span><button id="putBack" type="button" hidden>Put the stack back</button></div>
+  </section>
+</div>
+
+<div class="overlay" id="settings" hidden>
+  <div class="panel" role="dialog" aria-labelledby="setTitle">
+    <h2 id="setTitle">Settings</h2>
+    <label class="setrow" for="volMusic"><span>Music</span><input type="range" id="volMusic" min="0" max="100" step="5"><output id="outMusic"></output></label>
+    <label class="setrow" for="volSfx"><span>Sound effects</span><input type="range" id="volSfx" min="0" max="100" step="5"><output id="outSfx"></output></label>
+    <label class="setrow check" for="optVibe"><span>Vibration</span><input type="checkbox" id="optVibe"></label>
+    <label class="setrow check" for="optSame"><span>Same cards for both</span><input type="checkbox" id="optSame"></label>
+    <label class="setrow check" for="optCalm"><span>Calm cards</span><input type="checkbox" id="optCalm"></label>
+    <h3 class="sethead">Game</h3>
+    <div class="modepick" role="group" aria-label="Game type"><button type="button" class="mode" data-mode="normal">Normal</button><button type="button" class="mode" data-mode="skjult">Hidden stacks</button></div>
+    <p class="modeinfo"></p>
+    <h3 class="sethead">Your cards</h3>
+    <div class="dzgrid" id="dzGrid"></div>
+    <p class="dznote" id="dzNote"></p>
+    <div class="btnrow"><button class="primary" id="setClose" type="button">Close</button><button id="setRules" type="button">Rules</button><button id="setMenu" type="button">Menu</button></div>
+  </div>
+</div>
+<template id="rulesTpl">
+    <ul>
+      <li>You each get half a deck. You lay out 5 stacks of 5, 4, 3, 2 and 1 cards, with only the top card face up. The rest is your reserve.</li>
+      <li><strong>Drag</strong> your cards onto the piles in the middle, one step up or down. An ace goes on both a 2 and a king.</li>
+      <li><strong>Tap</strong> a stack to turn over its next card.</li>
+      <li>Drag a card into an <strong>empty stack</strong> to make room, or onto a <strong>matching card</strong> in your own stacks. Then you can turn over the card below.</li>
+      <li>Two matching cards on top in the middle? Tap <strong>Pismarie!</strong> before your opponent, and they get both piles.</li>
+      <li>If nobody can play, you each turn a card from your reserve onto your pile.</li>
+      <li>When you have emptied your 5 stacks, you pick one of the piles in the middle. Take the smallest! Your opponent gets the other one, and you both lay out again.</li>
+      <li>If a player has no reserve, only one pile is played. If that player empties their stacks, they win.</li>
+      <li><strong>Hidden stacks:</strong> all 5 stacks have 5 cards face down. Tap a stack to pick it up in your hand, play the cards that fit, and put the stack back. Remember what is where!</li>
+    </ul>
+</template>
+<div class="overlay" id="overlay">
+  <div class="panel" id="panel"></div>
+</div>
+<div class="coach" id="coach" hidden>
+  <p id="coachText"></p>
+  <div class="coachrow"><span class="label" id="coachStep"></span><button id="coachNext" type="button" hidden>Next</button><button id="coachSkip" type="button">Quit</button></div>
+</div>
+
+<script>
+/* ---------- Game rules (no DOM in this part, so it can move into an app) ---------- */
+const SUITS = [["♠","black"],["♥","red"],["♦","red"],["♣","black"]];
+// Danish court letters: B (knægt/bonde), D (dame), K (konge).
+const RANKS = ["","A","2","3","4","5","6","7","8","9","10","J","Q","K"];
+const FIGURES = { 11: "♞", 12: "♛", 13: "♚" };
+
+function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function fits(card, t) { if (!card || !t) return false; const d = Math.abs(card.r - t.r); return d === 1 || d === 12; }
+
+/* A bunke is an array of cards with the top last. pl.open[k] counts how many cards on top of bunke k
+   are face up: 0 means the top must be turned, more than 1 means equal cards are stacked there. */
+// One object per card for the whole session, so a card is the same object after a network update.
+const ALL = [];
+for (const [s, c] of SUITS) for (let r = 1; r <= 13; r++) ALL.push({ r, s, c });
+const ALPH = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+const enc = cards => cards.map(c => ALPH[ALL.indexOf(c)]).join("");
+const dec = str => [...String(str || "")].map(ch => ALL[ALPH.indexOf(ch)]).filter(Boolean);
+
+/* Two ways to play. "normal": bunker of 5-4-3-2-1 with the top card face up.
+   "skjult" (hidden bunker): 5 face-down cards in every bunke; take one bunke up in your hand at a time,
+   play any of its cards, then put it back face down. pl.hand is the bunke in your hand, or -1. */
+const MODES = { normal: "Normal", skjult: "Hidden stacks" };
+function newGame(mode) {
+  const deck = shuffle(ALL.slice());
+  const skjult = mode === "skjult";
+  const player = () => ({ deck: deck.splice(0, 26), cols: [[], [], [], [], []], open: [0, 0, 0, 0, 0], stock: [], played: 0, shouts: 0, skjult, hand: -1 });
+  const G = { you: player(), ai: player(), piles: [[], []], active: [true, true], round: 0, over: false, mode: skjult ? "skjult" : "normal" };
+  dealRound(G);
+  return G;
+}
+// Deal each player's cards into 5 bunker, row by row (5, 4, 3, 2, 1 when there are enough), the rest is the reserve.
+// Dynge 0 belongs to the computer, dynge 1 to you. A player with no reserve has no dynge of their own.
+function dealRound(G) {
+  for (const pl of [G.you, G.ai]) {
+    const cards = shuffle(pl.deck); pl.deck = [];
+    pl.cols = [[], [], [], [], []];
+    for (let row = 0; row < 5; row++) for (let c = pl.skjult ? 0 : row; c < 5; c++) if (cards.length) pl.cols[c].push(cards.pop());
+    pl.open = pl.cols.map(c => c.length && !pl.skjult ? 1 : 0);
+    pl.hand = -1;
+    pl.stock = cards;
+  }
+  G.piles = [[], []];
+  G.active = [G.ai.stock.length > 0, G.you.stock.length > 0];
+  G.round++;
+}
+function singlePile(G) { return G.active.filter(Boolean).length === 1; }
+function bunkerEmpty(pl) { return pl.cols.every(c => !c.length); }
+// The round is over when a player has emptied their bunker. Returns the winner of the whole game, or null.
+// Otherwise the round winner takes dynge `choice`, the other player gets the other dynge plus their leftovers.
+function endRound(G, w, choice) {
+  const L = w === G.you ? G.ai : G.you;
+  if (singlePile(G) && !w.stock.length) return w;
+  const flat = pl => pl.cols.flat();
+  let wTake = [], lTake = [];
+  if (singlePile(G)) lTake = [...G.piles[0], ...G.piles[1]];
+  else { wTake = G.piles[choice]; lTake = G.piles[1 - choice]; }
+  w.deck = [...w.stock, ...flat(w), ...wTake];
+  L.deck = [...L.stock, ...flat(L), ...lTake];
+  w.cols = L.cols = [[], [], [], [], []];
+  w.stock = []; L.stock = [];
+  G.piles = [[], []];
+  if (!w.deck.length) return w;
+  dealRound(G);
+  return null;
+}
+function pileTop(G, i) { const p = G.piles[i]; return p[p.length - 1]; }
+function topOf(pl, k) { const c = pl.cols[k]; return c.length && pl.open[k] ? c[c.length - 1] : null; }
+function hiddenUnder(pl, k) { return pl.cols[k].length - pl.open[k]; }
+function remaining(pl) { return pl.cols.reduce((n, c) => n + c.length, 0) + pl.stock.length; }
+function moves(G, pl) {
+  const out = [];
+  for (let k = 0; k < 5; k++) { const c = topOf(pl, k); for (let i = 0; i < 2; i++) if (fits(c, pileTop(G, i))) out.push([k, i]); }
+  return out;
+}
+function flipTarget(pl) { return pl.skjult ? -1 : pl.cols.findIndex((c, k) => c.length && !pl.open[k]); }
+// Hidden bunker: the cards in your hand, the moves from it, and whether any hidden card could be played at all.
+function handCards(pl) { return pl.hand >= 0 ? pl.cols[pl.hand] : []; }
+function handMoves(G, pl) {
+  const out = [];
+  handCards(pl).forEach((c, j) => { for (let i = 0; i < 2; i++) if (fits(c, pileTop(G, i))) out.push([j, i]); });
+  return out;
+}
+function anyFits(G, pl) { return pl.cols.some(col => col.some(c => fits(c, pileTop(G, 0)) || fits(c, pileTop(G, 1)))); }
+function doTake(pl, k) { if (!pl.skjult || !pl.cols[k].length || pl.hand === k) return false; pl.hand = k; return true; }
+function doPutBack(pl) { if (pl.hand < 0) return false; pl.hand = -1; return true; }
+function doPlayHand(G, pl, j, i) {
+  const col = handCards(pl), c = col[j];
+  if (!fits(c, pileTop(G, i))) return false;
+  col.splice(j, 1);
+  G.piles[i].push(c);
+  pl.played++;
+  if (!col.length) pl.hand = -1;
+  return true;
+}
+function isPismarie(G) { const a = pileTop(G, 0), b = pileTop(G, 1); return !!(a && b && a.r === b.r); }
+// Moving within your own bunker: onto an empty bunke, or onto a face-up card of the same rank.
+function canShift(pl, from, to) {
+  if (from === to) return false;
+  const c = topOf(pl, from); if (!c) return false;
+  if (!pl.cols[to].length) return true;
+  const t = topOf(pl, to);
+  return !!(t && t.r === c.r);
+}
+// A shift is worth making when it uncovers a hidden card or empties a bunke onto a matching stack.
+function usefulShift(pl) {
+  for (let from = 0; from < 5; from++) {
+    if (pl.open[from] !== 1) continue;
+    const reveals = hiddenUnder(pl, from) > 0;
+    for (let to = 0; to < 5; to++) {
+      if (!canShift(pl, from, to)) continue;
+      const stacking = pl.cols[to].length > 0;
+      if (reveals || stacking) return [from, to];
+    }
+  }
+  return null;
+}
+
+function doPlay(G, pl, k, i) {
+  if (!fits(topOf(pl, k), pileTop(G, i))) return false;
+  G.piles[i].push(pl.cols[k].pop());
+  pl.open[k]--;
+  pl.played++;
+  return true;
+}
+function doFlip(pl, k) { if (!pl.cols[k].length || pl.open[k]) return false; pl.open[k] = 1; return true; }
+function doShift(pl, from, to) {
+  if (!canShift(pl, from, to)) return false;
+  pl.cols[to].push(pl.cols[from].pop());
+  pl.open[to] = pl.cols[to].length === 1 ? 1 : pl.open[to] + 1;
+  pl.open[from]--;
+  return true;
+}
+// The caller gives both middle dynger to the opponent, under their reserve.
+function doPismarie(G, caller) {
+  if (!isPismarie(G)) return 0;
+  const loser = caller === G.you ? G.ai : G.you;
+  const taken = [...G.piles[0], ...G.piles[1]];
+  loser.stock.unshift(...shuffle(taken));
+  G.piles = [[], []];
+  caller.shouts++;
+  return taken.length;
+}
+// Nobody can play: each flips a reserve card onto the middle. An empty reserve borrows from the other.
+function doSpit(G) {
+  if (!G.you.stock.length && !G.ai.stock.length) {
+    const rest = [];
+    for (let i = 0; i < 2; i++) { const t = G.piles[i].pop(); rest.push(...G.piles[i]); G.piles[i] = t ? [t] : []; }
+    shuffle(rest);
+    const half = Math.ceil(rest.length / 2);
+    G.you.stock = rest.slice(0, half); G.ai.stock = rest.slice(half);
+  }
+  const src = [G.ai.stock, G.you.stock];
+  let flipped = 0;
+  for (let i = 0; i < 2; i++) {
+    if (!G.active[i]) continue;
+    const from = src[i].length ? src[i] : src[1 - i];
+    if (from.length) { G.piles[i].push(from.pop()); flipped++; }
+  }
+  return flipped;
+}
+// Stuck: nobody can play to the middle, nobody has a card to turn, and the computer has nothing useful to do.
+// (Your own shifts are optional, so the game does not wait for them.)
+function isStuck(G) {
+  if (isPismarie(G)) return false;
+  if (G.mode === "skjult") return !anyFits(G, G.you) && !anyFits(G, G.ai);
+  if (moves(G, G.you).length || moves(G, G.ai).length) return false;
+  if (flipTarget(G.you) >= 0 || flipTarget(G.ai) >= 0) return false;
+  if (!G.mp && usefulShift(G.ai)) return false;
+  return true;
+}
+
+/* ---------- Table (rendering, input, computer opponent) ---------- */
+const $ = id => document.getElementById(id);
+const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+let NET = null;  // set while playing against another phone
+const opp = () => NET ? "Your opponent" : "The computer";
+let TUT = null;  // the tutorial's progress while it runs
+let S = newGame(), aiTimer = null, stuckTimer = null, aiShoutTimer = null, running = false, selected = null, drag = null, startedAt = 0;
+
+function cardEl(c) {
+  const d = document.createElement("div");
+  if (!c) { d.className = "card empty"; return d; }
+  const fig = FIGURES[c.r];
+  d.className = `card ${c.c}` + (fig ? ` fig k${c.r}` : "");
+  d.dataset.r = RANKS[c.r]; d.dataset.s = c.s;  // layouts that repeat the corner read these
+  // Court cards show a figure (knight, queen, king) instead of the big suit, so D never reads as a 2.
+  d.innerHTML = `<span class="r">${RANKS[c.r]}</span><span class="s">${c.s}</span><span class="big">${fig ? fig + "\uFE0E" : c.s}</span>`;
+  d.setAttribute("aria-label", ["", "ace", "2", "3", "4", "5", "6", "7", "8", "9", "10", "jack", "queen", "king"][c.r] + " " + c.s);
+  return d;
+}
+function backEl(n) {
+  const d = document.createElement("div");
+  d.className = "card back";
+  if (n) d.innerHTML = `<span class="n">${n}</span>`;
+  return d;
+}
+function stockEl(n) { return n ? backEl(n) : cardEl(null); }
+
+function colEl(pl, k, mine) {
+  if (pl.skjult) return hiddenColEl(pl, k, mine);
+  const col = document.createElement("div");
+  col.className = "col";
+  col.dataset.k = k;
+  const cards = pl.cols[k];
+  const hidden = hiddenUnder(pl, k) - (pl.open[k] ? 0 : 1);
+  const under = document.createElement("div");
+  under.className = "under";
+  if (hidden > 0) { under.innerHTML = "<span></span>"; under.style.height = (4 + hidden * 3) + "px"; }
+  else under.style.visibility = "hidden";
+  col.appendChild(under);
+  let card;
+  if (!cards.length) card = cardEl(null);
+  else if (pl.open[k]) card = cardEl(cards[cards.length - 1]);
+  else card = backEl(0);
+  if (pl.open[k] > 1) {
+    card.classList.add("stacked");
+    const t = document.createElement("span"); t.className = "times"; t.textContent = "×" + pl.open[k];
+    card.appendChild(t);
+  }
+  if (mine) {
+    if (!cards.length) {}
+    else if (!pl.open[k]) card.classList.add("flipme");
+    else if (fits(cards[cards.length - 1], pileTop(S, 0)) || fits(cards[cards.length - 1], pileTop(S, 1))) card.classList.add("playable");
+    if (drag && drag.k === k) card.classList.add("lifted");
+  }
+  if (!mine && pl === S.ai && aimK === k && pl.cols[k].length) card.classList.add("aim");
+  col.appendChild(card);
+  if (!mine) return col;
+  col.tabIndex = 0;
+  col.setAttribute("aria-label", "Stack " + (k + 1));
+  if (selected === k) col.classList.add("selected");
+  if (drag && canShift(pl, drag.k, k)) col.classList.add("drop-ok");
+  col.addEventListener("pointerdown", e => startDrag(e, k, card));
+  col.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); keyCol(k); } });
+  const key = document.createElement("span"); key.className = "key"; key.textContent = k + 1;
+  const wrap = document.createElement("div"); wrap.className = "zone"; wrap.style.gap = "2px";
+  wrap.append(col, key);
+  return wrap;
+}
+
+function keyWrap(col, label) {
+  const key = document.createElement("span"); key.className = "key"; key.textContent = label;
+  const wrap = document.createElement("div"); wrap.className = "zone"; wrap.style.gap = "2px";
+  wrap.append(col, key);
+  return wrap;
+}
+// Hidden bunker: a face-down bunke with its count. Yours are taken up in your hand with a tap.
+function hiddenColEl(pl, k, mine) {
+  const col = document.createElement("div");
+  col.className = "col"; col.dataset.k = k;
+  const n = pl.cols[k].length;
+  const card = n ? backEl(n) : cardEl(null);
+  if (pl.hand === k) card.classList.add("held");
+  if (!mine && aimK === k && n) card.classList.add("aim");
+  col.appendChild(card);
+  if (!mine) return col;
+  if (n) card.classList.add("takeme");
+  col.tabIndex = 0;
+  col.setAttribute("aria-label", `Stack ${k + 1}, ${n} cards. Pick it up`);
+  col.addEventListener("pointerdown", e => { e.preventDefault(); take(S.you, k); });
+  col.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); take(S.you, k); } });
+  return keyWrap(col, k + 1);
+}
+// A card in your hand: drag any of them to the middle.
+function handEl(j) {
+  const c = handCards(S.you)[j];
+  const col = document.createElement("div");
+  col.className = "col"; col.dataset.k = j;
+  const card = cardEl(c);
+  if (fits(c, pileTop(S, 0)) || fits(c, pileTop(S, 1))) card.classList.add("playable");
+  if (drag && drag.card === c) card.classList.add("lifted");
+  if (selected === j) col.classList.add("selected");
+  col.appendChild(card);
+  col.tabIndex = 0;
+  col.addEventListener("pointerdown", e => startDrag(e, j, card));
+  col.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); keyCol(j); } });
+  return keyWrap(col, j + 1);
+}
+
+let lastCounts = [26, 26];
+function render() {
+  document.body.classList.toggle("atmenu", S.phase === "menu");
+  applyDesigns();
+  const cols = $("cols"); cols.innerHTML = "";
+  const holding = S.you.skjult && S.you.hand >= 0;
+  cols.classList.toggle("hand", holding);
+  if (holding) handCards(S.you).forEach((c, j) => cols.appendChild(handEl(j)));
+  else for (let k = 0; k < 5; k++) cols.appendChild(colEl(S.you, k, true));
+  $("putBack").hidden = !holding;
+  $("youSeat").hidden = holding;
+  const ai = $("aiCols"); ai.innerHTML = "";
+  for (let k = 0; k < 5; k++) ai.appendChild(colEl(S.ai, k, false));
+  const same = isPismarie(S);
+  for (let i = 0; i < 2; i++) {
+    const p = $("pile" + i); p.innerHTML = "";
+    p.appendChild(cardEl(pileTop(S, i)));
+    const pc = document.createElement("span"); pc.className = "pc";
+    pc.textContent = S.active[i] ? S.piles[i].length + (S.piles[i].length === 1 ? " card" : " cards") : "no pile";
+    p.appendChild(pc);
+    p.classList.toggle("off", !S.active[i]);
+    const choosing = S.choosing === S.you && S.active[i] && !singlePile(S);
+    p.classList.toggle("choose", choosing);
+    p.classList.toggle("smallest", choosing && S.piles[i].length <= S.piles[1 - i].length);
+    const dragCard = drag ? drag.card : selected !== null ? (S.you.skjult ? handCards(S.you)[selected] : topOf(S.you, selected)) : null;
+    p.classList.toggle("drop-ok", !!dragCard && fits(dragCard, pileTop(S, i)));
+    p.classList.toggle("same", running && same);
+  }
+  $("side0").innerHTML = ""; $("side0").appendChild(stockEl(S.you.stock.length));
+  $("side1").innerHTML = ""; $("side1").appendChild(stockEl(S.ai.stock.length));
+  const counts = [remaining(S.you), remaining(S.ai)];
+  ["youCount", "aiCount"].forEach((id, j) => {
+    $(id).textContent = counts[j];
+    if (counts[j] > lastCounts[j]) { $(id).classList.remove("bump"); void $(id).offsetWidth; $(id).classList.add("bump"); }
+  });
+  lastCounts = counts;
+  const live = running && same;
+  $("shout").classList.toggle("live", live);
+  $("shout").setAttribute("aria-disabled", String(!live));
+  if (TUT) tutHighlight();
+  if (NET && NET.role === "host") broadcast();
+}
+
+function flashPile(i, byAi) {
+  const p = $("pile" + i);
+  p.classList.remove("flash", "by-ai"); void p.offsetWidth;
+  p.classList.add("flash"); if (byAi) p.classList.add("by-ai");
+}
+function myCard(k) { const c = $("cols").children[k]; return c ? c.querySelector(".card") : null; }
+function aiColEl(k) { return $("aiCols").children[k]; }
+function aiCardRect(k) { return $("aiCols").children[k].querySelector(".card").getBoundingClientRect(); }
+function shake(el) { if (!el) return; sfx("nope"); el.classList.remove("shake"); void el.offsetWidth; el.classList.add("shake"); }
+let msgTimer = null;
+function say(t, big) {
+  const m = $("msg"); m.textContent = t; m.classList.toggle("big", !!big);
+  clearTimeout(msgTimer);
+  if (big) msgTimer = setTimeout(() => { m.textContent = ""; m.classList.remove("big"); }, 1800);
+}
+function buzz(ms) { if (!Settings.vibe) return; try { navigator.vibrate && navigator.vibrate(ms); } catch (e) {} }
+
+// The computer's card flies from its bunke to the dynge it lands on.
+function fly(card, from, toEl, faceDown, dz) {
+  if (reduceMotion || !toEl || !toEl.querySelector(".card")) return;
+  const to = toEl.querySelector(".card").getBoundingClientRect();
+  const f = faceDown ? backEl(0) : cardEl(card); f.classList.add("flyer");
+  const home = toEl.closest("[data-dz]");
+  f.dataset.dz = dz || (home ? home.dataset.dz : myDz());
+  f.style.transform = "rotate(" + (Math.random() * 16 - 8) + "deg)";
+  f.style.width = from.width + "px"; f.style.left = from.left + "px"; f.style.top = from.top + "px";
+  document.body.appendChild(f);
+  toEl.querySelector(".card").style.visibility = "hidden";
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    f.style.width = to.width + "px"; f.style.left = to.left + "px"; f.style.top = to.top + "px"; f.style.transform = "none";
+  }));
+  setTimeout(() => { f.remove(); const c = toEl.querySelector(".card"); if (c) c.style.visibility = ""; }, 320);
+}
+
+// Everything that changes the table goes through here.
+function afterChange(pl) {
+  if (TUT) { render(); tutCheck(); return; }
+  render();
+  if (pl && bunkerEmpty(pl)) { roundOver(pl); return; }
+  if (isPismarie(S) && !NET) scheduleAiShout();
+  else { clearTimeout(aiShoutTimer); aiShoutTimer = null; }
+  checkStuck();
+}
+
+// The tutorial's Pismarie step waits for the shout: playing on first would break up the pair.
+function tutLocked(pl) {
+  if (!TUT || pl !== S.you || !TUT_STEPS[TUT.step].lock) return false;
+  say("Tap Pismarie! first.", true);
+  return true;
+}
+function play(pl, k, i) {
+  if (tutLocked(pl)) return false;
+  if (isGuest()) {
+    if (pl !== S.you || !running || !doPlay(S, pl, k, i)) return false;
+    selected = null; render(); flashPile(i); sfx("card");
+    send({ t: "p", k, i: 1 - i });
+    return true;
+  }
+  if (!running || S.over) return false;
+  const card = topOf(pl, k);
+  const from = pl === S.ai ? aiCardRect(k) : null;
+  if (!doPlay(S, pl, k, i)) return false;
+  if (pl === S.you) selected = null;
+  afterChange(pl);
+  if (S.over) return true;
+  if (from) fly(card, from, $("pile" + i), false, oppShown());
+  flashPile(i, pl === S.ai);
+  sfx(pl === S.you ? "card" : "cardOpp");
+  return true;
+}
+function flip(pl, k) {
+  if (tutLocked(pl)) return false;
+  if (isGuest()) {
+    if (pl !== S.you || !running || !doFlip(pl, k)) return false;
+    render(); myCard(k).classList.add("flipped"); sfx("flip");
+    send({ t: "f", k });
+    return true;
+  }
+  if (!running || S.over || !doFlip(pl, k)) return false;
+  afterChange(pl);
+  if (pl === S.you) myCard(k).classList.add("flipped");
+  else aiColEl(k).querySelector(".card").classList.add("flipped");
+  sfx(pl === S.you ? "flip" : "flipOpp");
+  return true;
+}
+function shift(pl, from, to) {
+  if (tutLocked(pl)) return false;
+  if (isGuest()) {
+    if (pl !== S.you || !running || !doShift(pl, from, to)) return false;
+    render(); sfx("slide");
+    send({ t: "m", a: from, b: to });
+    return true;
+  }
+  const card = topOf(pl, from), rect = pl === S.ai ? aiCardRect(from) : null;
+  if (!running || S.over || !doShift(pl, from, to)) return false;
+  afterChange(pl);
+  if (rect) fly(card, rect, aiColEl(to));
+  sfx("slide");
+  return true;
+}
+function take(pl, k) {
+  if (isGuest()) {
+    if (pl !== S.you || !running || !doTake(pl, k)) return false;
+    selected = null; render(); sfx("flip"); send({ t: "t", k });
+    return true;
+  }
+  if (!running || S.over || !doTake(pl, k)) return false;
+  if (pl === S.you) selected = null;
+  afterChange(pl);
+  sfx(pl === S.you ? "flip" : "flipOpp");
+  return true;
+}
+function putBack(pl) {
+  if (isGuest()) {
+    if (pl !== S.you || !running || !doPutBack(pl)) return false;
+    selected = null; render(); sfx("slide"); send({ t: "b" });
+    return true;
+  }
+  if (!running || S.over || !doPutBack(pl)) return false;
+  if (pl === S.you) selected = null;
+  afterChange(pl);
+  sfx("slide");
+  return true;
+}
+function playHand(pl, j, i) {
+  const card = handCards(pl)[j];
+  if (isGuest()) {
+    if (pl !== S.you || !running || !doPlayHand(S, pl, j, i)) return false;
+    selected = null; render(); flashPile(i); sfx("card");
+    send({ t: "q", c: ALL.indexOf(card), i: 1 - i });
+    return true;
+  }
+  if (!running || S.over) return false;
+  const from = pl === S.ai && pl.hand >= 0 ? aiCardRect(pl.hand) : null;
+  if (!doPlayHand(S, pl, j, i)) return false;
+  if (pl === S.you) selected = null;
+  afterChange(pl);
+  if (S.over) return true;
+  if (from) fly(card, from, $("pile" + i), false, oppShown());
+  flashPile(i, pl === S.ai);
+  sfx(pl === S.you ? "card" : "cardOpp");
+  return true;
+}
+$("putBack").addEventListener("click", () => putBack(S.you));
+
+const MODE_INFO = {
+  normal: "Stacks of 5, 4, 3, 2 and 1 cards, with the top card face up.",
+  skjult: "5 cards in every stack, all face down. Pick a stack up in your hand, play what fits, and put it back. Remember what is where!",
+};
+const MODE_PICK = `<div class="modepick" role="group" aria-label="Game type"><button type="button" class="mode" data-mode="normal">Normal</button><button type="button" class="mode" data-mode="skjult">Hidden stacks</button></div><p class="modeinfo"></p>`;
+function syncModeUI() {
+  const m = Settings.mode === "skjult" ? "skjult" : "normal";
+  document.querySelectorAll("#settings .mode").forEach(b => { b.disabled = !!NET; });  // online, the host's game decides
+  document.querySelectorAll(".mode").forEach(b => { b.classList.toggle("on", b.dataset.mode === m); b.setAttribute("aria-pressed", String(b.dataset.mode === m)); });
+  const later = running || S.phase === "play" || S.phase === "countdown";
+  document.querySelectorAll(".modeinfo").forEach(p => { p.textContent = MODE_INFO[m] + (later && p.closest("#settings") ? " Applies from the next game." : ""); });
+}
+document.addEventListener("click", e => {
+  const b = e.target.closest(".mode"); if (!b) return;
+  Settings.mode = b.dataset.mode; saveSettings(); syncModeUI(); sfx("card");
+  if ($("lobbyStat")) { $("lobbyStat").textContent = "Looking for players online…"; showLobby(); }
+});
+function showBubble() {
+  document.querySelectorAll(".bubble").forEach(b => b.remove());
+  const b = document.createElement("div"); b.className = "bubble"; b.textContent = "Pismarie!";
+  document.querySelector(".opp").appendChild(b);
+  setTimeout(() => b.remove(), 1400);
+}
+function shout(pl) {
+  if (isGuest()) {
+    if (!running || !isPismarie(S)) { shake($("shout")); return; }
+    send({ t: "s" });
+    return;
+  }
+  if (!running || S.over) return;
+  const n = doPismarie(S, pl);
+  if (!n) { if (pl === S.you) shake($("shout")); return; }
+  clearTimeout(aiShoutTimer); aiShoutTimer = null;
+  buzz(pl === S.you ? 40 : [60, 40, 60]);
+  sfx(pl === S.you ? "shout" : "shoutOpp");
+  const pileRects = [0, 1].map(i => ({ rect: $("pile" + i).querySelector(".card").getBoundingClientRect(), card: pileTop(S, i) }));
+  if (pl === S.ai) showBubble();
+  S.ev = { id: (S.ev ? S.ev.id : 0) + 1, k: "shout", w: pl === S.you ? "h" : "g", n };
+  say(pl === S.you ? `Pismarie! ${opp()} gets ${n} cards` : `${opp()} called Pismarie! You get ${n} cards`, true);
+  // The won dynger fly to the loser's reserve, then the table slams down new cards.
+  const loserSide = $(pl === S.you ? "side1" : "side0");
+  pileRects.forEach(p => p.card && fly(p.card, p.rect, loserSide));
+  S.pending = true; render();
+  setTimeout(() => {
+    S.pending = false;
+    if (S.over || !running) return;
+    doSpit(S);
+    afterChange(null);
+    for (let i = 0; i < 2; i++) { const el = $("pile" + i); el.classList.remove("slam"); void el.offsetWidth; el.classList.add("slam"); }
+    sfx("spit");
+  }, reduceMotion ? 0 : 420);
+}
+
+/* Dragging: onto a middle dynge, onto an empty bunke of your own, or onto an equal card of your own.
+   A short tap turns a hidden card. */
+function near(el, x, y, pad) { const r = el.getBoundingClientRect(); return x > r.left - pad && x < r.right + pad && y > r.top - pad && y < r.bottom + pad; }
+// Generous targets for fingers: anywhere in the middle band counts, and the card goes to the
+// dynge it fits on (the nearest one if it fits both).
+function targetAt(x, y, card) {
+  for (let i = 0; i < 2; i++) if (near($("pile" + i), x, y, 40) && fits(card, pileTop(S, i))) return { pile: i };
+  const cols = S.you.skjult ? [] : $("cols").querySelectorAll(".col");
+  for (const c of cols) if (near(c, x, y, 6)) return { col: +c.dataset.k };
+  const band = $("cols").getBoundingClientRect().top - 8, roof = $("aiCols").getBoundingClientRect().bottom;
+  if (y < band && y > roof) {
+    const ok = [0, 1].filter(i => fits(card, pileTop(S, i)));
+    if (ok.length === 1) return { pile: ok[0] };
+    if (ok.length === 2) {
+      const mid = i => { const r = $("pile" + i).getBoundingClientRect(); return Math.abs(x - (r.left + r.width / 2)); };
+      return { pile: mid(0) <= mid(1) ? 0 : 1 };
+    }
+  }
+  return null;
+}
+function startDrag(e, k, el) {
+  if (!running) return;
+  if (drag) { drag.ghost.remove(); drag = null; }  // a lost finger-up must never block the next drag
+  e.preventDefault();
+  const pl = S.you;
+  if (!pl.skjult) {
+    if (!pl.cols[k].length) return;
+    if (!pl.open[k]) { flip(pl, k); return; }
+  }
+  const card = pl.skjult ? handCards(pl)[k] : topOf(pl, k);
+  if (!card) return;
+  const r = el.getBoundingClientRect();
+  const ghost = cardEl(card);
+  ghost.classList.add("ghost"); ghost.dataset.dz = myDz();
+  ghost.style.width = r.width + "px"; ghost.style.left = r.left + "px"; ghost.style.top = r.top + "px";
+  document.body.appendChild(ghost);
+  drag = { k, card, ghost, dx: e.clientX - r.left, dy: e.clientY - r.top, home: r, moved: false, sx: e.clientX, sy: e.clientY, x: e.clientX, y: e.clientY, id: e.pointerId };
+  // Capture on a container that is never rebuilt, so the drag survives the table redrawing under the finger.
+  try { $("cols").setPointerCapture(e.pointerId); } catch (err) {}
+  selected = null;
+  render();
+}
+let hoverKey = "";
+document.addEventListener("pointermove", e => {
+  if (!drag || e.pointerId !== drag.id) return;
+  drag.x = e.clientX; drag.y = e.clientY;
+  if (Math.hypot(e.clientX - drag.sx, e.clientY - drag.sy) > 6) drag.moved = true;
+  drag.ghost.style.left = (e.clientX - drag.dx) + "px";
+  drag.ghost.style.top = (e.clientY - drag.dy) + "px";
+  const t = targetAt(e.clientX, e.clientY, drag.card);
+  const key = t ? (t.pile !== undefined ? "p" + t.pile : "c" + t.col) : "";
+  if (key === hoverKey) return;
+  hoverKey = key;
+  document.querySelectorAll(".hover").forEach(x => x.classList.remove("hover"));
+  if (t && t.pile !== undefined) $("pile" + t.pile).classList.add("hover");
+  if (t && t.col !== undefined && canShift(S.you, drag.k, t.col)) $("cols").children[t.col].querySelector(".col").classList.add("hover");
+});
+function endDrag(e) {
+  if (!drag || e.pointerId !== drag.id) return;
+  const d = drag; drag = null; hoverKey = "";
+  document.querySelectorAll(".hover").forEach(x => x.classList.remove("hover"));
+  // If the phone cancels the gesture, drop the card where the finger last was.
+  const x = e.type === "pointerup" ? e.clientX : d.x, y = e.type === "pointerup" ? e.clientY : d.y;
+  const t = d.moved ? targetAt(x, y, d.card) : null;
+  // The card must still be the top card: the computer may have changed the table meanwhile.
+  const hand = S.you.skjult;
+  const still = hand ? handCards(S.you).includes(d.card) : topOf(S.you, d.k) === d.card;
+  let ok = false;
+  if (t && still && t.pile !== undefined) ok = hand ? playHand(S.you, handCards(S.you).indexOf(d.card), t.pile) : play(S.you, d.k, t.pile);
+  else if (t && still && t.col !== undefined && t.col !== d.k) ok = shift(S.you, d.k, t.col);
+  if (ok) { d.ghost.remove(); return; }
+  if (!d.moved) say("Drag the card onto one of the piles in the middle.");
+  d.ghost.classList.add("back-home");
+  d.ghost.style.left = d.home.left + "px"; d.ghost.style.top = d.home.top + "px";
+  setTimeout(() => { d.ghost.remove(); render(); if (d.moved && !(t && t.col === d.k)) shake(myCard(d.k)); }, 180);
+}
+document.addEventListener("pointerup", endDrag);
+document.addEventListener("pointercancel", endDrag);
+document.addEventListener("touchmove", e => { if (drag) e.preventDefault(); }, { passive: false });
+
+/* Keyboard: 1–5 picks a bunke, arrows lay the card, space shouts. */
+function keyCol(k) {
+  const pl = S.you;
+  if (pl.skjult) {
+    if (pl.hand < 0) take(pl, k);
+    else if (k < handCards(pl).length) { selected = selected === k ? null : k; render(); }
+    return;
+  }
+  if (selected !== null && selected !== k && canShift(pl, selected, k)) { const f = selected; selected = null; shift(pl, f, k); return; }
+  if (!pl.cols[k].length) return;
+  if (!pl.open[k]) { flip(pl, k); return; }
+  selected = selected === k ? null : k; render();
+}
+document.addEventListener("keydown", e => {
+  if (!running || !$("settings").hidden) return;
+  const n = parseInt(e.key, 10);
+  if (n >= 1 && n <= 5) keyCol(n - 1);
+  if (e.key === " ") { e.preventDefault(); shout(S.you); }
+  if (e.key === "Backspace" || e.key === "0") putBack(S.you);
+  if (selected !== null && (e.key === "ArrowLeft" || e.key === "ArrowRight")) {
+    const k = selected, i = e.key === "ArrowLeft" ? 0 : 1;
+    if (!(S.you.skjult ? playHand(S.you, k, i) : play(S.you, k, i))) { selected = null; render(); shake(myCard(k)); }
+  }
+});
+$("shout").addEventListener("click", () => shout(S.you));
+
+/* Computer opponent. Its pace drifts, it sometimes hesitates, picks moves at random,
+   and can miss a Pismarie altogether. */
+const pick = a => a[Math.floor(Math.random() * a.length)];
+let mood = 1;
+// How fast the computer is: chosen when you pick "Mod computeren".
+const LEVELS = [
+  { ms: 1900, name: "Easy", info: "Takes it slow and often forgets to call Pismarie." },
+  { ms: 1200, name: "Medium", info: "A good challenge." },
+  { ms: 750, name: "Hard", info: "Fast and rarely fooled." },
+  { ms: 450, name: "Lightning", info: "Almost impossible to beat." },
+];
+function base() { return LEVELS.some(l => l.ms === +Settings.speed) ? +Settings.speed : 1200; }
+function aiDelay() {
+  mood = Math.min(1.5, Math.max(0.7, mood + (Math.random() - 0.5) * 0.2));
+  let d = base() * mood * (0.45 + Math.random() * 1.1);
+  if (Math.random() < 0.12) d += base() * (0.8 + Math.random() * 1.5);
+  return d;
+}
+function scheduleAiShout() {
+  if (aiShoutTimer) return;
+  const miss = { 1900: .4, 1200: .25, 750: .12, 450: .05 }[base()] ?? .2;
+  if (Math.random() < miss) { aiShoutTimer = -1; return; }
+  aiShoutTimer = setTimeout(() => { aiShoutTimer = null; shout(S.ai); }, base() * (0.5 + Math.random() * 1.1) + 200);
+}
+// The computer first lifts the card it is going for, so you can see what it is about to do.
+let aimK = -1;
+function aiTick() {
+  if (!running || S.over) return;
+  const pl = S.ai;
+  if (pl.skjult) { aiHidden(pl); return; }
+  const m = moves(S, pl);
+  const sh = usefulShift(pl);
+  let act = null, k = -1;
+  if (m.length && !(sh && Math.random() < 0.25)) { const [kk, i] = pick(m); k = kk; act = () => play(pl, kk, i); }
+  else if (flipTarget(pl) >= 0) { k = flipTarget(pl); act = () => flip(pl, k); }
+  else if (sh) { k = sh[0]; act = () => shift(pl, sh[0], sh[1]); }
+  document.querySelector(".opp .seat").classList.toggle("thinking", !act);
+  if (!act) { aiTimer = setTimeout(aiTick, aiDelay()); return; }
+  aimK = k;
+  if (k >= 0) { const c = aiColEl(k).querySelector(".card"); if (c) c.classList.add("aim"); }
+  aiTimer = setTimeout(() => {
+    aimK = -1;
+    if (!running || S.over) return;
+    if (!act()) render();  // the table changed under it: put the card back down
+    aiTimer = setTimeout(aiTick, aiDelay());
+  }, reduceMotion ? 0 : 140 + Math.random() * 160);
+}
+
+// Hidden bunker: the computer takes a bunke up, plays what fits, puts it back and tries the next.
+// It half remembers where the good cards are.
+function aiHidden(pl) {
+  let act;
+  if (pl.hand >= 0) {
+    const hm = handMoves(S, pl);
+    if (hm.length) { const [j, i] = pick(hm); act = () => playHand(pl, j, i); }
+    else act = () => putBack(pl);
+  } else {
+    const ks = [0, 1, 2, 3, 4].filter(k => pl.cols[k].length && k !== pl.lastHand);
+    const good = ks.filter(k => pl.cols[k].some(c => fits(c, pileTop(S, 0)) || fits(c, pileTop(S, 1))));
+    const k = good.length && Math.random() < 0.55 ? pick(good) : ks.length ? pick(ks) : pl.cols.findIndex(c => c.length);
+    if (k >= 0) { pl.lastHand = k; act = () => take(pl, k); }
+  }
+  if (!act) { aiTimer = setTimeout(aiTick, aiDelay()); return; }
+  aiTimer = setTimeout(() => {
+    if (!running || S.over) return;
+    if (!act()) render();
+    aiTimer = setTimeout(aiTick, aiDelay() * 0.7);
+  }, reduceMotion ? 0 : 120);
+}
+
+function checkStuck() {
+  if (S.over || S.pending || stuckTimer) return;
+  if (!isStuck(S)) {
+    if (!moves(S, S.you).length && !moves(S, S.ai).length && flipTarget(S.you) >= 0) say("Turn over your next card.");
+    return;
+  }
+  say("Nobody can play. You each turn a card…");
+  stuckTimer = setTimeout(() => {
+    stuckTimer = null;
+    if (S.over || !isStuck(S)) { say(""); return; }
+    if (!doSpit(S)) { const a = remaining(S.you), b = remaining(S.ai); finish(a < b ? true : a > b ? false : null); return; }
+    say(""); flashPile(0); flashPile(1); sfx("spit");
+    S.ev = { id: (S.ev ? S.ev.id : 0) + 1, k: "spit" };
+    afterChange(null);
+  }, 1500);
+}
+
+function stopTimers() {
+  clearTimeout(aiTimer); clearTimeout(stuckTimer); if (aiShoutTimer > 0) clearTimeout(aiShoutTimer);
+  aiTimer = stuckTimer = aiShoutTimer = null; aimK = -1;
+  const seat = document.querySelector(".opp .seat"); if (seat) seat.classList.remove("thinking");
+}
+// Timers that move the game from one step to the next (countdown, round end). Leaving the game
+// cancels them, so an old game can never pop up over the menu or a new game.
+const flow = new Set();
+function later(fn, ms) { const t = setTimeout(() => { flow.delete(t); fn(); }, ms); flow.add(t); return t; }
+function cancelFlow() { flow.forEach(clearTimeout); flow.clear(); }
+
+function finish(youWon, how) {
+  S.how = how || "stuck";
+  S.over = true; running = false; stopTimers();
+  // For the app shell (ads between games): it listens for this instead of reaching into the page.
+  try { window.dispatchEvent(new CustomEvent("pismarie:gameover", { detail: { online: !!NET, won: youWon } })); } catch (e) {}
+  S.phase = "over"; S.winner = youWon === true ? "h" : youWon === false ? "g" : "d";
+  render();
+  sfx(youWon === true ? "win" : youWon === false ? "lose" : "round");
+  const secs = Math.round((Date.now() - startedAt) / 1000);
+  const time = `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, "0")}`;
+  const title = youWon === true ? "You won!" : youWon === false ? `${opp()} won` : "Draw";
+  const sub = youWon === true ? `${how === "last" ? "You won on the last pile" : "You had the fewest cards when nobody could play"}. ${opp()} had ${remaining(S.ai) + S.ai.deck.length} cards left.`
+    : youWon === false ? `You had ${remaining(S.you) + S.you.deck.length} cards left. ${NET ? "Go for a rematch!" : "Try an easier computer, or go for a rematch."}`
+    : "You were stuck with the same number of cards.";
+  showPanel(`<h2>${title}</h2><p>${sub}</p>
+    <div class="stats"><span class="h">Time ${time}</span><span class="h">You</span><span class="h">${NET ? "Opponent" : "Computer"}</span>
+    <span>Cards played</span><span>${S.you.played}</span><span>${S.ai.played}</span>
+    <span>Pismarie called</span><span>${S.you.shouts}</span><span>${S.ai.shouts}</span>
+    <span>Rounds played</span><span>${S.round}</span><span></span></div>
+    ${isGuest() ? `<p>Waiting for your opponent to start a new game.</p><div class="btnrow"><button class="leave" type="button">Menu</button></div>`
+      : `<div class="btnrow"><button class="primary" id="againBtn" type="button">New game${NET ? "" : " · " + LEVELS.find(l => l.ms === base()).name}</button>${NET ? `<button class="leave" type="button">Menu</button>` : `<button id="lvBtn" type="button">Change difficulty</button><button id="toMenu" type="button">Menu</button>`}</div>`}`);
+  if (!isGuest()) { $("againBtn").addEventListener("click", start); $("againBtn").focus(); }
+  if (!NET) { $("lvBtn").addEventListener("click", chooseLevel); $("toMenu").addEventListener("click", showMenu); }
+}
+
+/* Rounds: whoever empties their bunker first picks a dynge (the smallest, if they are smart). */
+function roundOver(w) {
+  S.phase = "roundend";
+  running = false; stopTimers(); selected = null; aimK = -1;
+  document.querySelector(".opp .seat").classList.remove("thinking");
+  S.choosing = w; render();
+  const me = w === S.you;
+  sfx(me ? "round" : "roundOpp");
+  if (singlePile(S) && !w.stock.length) { later(() => finish(me, "last"), 700); return; }
+  if (singlePile(S)) {
+    const n = S.piles[0].length + S.piles[1].length;
+    say(me ? `Your stacks are empty! ${opp()} gets ${n} cards.` : `${opp()} emptied their stacks. You get ${n} cards.`);
+    later(() => resolveRound(0), 1800);
+    return;
+  }
+  S.phase = "choose"; render();
+  if (me) { say("Your stacks are empty! Tap the smallest pile."); return; }
+  if (NET) { say("Your opponent is picking a pile…"); return; }
+  const a = S.piles[0].length, b = S.piles[1].length;
+  const pickI = a === b ? Math.floor(Math.random() * 2) : a < b ? 0 : 1;
+  say("The computer is picking a pile…");
+  later(() => {
+    say(`The computer took ${S.piles[pickI].length} cards. You get ${S.piles[1 - pickI].length}.`);
+    later(() => resolveRound(pickI), 1500);
+  }, 900);
+}
+function choose(pl, i) {
+  if (S.choosing !== pl || running || S.over || singlePile(S) || !S.active[i] || S.resolving) return;
+  S.resolving = true;
+  sfx("pick");
+  if (isGuest()) { say("One moment…"); send({ t: "c", i: 1 - i }); return; }
+  resolveRound(i);
+}
+[0, 1].forEach(i => $("pile" + i).addEventListener("click", () => choose(S.you, i)));
+function resolveRound(choice) {
+  const w = S.choosing;
+  const winner = endRound(S, w, choice);
+  S.choosing = null; S.resolving = false;
+  if (winner) { finish(winner === S.you, "last"); return; }
+  S.phase = "round";
+  say(""); render();
+  if (NET) { showPanel(roundPanel() + "<p>The next round starts in a moment…</p>"); later(() => { if (!S.over) beginRound(); }, 2500); return; }
+  showPanel(`<h2>Round ${S.round}</h2>
+    <p>You have <strong>${remaining(S.you)}</strong> cards, ${opp().toLowerCase()} has <strong>${remaining(S.ai)}</strong>.</p>
+    ${singlePile(S) ? `<p>${S.you.stock.length ? opp() + " has" : "You have"} no reserve, so only one pile is played.</p>` : ""}
+    <button class="primary" id="nextBtn" type="button">Deal</button>`);
+  $("nextBtn").addEventListener("click", () => beginRound());
+  $("nextBtn").focus();
+}
+function roundPanel() {
+  return `<h2>Round ${S.round}</h2>
+    <p>You have <strong>${remaining(S.you)}</strong> cards, ${opp().toLowerCase()} has <strong>${remaining(S.ai)}</strong>.</p>
+    ${singlePile(S) ? `<p>${S.you.stock.length ? opp() + " has" : "You have"} no reserve, so only one pile is played.</p>` : ""}`;
+}
+// 3, 2, 1 on the table, then done().
+function countdown(done) {
+  cancelFlow();
+  let n = 3;
+  showPanel(`<div class="countdown" id="cd">${n}</div>`); sfx("tick");
+  const step = () => {
+    n--;
+    if (n > 0) { if ($("cd")) $("cd").textContent = n; sfx("tick"); later(step, 600); return; }
+    if (done) done();
+  };
+  later(step, 600);
+}
+function beginRound() {
+  S.phase = "countdown"; render();
+  countdown(() => {
+    $("overlay").hidden = true;
+    sfx("go"); dealIn();
+    doSpit(S);
+    S.phase = "play";
+    running = true; flashPile(0); flashPile(1);
+    if (!NET) aiTimer = setTimeout(aiTick, aiDelay() + 400);
+    afterChange(null);
+    if (S.you.skjult && S.round === 1) say("Tap a stack to pick it up in your hand.");
+  });
+}
+
+function showPanel(html) { $("panel").innerHTML = html; $("overlay").hidden = false; }
+
+function start() {
+  if (isGuest()) return;
+  endTutorial(false);
+  stopTimers(); cancelFlow();
+  if (!NET) pickOppDz();
+  running = false; S = newGame(NET ? NET.md : Settings.mode); S.mp = !!NET; selected = null; mood = 1; lastCounts = [26, 26]; render(); say("");
+  startedAt = Date.now();
+  beginRound();
+}
+
+/* ---------- Menu ---------- */
+function showMenu() {
+  stopTimers(); cancelFlow(); running = false; endTutorial(false);
+  if (!NET) { S = newGame(Settings.mode); S.phase = "menu"; selected = null; render(); say(""); }
+  const fresh = !Settings.tutorialDone;
+  showPanel(`<h2 class="menutitle">Pismarie</h2>
+    <p class="menusub">The fast card game for two. First to empty their stacks wins.</p>
+    ${fresh ? `<div class="lobby"><p class="lobbystat live">New to Pismarie?</p>
+      <p class="newbietxt">Learn the game in a few minutes by playing it, step by step.</p>
+      <div class="btnrow"><button class="primary" id="mTut" type="button">Learn to play</button><button id="mKnow" type="button">I know the game</button></div></div>` : ""}
+    <div class="menu">
+      <button class="primary big" id="mCpu" type="button">Vs the computer</button>
+      <button class="primary alt big" id="mOnline" type="button">Online and with friends</button>
+    </div>
+    <div class="menu2">
+      ${fresh ? "" : `<button id="mTut" type="button">Learn to play</button>`}
+      <button id="mCards" type="button">Your cards</button>
+      <button id="mSet" type="button" aria-label="Settings">⚙ Settings</button>
+    </div>
+    ${window.claude ? "" : `<a class="lang" href="../" lang="da">Spil på dansk</a>`}`);
+  $("mCpu").addEventListener("click", chooseLevel);
+  $("mOnline").addEventListener("click", () => mpMenu());
+  $("mTut").addEventListener("click", startTutorial);
+  if ($("mKnow")) $("mKnow").addEventListener("click", () => { Settings.tutorialDone = true; saveSettings(); showMenu(); });
+  $("mCards").addEventListener("click", () => { openSettings(); $("dzGrid").scrollIntoView({ block: "center" }); });
+  $("mSet").addEventListener("click", openSettings);
+  syncModeUI();
+  $("mCpu").focus();
+}
+
+function chooseLevel() {
+  showPanel(`<h2>Vs the computer</h2><p>How hard should the computer be?</p>
+    <div class="levels">${LEVELS.map(l => `<button type="button" class="level${l.ms === base() ? " on" : ""}" data-ms="${l.ms}"><strong>${l.name}</strong><span>${l.info}</span></button>`).join("")}</div>
+    ${MODE_PICK}
+    <div class="btnrow"><button id="lvBack" type="button">Back</button></div>`);
+  document.querySelectorAll(".level").forEach(b => b.addEventListener("click", () => { Settings.speed = +b.dataset.ms; saveSettings(); start(); }));
+  $("lvBack").addEventListener("click", showMenu);
+  syncModeUI();
+  (document.querySelector(".level.on") || document.querySelector(".level")).focus();
+}
+// Leaving anything online: a fresh page closes every link and timer at once.
+document.addEventListener("click", e => { if (e.target.closest(".leave")) location.reload(); });
+$("menuBtn").addEventListener("click", () => { if (NET) { if (confirm("Leave the game against your opponent?")) location.reload(); return; } showMenu(); });
+
+/* ---------- Tutorial: a set table where you play the first moves yourself ---------- */
+const cardOf = (r, si) => ALL[si * 13 + r - 1];  // si: 0 ♠, 1 ♥, 2 ♦, 3 ♣
+function tutorialGame() {
+  const G = newGame("normal");
+  const mine = [[[8, 2], [7, 1]], [[2, 1], [9, 0], [11, 0]], [[12, 3], [4, 2]], [[13, 1], [5, 3], [10, 3]], [[12, 1]]];
+  const used = new Set();
+  const own = ([r, si]) => { const c = cardOf(r, si); used.add(c); return c; };
+  G.you.cols = mine.map(col => col.map(own));
+  G.you.open = [1, 1, 1, 1, 1];
+  G.piles = [[own([2, 3])], [own([6, 3])]];
+  const extra = own([8, 0]);
+  const rest = shuffle(ALL.filter(c => !used.has(c)));
+  G.ai.cols = [[], [], [], [], []];
+  for (let row = 0; row < 5; row++) for (let c = row; c < 5; c++) G.ai.cols[c].push(rest.pop());
+  G.ai.open = [1, 1, 1, 1, 1];
+  G.you.stock = rest.splice(0, 10); G.ai.stock = rest;
+  G.you.deck = []; G.ai.deck = [];
+  G.active = [true, true]; G.round = 1;
+  return { G, extra };
+}
+const TUT_STEPS = [
+  { text: "At the bottom are your 5 stacks. Drag the 7 onto the pile with the 6. A card fits when it is one higher or one lower.",
+    done: () => pileTop(S, 1) === cardOf(7, 1), hi: () => [myCard(0), $("pile1").querySelector(".card")] },
+  { text: "Good! There was a hidden card under the 7. Tap the stack to turn it over.",
+    done: () => S.you.open[0] > 0, hi: () => [myCard(0)] },
+  { text: "An 8. It fits on the 7, so drag it up too.",
+    done: () => pileTop(S, 1) === cardOf(8, 2), hi: () => [myCard(0), $("pile1").querySelector(".card")] },
+  { text: "Now the stack is empty. Drag one of your other cards into the empty space. That makes room, and if a hidden card was under it, you can turn it over.",
+    done: () => S.you.cols[0].length > 0, hi: () => [myCard(0)] },
+  { text: "Look, there are two 8s in the middle! Tap Pismarie! before your opponent, and your opponent gets both piles.",
+    enter: () => { tutPair(); render(); flashPile(0, true); sfx("cardOpp"); },
+    lock: true, done: () => S.you.shouts > 0 && !S.pending, hi: () => [$("shout")] },
+  { text: "Your opponent got both piles, and you each turned a card from your reserve. That also happens when neither of you can play.",
+    next: "Next", hi: () => [$("side0").querySelector(".card"), $("side1").querySelector(".card")] },
+  { text: "Empty your 5 stacks before your opponent. Then you pick one of the piles in the middle: take the smallest. The first to run out of cards completely wins the game.",
+    next: "Play the computer", final: true, hi: () => [] },
+];
+// The Pismarie step needs a pair on top, whatever the player laid before: the opponent lays a card
+// of the same rank as the top of your dynge (taken from its own cards).
+function tutPair() {
+  const t = pileTop(S, 1);
+  const r = t ? t.r : TUT.extra.r;
+  if (!t) { S.piles[1].push(TUT.extra); return; }
+  if (TUT.extra.r === r) { S.piles[0].push(TUT.extra); return; }
+  S.ai.stock.push(TUT.extra);
+  for (const src of [S.ai.stock, ...S.ai.cols]) {
+    const j = src.findIndex(c => c.r === r);
+    if (j >= 0) {
+      const [c] = src.splice(j, 1);
+      if (src !== S.ai.stock) { const k = S.ai.cols.indexOf(src); S.ai.open[k] = src.length ? 1 : 0; }
+      S.piles[0].push(c);
+      return;
+    }
+  }
+}
+function startTutorial() {
+  if (NET) return;
+  stopTimers(); cancelFlow(); pickOppDz();
+  const t = tutorialGame();
+  S = t.G; S.phase = "play"; selected = null;
+  TUT = { step: 0, extra: t.extra };
+  lastCounts = [remaining(S.you), remaining(S.ai)];
+  $("overlay").hidden = true; running = true;
+  render(); say(""); dealIn(); sfx("go");
+  showCoach();
+}
+function showCoach() {
+  const st = TUT_STEPS[TUT.step];
+  $("coachText").textContent = st.text;
+  $("coachStep").textContent = `Step ${TUT.step + 1} of ${TUT_STEPS.length}`;
+  $("coachNext").hidden = !st.next; $("coachNext").textContent = st.next || "";
+  $("coach").hidden = false;
+  $("coach").classList.remove("pop"); void $("coach").offsetWidth; $("coach").classList.add("pop");
+  tutHighlight();
+}
+function tutHighlight() {
+  document.querySelectorAll(".coach-hi").forEach(el => el.classList.remove("coach-hi"));
+  if (!TUT) return;
+  TUT_STEPS[TUT.step].hi().forEach(el => el && el.classList.add("coach-hi"));
+}
+function tutCheck() {
+  const st = TUT_STEPS[TUT.step];
+  if (TUT.next || !st.done || !st.done()) return;
+  TUT.next = setTimeout(tutAdvance, 450);  // once: several moves in a row must not skip steps
+}
+function tutAdvance() {
+  if (!TUT) return;
+  TUT.next = null;
+  TUT.step++;
+  sfx("pick");
+  const st = TUT_STEPS[TUT.step];
+  if (st.enter) st.enter();
+  showCoach();
+}
+function endTutorial(learned) {
+  if (learned) { Settings.tutorialDone = true; saveSettings(); }
+  if (!TUT) return;
+  clearTimeout(TUT.next);
+  TUT = null;
+  $("coach").hidden = true;
+  tutHighlight();
+}
+$("coachNext").addEventListener("click", () => {
+  if (!TUT) return;
+  if (TUT_STEPS[TUT.step].final) { endTutorial(true); start(); return; }
+  tutAdvance();
+});
+$("coachSkip").addEventListener("click", () => { endTutorial(true); showMenu(); });
+
+/* ---------- Sound: everything is synthesised, so there are no sound files to ship ---------- */
+const Settings = (() => {
+  const d = { music: 35, sfx: 75, vibe: true, sameDz: false, calm: false, design: "klassisk", owned: [], mode: "normal", tutorialDone: false, speed: 1200 };
+  try { return Object.assign(d, JSON.parse(localStorage.getItem("pismarie.settings") || "{}")); } catch (e) { return d; }
+})();
+function saveSettings() { try { localStorage.setItem("pismarie.settings", JSON.stringify(Settings)); } catch (e) {} }
+
+/* ---------- Card designs: the free ones now, the shop ones once the app has a shop ---------- */
+const DESIGNS = [
+  { id: "klassisk", name: "Classic" },
+  { id: "hav", name: "Sea" },
+  { id: "nat", name: "Night" },
+  { id: "skov", name: "Forest" },
+  { id: "dannebrog", name: "Dannebrog", shop: true },
+  { id: "neon", name: "Neon", shop: true },
+  { id: "guld", name: "Gold", shop: true },
+  { id: "lava", name: "Lava", shop: true },
+  { id: "is", name: "Ice" },
+  { id: "rum", name: "Space", shop: true },
+  { id: "pixel", name: "Pixel" },
+  { id: "slik", name: "Candy" },
+  { id: "tiger", name: "Tiger", shop: true },
+  { id: "marmor", name: "Marble", shop: true },
+  { id: "trae", name: "Wood" },
+  { id: "pirat", name: "Pirate", shop: true },
+  { id: "regnbue", name: "Rainbow", shop: true },
+];
+// Everything is unlocked for now. Set this to false when the app gets its shop.
+const UNLOCK_ALL = true;
+// A shop design is yours once its id is in Settings.owned; the app's shop will add it there.
+function owns(d) { return UNLOCK_ALL || !d.shop || (Array.isArray(Settings.owned) && Settings.owned.includes(d.id)); }
+function dzOk(id) { return DESIGNS.some(d => d.id === id) ? id : "klassisk"; }
+function myDz() { const d = DESIGNS.find(x => x.id === Settings.design); return d && owns(d) ? d.id : "klassisk"; }
+let oppDz = "hav";
+// The computer always plays with a free design that differs from yours.
+function pickOppDz() {
+  const free = DESIGNS.filter(d => !d.shop && d.id !== myDz());
+  oppDz = free[Math.floor(Math.random() * free.length)].id;
+}
+// "Modstanderen i mit design": some find two colourful designs on one table hard to read.
+const oppShown = () => Settings.sameDz ? myDz() : dzOk(oppDz);
+function applyDesigns() {
+  document.body.classList.toggle("calm", !!Settings.calm);
+  const me = myDz(), op = oppShown();
+  for (const el of [document.querySelector(".zone.mine"), $("side0"), $("pile1")]) if (el.dataset.dz !== me) el.dataset.dz = me;
+  for (const el of [document.querySelector(".zone.opp"), $("side1"), $("pile0")]) if (el.dataset.dz !== op) el.dataset.dz = op;
+}
+function setMyDz(id) {
+  const d = DESIGNS.find(x => x.id === id);
+  if (!d) return;
+  if (!owns(d)) { $("dzNote").textContent = `${d.name} will be in the shop when Pismarie becomes an app.`; sfx("nope"); return; }
+  Settings.design = d.id; saveSettings();
+  if (!NET && oppDz === d.id) pickOppDz();
+  if (NET) NET.room.presence({ dz: d.id }).catch(() => {});
+  $("dzNote").textContent = "";
+  renderDzGrid(); applyDesigns(); sfx("card");
+}
+function renderDzGrid() {
+  const g = $("dzGrid"); if (!g) return;
+  g.innerHTML = "";
+  for (const d of DESIGNS) {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "dz" + (d.id === myDz() ? " on" : "") + (owns(d) ? "" : " locked");
+    b.dataset.id = d.id; b.dataset.dz = d.id;
+    b.setAttribute("aria-pressed", String(d.id === myDz()));
+    const pair = document.createElement("span"); pair.className = "pair";
+    pair.append(backEl(0), cardEl({ r: 12, s: "♥", c: "red" }), cardEl({ r: 7, s: "♠", c: "black" }));
+    const tag = document.createElement("span"); tag.className = "tag";
+    tag.textContent = d.id === myDz() ? "Selected" : !owns(d) ? "🔒 Shop" : d.shop ? "Shop · unlocked" : "Free";
+    const nm = document.createElement("span"); nm.textContent = d.name;
+    b.append(pair, nm, tag);
+    g.appendChild(b);
+  }
+}
+
+const Sound = (() => {
+  let ctx = null, sfxBus = null, musicBus = null, noiseBuf = null, nextBeat = 0, beat = 0, timer = null;
+  function init() {
+    if (ctx) { if (ctx.state === "suspended") ctx.resume().catch(() => {}); return ctx; }
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return null;
+    try { ctx = new AC(); } catch (e) { return null; }
+    const comp = ctx.createDynamicsCompressor(); comp.connect(ctx.destination);
+    sfxBus = ctx.createGain(); sfxBus.connect(comp);
+    musicBus = ctx.createGain(); musicBus.connect(comp);
+    noiseBuf = ctx.createBuffer(1, ctx.sampleRate * 0.5, ctx.sampleRate);
+    const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    levels();
+    return ctx;
+  }
+  function levels() {
+    if (!ctx) return;
+    sfxBus.gain.value = Math.pow(Settings.sfx / 100, 1.6) * 0.9;
+    musicBus.gain.value = Math.pow(Settings.music / 100, 1.6) * 0.35;
+    if (Settings.music > 0) startMusic(); else stopMusic();
+  }
+  function tone(t, freq, dur, { type = "sine", gain = 0.3, attack = 0.005, to = null, bus = sfxBus, filter = null } = {}) {
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = type; o.frequency.setValueAtTime(freq, t);
+    if (to) o.frequency.exponentialRampToValueAtTime(to, t + dur);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(gain, t + attack);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    let out = o;
+    if (filter) { const f = ctx.createBiquadFilter(); f.type = "lowpass"; f.frequency.value = filter; o.connect(f); out = f; }
+    out.connect(g); g.connect(bus);
+    o.start(t); o.stop(t + dur + 0.02);
+  }
+  function noise(t, dur, { gain = 0.4, type = "bandpass", freq = 2500, q = 1, to = null } = {}) {
+    const n = ctx.createBufferSource(), f = ctx.createBiquadFilter(), g = ctx.createGain();
+    n.buffer = noiseBuf; f.type = type; f.frequency.setValueAtTime(freq, t); f.Q.value = q;
+    if (to) f.frequency.exponentialRampToValueAtTime(to, t + dur);
+    g.gain.setValueAtTime(gain, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    n.connect(f); f.connect(g); g.connect(sfxBus);
+    n.start(t); n.stop(t + dur + 0.02);
+  }
+  const NOTES = { C4: 261.6, D4: 293.7, E4: 329.6, F4: 349.2, G4: 392, A4: 440, B4: 493.9, C5: 523.3, E5: 659.3, G5: 784, C6: 1046.5 };
+  const SFX = {
+    card(t) { noise(t, 0.07, { gain: 0.55, freq: 1800, q: 0.8 }); tone(t, 180, 0.08, { gain: 0.25, to: 90 }); },
+    cardOpp(t) { noise(t, 0.06, { gain: 0.3, freq: 1400, q: 0.8 }); tone(t, 150, 0.07, { gain: 0.15, to: 80 }); },
+    flip(t) { noise(t, 0.04, { gain: 0.35, type: "highpass", freq: 3500 }); tone(t + 0.02, 880, 0.05, { gain: 0.08 }); },
+    flipOpp(t) { noise(t, 0.035, { gain: 0.18, type: "highpass", freq: 3200 }); },
+    slide(t) { noise(t, 0.14, { gain: 0.3, type: "lowpass", freq: 3000, to: 600 }); },
+    nope(t) { tone(t, 140, 0.16, { type: "square", gain: 0.1, filter: 700, to: 110 }); },
+    shout(t) { [NOTES.C5, NOTES.E5, NOTES.G5].forEach((f, i) => tone(t + i * 0.06, f, 0.35, { type: "sawtooth", gain: 0.12, filter: 2400 })); noise(t, 0.12, { gain: 0.3, freq: 900 }); },
+    shoutOpp(t) { [NOTES.G4, NOTES.E4, NOTES.C4].forEach((f, i) => tone(t + i * 0.07, f, 0.35, { type: "sawtooth", gain: 0.12, filter: 1600 })); noise(t, 0.12, { gain: 0.3, freq: 700 }); },
+    spit(t) { SFX.card(t); SFX.card(t + 0.09); },
+    tick(t) { tone(t, 660, 0.09, { gain: 0.18 }); },
+    go(t) { tone(t, 990, 0.22, { gain: 0.22 }); tone(t, 1485, 0.18, { gain: 0.06 }); },
+    pick(t) { tone(t, 520, 0.08, { type: "triangle", gain: 0.2 }); },
+    round(t) { [NOTES.C5, NOTES.E5, NOTES.G5, NOTES.C6].forEach((f, i) => tone(t + i * 0.09, f, 0.3, { type: "triangle", gain: 0.18 })); },
+    roundOpp(t) { [NOTES.G4, NOTES.E4, NOTES.C4].forEach((f, i) => tone(t + i * 0.1, f, 0.3, { type: "triangle", gain: 0.15 })); },
+    win(t) { [NOTES.C5, NOTES.E5, NOTES.G5, NOTES.C6, NOTES.G5, NOTES.C6].forEach((f, i) => tone(t + i * 0.12, f, i > 3 ? 0.6 : 0.25, { type: "triangle", gain: 0.2 })); },
+    lose(t) { [NOTES.E4, NOTES.D4, NOTES.C4, 196].forEach((f, i) => tone(t + i * 0.16, f, 0.4, { type: "triangle", gain: 0.16 })); }
+  };
+  function play(name) {
+    if (Settings.sfx <= 0 || !SFX[name]) return;
+    if (!init() || ctx.state !== "running") return;
+    try { SFX[name](ctx.currentTime + 0.005); } catch (e) {}
+  }
+  // A gentle café loop: Am – F – C – G, a bass on 1 and 3 and a plucked arpeggio on the eighths.
+  const CHORDS = [[220, 261.6, 329.6], [174.6, 220, 261.6], [130.8, 196, 261.6], [196, 246.9, 293.7]];
+  const BPM = 96, EIGHTH = 60 / BPM / 2;
+  function schedule() {
+    if (!ctx) return;
+    while (nextBeat < ctx.currentTime + 0.25) {
+      const bar = Math.floor(beat / 8) % CHORDS.length, step = beat % 8, ch = CHORDS[bar];
+      if (step === 0 || step === 4) tone(nextBeat, ch[0] / 2, EIGHTH * 3.5, { type: "triangle", gain: 0.35, bus: musicBus, attack: 0.01 });
+      const arp = [0, 1, 2, 1, 2, 1, 0, 1][step];
+      tone(nextBeat, ch[arp] * 2, EIGHTH * 1.6, { type: "sine", gain: step % 2 ? 0.08 : 0.13, bus: musicBus });
+      if (step === 6 && bar % 2) tone(nextBeat, ch[2] * 4, EIGHTH, { type: "sine", gain: 0.04, bus: musicBus });
+      nextBeat += EIGHTH; beat++;
+    }
+  }
+  function startMusic() {
+    if (!ctx || timer || ctx.state !== "running") return;
+    nextBeat = ctx.currentTime + 0.1; timer = setInterval(schedule, 100);
+  }
+  function stopMusic() { clearInterval(timer); timer = null; }
+  // Browsers only allow sound after the viewer has touched the page.
+  function unlock() { if (init()) { ctx.resume().then(levels).catch(() => {}); } }
+  document.addEventListener("visibilitychange", () => { if (!ctx) return; if (document.hidden) { stopMusic(); ctx.suspend().catch(() => {}); } else ctx.resume().then(levels).catch(() => {}); });
+  return { play, levels, unlock };
+})();
+function sfx(name) { Sound.play(name); }
+document.addEventListener("pointerdown", () => Sound.unlock(), { capture: true });
+document.addEventListener("keydown", () => Sound.unlock(), { capture: true });
+
+// New bunker slide in from the deck, one after another.
+function dealIn() {
+  if (reduceMotion) return;
+  for (const id of ["cols", "aiCols"]) {
+    const el = $(id);
+    [...el.children].forEach((c, i) => (c.querySelector(".col") || c).style.setProperty("--i", i));
+    el.classList.remove("deal"); void el.offsetWidth; el.classList.add("deal");
+    setTimeout(() => el.classList.remove("deal"), 900);
+  }
+}
+
+/* Settings dialog. Against the computer the game pauses while it is open. */
+let pausedForSettings = false;
+function syncSettingsUI() {
+  $("volMusic").value = Settings.music; $("outMusic").textContent = Settings.music;
+  $("volSfx").value = Settings.sfx; $("outSfx").textContent = Settings.sfx;
+  $("optVibe").checked = Settings.vibe;
+  $("optSame").checked = !!Settings.sameDz;
+  $("optCalm").checked = !!Settings.calm;
+  $("dzNote").textContent = "";
+  renderDzGrid(); syncModeUI();
+}
+// Against the computer the game waits while settings are open or the phone shows something else.
+function pause() { if (!NET && !TUT && running) { pausedForSettings = true; running = false; stopTimers(); } }
+function resume() {
+  if (!pausedForSettings || !$("settings").hidden || document.visibilityState === "hidden") return;
+  pausedForSettings = false; running = true;
+  aiTimer = setTimeout(aiTick, aiDelay()); afterChange(null);
+}
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") pause(); else resume(); });
+function openSettings() {
+  if (!$("volMusic")) { $("settings").querySelector(".panel").innerHTML = SETTINGS_HTML; wireSettings(); }
+  syncSettingsUI();
+  pause();
+  $("settings").hidden = false; $("settings").querySelector(".panel").scrollTop = 0; $("setClose").focus({ preventScroll: true });
+}
+function closeSettings() {
+  $("settings").hidden = true;
+  resume();
+}
+$("gear").addEventListener("click", openSettings);
+$("settings").addEventListener("click", e => { if (e.target === $("settings")) closeSettings(); });
+const SETTINGS_HTML = $("settings").querySelector(".panel").innerHTML;
+const RULES_HTML = $("rulesTpl").innerHTML;
+function wireSettings() {
+  $("setClose").addEventListener("click", closeSettings);
+  $("volMusic").addEventListener("input", e => { Settings.music = +e.target.value; $("outMusic").textContent = Settings.music; Sound.levels(); saveSettings(); });
+  $("volSfx").addEventListener("input", e => { Settings.sfx = +e.target.value; $("outSfx").textContent = Settings.sfx; Sound.levels(); saveSettings(); });
+  $("volSfx").addEventListener("change", () => sfx("card"));
+  $("optVibe").addEventListener("change", e => { Settings.vibe = e.target.checked; saveSettings(); buzz(30); });
+  $("optSame").addEventListener("change", e => { Settings.sameDz = e.target.checked; saveSettings(); applyDesigns(); });
+  $("optCalm").addEventListener("change", e => { Settings.calm = e.target.checked; saveSettings(); applyDesigns(); });
+  $("dzGrid").addEventListener("click", e => { const b = e.target.closest(".dz"); if (b) setMyDz(b.dataset.id); });
+  $("setMenu").addEventListener("click", () => { if (NET) { location.reload(); return; } pausedForSettings = false; $("settings").hidden = true; showMenu(); });
+  $("setRules").addEventListener("click", () => {
+    $("settings").querySelector(".panel").innerHTML = `<h2>Rules</h2><div class="scroll">${RULES_HTML}</div><div class="btnrow"><button class="primary" id="rulesBack" type="button">Back</button></div>`;
+    $("rulesBack").addEventListener("click", () => { $("settings").querySelector(".panel").innerHTML = SETTINGS_HTML; wireSettings(); syncSettingsUI(); });
+  });
+}
+wireSettings();
+syncModeUI();
+document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("settings").hidden) closeSettings(); });
+
+/* ---------- Two phones: one hosts the game, the other mirrors it ----------
+   Both join a named room from a 4-digit code. The host keeps the real game and puts it in its presence;
+   the guest sees the table from its own side and sends its moves in its presence, numbered. */
+function isGuest() { return !!NET && NET.role === "guest"; }
+function encPl(pl) { return { c: pl.cols.map(enc), o: pl.open, s: enc(pl.stock), d: enc(pl.deck || []), p: pl.played, x: pl.shouts, h: pl.hand }; }
+function decPl(o, skjult) {
+  const hand = Number.isInteger(o.h) && o.h >= 0 && o.h <= 4 ? o.h : -1;
+  return { cols: [0, 1, 2, 3, 4].map(k => dec(o.c[k])), open: [0, 1, 2, 3, 4].map(k => Math.max(0, o.o[k] | 0)), stock: dec(o.s), deck: dec(o.d), played: o.p | 0, shouts: o.x | 0, skjult, hand };
+}
+function broadcast() {
+  const ch = S.choosing === S.you ? "h" : S.choosing === S.ai ? "g" : "";
+  const st = { v: 0, md: S.mode, h: encPl(S.you), g: encPl(S.ai), p: S.piles.map(enc), a: S.active, r: S.round, ph: S.phase || "", ch, w: S.winner || "", hw: S.how || "", e: S.ev || null };
+  const key = JSON.stringify(st);
+  if (key === NET.lastSent) return;  // unchanged: sending it again would only echo back here
+  NET.lastSent = key;
+  st.v = NET.v = (NET.v || 0) + 1;
+  NET.room.presence({ role: "host", st, dz: myDz() }).catch(() => {});
+}
+function send(a) {
+  NET.n++;
+  NET.acts = [...NET.acts.slice(-15), { ...a, n: NET.n }];
+  NET.room.presence({ role: "guest", acts: NET.acts, dz: myDz() }).catch(() => {});
+}
+// Host: apply the guest's numbered moves that are new. The guest sits in the computer's seat.
+function hostTakeActs(acts) {
+  if (!Array.isArray(acts)) return;
+  const ok = (v, max) => Number.isInteger(v) && v >= 0 && v <= max;
+  for (const a of acts) {
+    if (!a || !Number.isInteger(a.n) || a.n <= NET.lastN) continue;
+    NET.lastN = a.n;
+    if (a.t === "p" && ok(a.k, 4) && ok(a.i, 1)) play(S.ai, a.k, a.i);
+    else if (a.t === "f" && ok(a.k, 4)) flip(S.ai, a.k);
+    else if (a.t === "m" && ok(a.a, 4) && ok(a.b, 4)) shift(S.ai, a.a, a.b);
+    else if (a.t === "s") shout(S.ai);
+    else if (a.t === "c" && ok(a.i, 1)) choose(S.ai, a.i);
+    else if (a.t === "t" && ok(a.k, 4)) take(S.ai, a.k);
+    else if (a.t === "b") putBack(S.ai);
+    else if (a.t === "q" && ok(a.c, 51) && ok(a.i, 1)) { const j = handCards(S.ai).indexOf(ALL[a.c]); if (j >= 0) playHand(S.ai, j, a.i); }
+  }
+}
+function hostPeers(ch) {
+  // While the opponent is gone, the same player may come back with a new id (they reloaded the page).
+  const g = ch.peers.find(p => !p.isMe && p.presence && p.presence.role === "guest" && p.presence.pv === PV && (!NET.guest || p.peer === NET.guest || NET.lost))
+    || ch.peers.find(p => !p.isMe && p.presence && p.presence.role === "guest" && !NET.guest);
+  if (NET.guest && ch.left.some(p => p.peer === NET.guest)) { say("Your opponent lost the connection…"); NET.lost = true; watchLost(); }
+  if (!g) return;
+  if (NET.lost) {
+    NET.lost = false; say(""); backFromLost();
+    if (NET.guest && g.peer !== NET.guest) {
+      NET.guest = g.peer;
+      const acts = Array.isArray(g.presence.acts) ? g.presence.acts : [];
+      NET.lastN = acts.reduce((m, a) => Math.max(m, (a && a.n) | 0), 0);
+      NET.lastSent = null; broadcast();
+      return;
+    }
+  }
+  if (g.presence.dz && dzOk(g.presence.dz) !== oppDz) { oppDz = dzOk(g.presence.dz); applyDesigns(); }
+  if (NET.guest && !ch.updated.includes(g) && !ch.joined.includes(g)) return;
+  if (!NET.guest) {
+    if (g.presence.pv !== PV) {
+      showPanel(`<h2>Old version</h2><p>Your opponent's phone has an older version of Pismarie. Ask them to reload the page, and the game will start.</p><button class="leave" type="button">Cancel</button>`);
+      return;
+    }
+    NET.guest = g.peer;
+    const acts = Array.isArray(g.presence.acts) ? g.presence.acts : [];
+    NET.lastN = acts.reduce((m, a) => Math.max(m, (a && a.n) | 0), 0);
+    start();
+    return;
+  }
+  hostTakeActs(g.presence.acts);
+}
+// Guest: rebuild the table from the host's state, seen from the guest's side.
+function guestPeers(ch) {
+  const h = ch.peers.find(p => !p.isMe && p.presence && p.presence.role === "host");
+  if (!h) { if (NET.seenHost && ch.left.length) { say("The connection dropped. Trying again…"); NET.lost = true; watchLost(); } return; }
+  if (h.presence.pv !== PV) {
+    if (!NET.oldHost) { NET.oldHost = true; showPanel(`<h2>Old version</h2><p>The other phone has an older version of Pismarie. Ask them to reload the page and create the game again.</p><button class="primary leave" type="button">Try again</button>`); }
+    return;
+  }
+  if (!NET.seenHost && !h.presence.st) showPanel(`<h2>Connected</h2><p>You are playing <strong>${modeName(h.presence.md)}</strong>. The game starts in a moment…</p><button class="leave" type="button">Cancel</button>`);
+  if (NET.md !== h.presence.md) { NET.md = h.presence.md === "skjult" ? "skjult" : "normal"; setMpLabels(); }
+  NET.seenHost = true;
+  if (NET.lost) { NET.lost = false; say(""); backFromLost(); }
+  if (h.presence.dz && dzOk(h.presence.dz) !== oppDz) { oppDz = dzOk(h.presence.dz); applyDesigns(); }
+  const st = h.presence.st;
+  if (!st || typeof st.v !== "number" || st.v <= NET.ver) return;
+  NET.ver = st.v;
+  try { applyState(st); } catch (e) {}
+}
+// If the opponent stays away, say so and offer a way out instead of waiting forever.
+function watchLost() {
+  clearTimeout(NET.lostTimer);
+  const net = NET;
+  NET.lostTimer = setTimeout(() => {
+    if (NET !== net || !NET.lost) return;
+    running = false;
+    showPanel(`<h2>Connection lost</h2><p>${isGuest() ? "The other phone is not answering." : "Your opponent is gone."} Stay on the page if you want to try to find each other again.</p>
+      <div class="btnrow"><button class="primary" id="lostWait" type="button">Wait a bit longer</button><button class="leave" type="button">Menu</button></div>`);
+    $("lostWait").addEventListener("click", () => { $("overlay").hidden = true; running = S.phase === "play"; watchLost(); });
+  }, 60000);
+}
+function backFromLost() { clearTimeout(NET.lostTimer); if ($("lostWait")) { $("overlay").hidden = true; running = S.phase === "play"; } }
+function applyState(st) {
+  const prevCols = S.ai.cols.map(c => c.slice());
+  const rects = prevCols.map((c, k) => c.length ? aiCardRect(k) : null);
+  const prevPile = [pileTop(S, 0), pileTop(S, 1)];
+  const prevOpen = S.ai.open.slice();
+  const keepDrag = drag;
+  const skjult = st.md === "skjult";
+  S = { you: decPl(st.g, skjult), ai: decPl(st.h, skjult), piles: [dec(st.p[1]), dec(st.p[0])], active: [!!st.a[1], !!st.a[0]],
+        round: st.r | 0, over: st.ph === "over", phase: st.ph, mp: true, mode: skjult ? "skjult" : "normal" };
+  S.choosing = st.ch === "g" ? S.you : st.ch === "h" ? S.ai : null;
+  running = st.ph === "play";
+  if (keepDrag && !running) { keepDrag.ghost.remove(); drag = null; }
+  render();
+  for (let i = 0; i < 2; i++) {
+    const t = pileTop(S, i);
+    if (!t || t === prevPile[i]) continue;
+    const k = prevCols.findIndex(c => c.includes(t));
+    if (k >= 0 && rects[k]) { fly(t, rects[k], $("pile" + i), false, oppShown()); flashPile(i, true); sfx("cardOpp"); }
+  }
+  for (let k = 0; k < 5; k++) if (!prevOpen[k] && S.ai.open[k] && S.ai.cols[k].length) { const c = aiColEl(k).querySelector(".card"); if (c) c.classList.add("flipped"); }
+  if (st.e && st.e.id !== NET.lastEv) {
+    const first = NET.lastEv === null;
+    NET.lastEv = st.e.id;
+    if (!first && st.e.k === "shout") {
+      if (st.e.w === "h") { showBubble(); buzz([60, 40, 60]); sfx("shoutOpp"); say(`Your opponent called Pismarie! You get ${st.e.n} cards`, true); }
+      else { buzz(40); sfx("shout"); say(`Pismarie! Your opponent gets ${st.e.n} cards`, true); }
+    }
+    if (!first && st.e.k === "spit") { flashPile(0); flashPile(1); sfx("spit"); }
+  }
+  if (st.ph !== NET.lastPh) { NET.lastPh = st.ph; guestPhase(st); }
+}
+function guestPhase(st) {
+  const me = S.choosing === S.you;
+  if (st.ph === "countdown") {
+    if (S.round === 1) { startedAt = Date.now(); lastCounts = [26, 26]; }
+    say("");
+    countdown(null);
+  } else if (st.ph === "play") { $("overlay").hidden = true; flashPile(0); flashPile(1); sfx("go"); dealIn(); }
+  else if (st.ph === "choose") {
+    sfx(me ? "round" : "roundOpp");
+    if (singlePile(S)) say(me ? "Your stacks are empty!" : "Your opponent emptied their stacks.");
+    else say(me ? "Your stacks are empty! Tap the smallest pile." : "Your opponent is picking a pile…");
+  } else if (st.ph === "round") { say(""); showPanel(roundPanel() + "<p>The next round starts in a moment…</p>"); }
+  else if (st.ph === "over") finish(st.w === "g" ? true : st.w === "h" ? false : null, st.hw);
+}
+
+// Protocol version: both phones must run the same page, or the game would look different on each.
+const PV = 5;
+const modeName = m => MODES[m === "skjult" ? "skjult" : "normal"];
+function setMpLabels() {
+  $("oppName").textContent = NET ? "Opponent" : "Computer";
+  $("oppRes").textContent = NET ? "Opponent" : "Computer";
+
+  $("restart").hidden = isGuest();
+  document.querySelector("h1 small").textContent = NET ? "online" + (NET.md ? " · " + modeName(NET.md) : "") : "you vs the computer";
+}
+// Inside Claude the platform's room connects the phones. On the stand-alone website, PeerJS connects
+// them directly, with the same calls, so the rest of the game does not care which one it got.
+async function getRoom() {
+  if (window.claude && window.claude.use) {
+    try { const room = await window.claude.use("room"); return room && { join: name => room.join(name) }; } catch (e) { return null; }
+  }
+  if (window.Peer) return { join: (name, role) => peerRoom(name, role) };
+  return null;
+}
+// Phones on mobile data often cannot reach each other directly, so a public relay (TURN) is offered as well.
+const ICE = [
+  { urls: "stun:stun.l.google.com:19302" },
+  { urls: "stun:openrelay.metered.ca:80" },
+  { urls: "turn:openrelay.metered.ca:80", username: "openrelayproject", credential: "openrelayproject" },
+  { urls: "turn:openrelay.metered.ca:443", username: "openrelayproject", credential: "openrelayproject" },
+  { urls: "turn:openrelay.metered.ca:443?transport=tcp", username: "openrelayproject", credential: "openrelayproject" },
+];
+function peerRoom(name, role) {
+  return new Promise((resolve, reject) => {
+    const opts = Object.assign({ config: { iceServers: ICE } }, window.PEER_OPTS || {});
+    const peer = role === "host" ? new Peer(name, opts) : new Peer(opts);
+    if (window.PEER_OPTS) window.__peers = [...(window.__peers || []), peer];  // tests only
+    let mine = {}, self = null, myId = "me", ready = false;
+    const remote = new Map(), handlers = [], conns = new Set();
+    const mk = (id, presence, isMe) => Object.freeze({ peer: id, by: null, isMe, sameTab: isMe, kind: "viewer", guest: false, presence: Object.freeze(presence), updatedAt: Date.now() });
+    const list = () => [self, ...remote.values()].filter(Boolean);
+    const deliver = (joined, left, updated) => { const peers = list(); handlers.forEach(h => { try { h({ peers, joined, left, updated }); } catch (e) {} }); };
+    const wire = conn => {
+      conns.add(conn);
+      conn.on("open", () => conn.send({ presence: mine }));
+      conn.on("data", d => {
+        seen.set(conn, Date.now());
+        if (!d || typeof d !== "object" || !d.presence || typeof d.presence !== "object") return;
+        // The host plays one opponent at a time; a second phone that wants to play is turned away.
+        if (role === "host" && d.presence.role === "guest" && [...remote.keys()].some(id => id !== conn.peer && [...conns].some(c => c.open && c.peer === id))) { conn.close(); return; }
+        const ex = remote.get(conn.peer), p = mk(conn.peer, d.presence, false);
+        remote.set(conn.peer, p);
+        deliver(ex ? [] : [p], [], ex ? [p] : []);
+      });
+      conn.on("close", () => gone(conn)); conn.on("error", () => gone(conn));
+    };
+    const gone = conn => {
+      if (!conns.delete(conn)) return;
+      const ex = remote.get(conn.peer);
+      if (ex && ![...conns].some(c => c.open && c.peer === conn.peer)) { remote.delete(conn.peer); deliver([], [ex], []); }
+      if (role === "guest") keepTrying();  // the link dropped (screen lock, network change): find the host again
+    };
+    // A heartbeat both ways: a phone that went silent without closing the link (screen locked, lost signal)
+    // is noticed within seconds, so the guest starts knocking again instead of waiting for nothing.
+    const seen = new Map();
+    const beat = setInterval(() => {
+      if (peer.destroyed) { clearInterval(beat); return; }
+      conns.forEach(c => {
+        if (!c.open) return;
+        try { c.send({ hb: 1 }); } catch (e) {}
+        if (!seen.has(c)) seen.set(c, Date.now());
+        else if (Date.now() - seen.get(c) > 12000) { seen.delete(c); try { c.close(); } catch (e) {} gone(c); }
+      });
+    }, 2000);
+    // The guest keeps knocking for a while, because the host may be reconnecting to the broker.
+    let tries = 0, knock = null;
+    // Only a link to a phone that has said who it is counts; lobby lookups connect without a word.
+    const linked = () => [...conns].some(c => c.open && remote.has(c.peer));
+    const connect = () => { if (!peer.destroyed && !peer.disconnected && !linked()) wire(peer.connect(name, { reliable: true })); };
+    const keepTrying = () => {
+      if (knock || peer.destroyed) return;
+      tries = 0;
+      knock = setInterval(() => {
+        if (peer.destroyed || linked() || ++tries > 40) { clearInterval(knock); knock = null; return; }
+        connect();
+      }, 3000);
+    };
+    // Switching app or locking the screen drops the link to the broker; come back to it with the same id.
+    const revive = () => { if (peer.disconnected && !peer.destroyed) { try { peer.reconnect(); } catch (e) {} } };
+    peer.on("disconnected", () => setTimeout(revive, 1000));
+    const onShow = () => { if (document.visibilityState === "visible") { revive(); if (role === "guest" && ready) setTimeout(() => { if (!linked()) { connect(); keepTrying(); } }, 800); } };
+    document.addEventListener("visibilitychange", onShow);
+    const api = {
+      name,
+      async presence(patch) {
+        mine = { ...mine, ...patch };
+        for (const k in mine) if (mine[k] === null) delete mine[k];
+        const ex = self; self = mk(myId, JSON.parse(JSON.stringify(mine)), true);
+        queueMicrotask(() => deliver(ex ? [] : [self], [], ex ? [self] : []));
+        conns.forEach(c => { if (c.open) c.send({ presence: mine }); });
+      },
+      onPeers(h) { handlers.push(h); return () => {}; },
+      peers: list,
+      connected: () => !peer.disconnected,
+      linked,
+      lastError: null,
+      async leave() { clearInterval(beat); clearInterval(knock); document.removeEventListener("visibilitychange", onShow); peer.destroy(); }
+    };
+    peer.on("open", id => {
+      myId = id;
+      if (role === "host" && !ready) {
+        // One opponent at a time; a phone that reloads may come back once the old link is gone.
+        // Everyone may knock: players looking through the lobby get an answer and leave again, and a
+        // link that never says who it is gets closed, so it cannot keep the real opponent out.
+        peer.on("connection", c => { wire(c); c.on("open", () => setTimeout(() => { if (!remote.has(c.peer)) { try { c.close(); } catch (e) {} gone(c); } }, 8000)); });
+      } else if (role === "guest" && !linked()) { connect(); keepTrying(); }
+      if (!ready) { ready = true; resolve(api); }
+    });
+    peer.on("error", err => {
+      api.lastError = err && err.type;
+      if (!ready) { reject(err); peer.destroy(); return; }
+      if (err && err.type === "unavailable-id" && role === "host") return;  // our id is still held by the old link; reconnect retries
+    });
+  });
+}
+function mpMenu(note) {
+  const lobby = !window.claude && !!window.Peer;
+  showPanel(`<h2>Online</h2>
+    ${note ? `<p><strong>${note}</strong></p>` : ""}
+    ${MODE_PICK}
+    ${lobby ? `<div class="lobby"><p class="lobbystat" id="lobbyStat">Looking for players online…</p>
+    <button class="primary" id="lobbyFind" type="button">Play a random opponent</button></div>
+    <h3 class="sethead">With someone you know</h3>` : ""}
+    <p>One of you creates a game and gets a code. The other types in the code and joins.</p>
+    <button class="primary" id="mpHost" type="button">Create game</button>
+    <label class="label" for="mpCode">Code from your opponent</label>
+    <input id="mpCode" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="0000">
+    <div class="btnrow"><button class="primary alt" id="mpJoin" type="button">Join</button><button id="mpBack" type="button">Back</button></div>`);
+  $("mpHost").addEventListener("click", hostGame);
+  $("mpJoin").addEventListener("click", () => joinGame($("mpCode").value.trim()));
+  $("mpCode").addEventListener("keydown", e => { if (e.key === "Enter") joinGame($("mpCode").value.trim()); });
+  $("mpBack").addEventListener("click", () => { clearTimeout(lobbyTimer); showMenu(); });
+  syncModeUI();
+  if (lobby) { $("lobbyFind").addEventListener("click", findGame); showLobby(); }
+}
+
+/* ---------- Lobby: play a stranger, without accounts or a server of our own ----------
+   There are a few well-known lobby places. A player waiting for an opponent holds a free place,
+   so anyone can look through the places and see who is waiting and which games are being played. */
+const LOBBY = Array.from({ length: 6 }, (_, i) => "pismarie-dks-lobby-" + (i + 1));
+// Looks at every place: "free", "waiting" (someone hosts and waits), "busy" (a game is on) or "unknown".
+// Asks every place at once; the broker takes a few seconds to say a place is empty, so stop
+// early as soon as `enough` says the answer is good enough.
+function scanLobby(enough) {
+  return new Promise(resolve => {
+    const opts = Object.assign({ config: { iceServers: ICE } }, window.PEER_OPTS || {});
+    const peer = new Peer(opts);
+    const out = {};
+    let done = false;
+    const finish = () => { if (done) return; done = true; setTimeout(() => { try { peer.destroy(); } catch (e) {} }, 300); resolve(out); };
+    const settle = (id, st, conn) => {
+      if (done || out[id]) return;
+      out[id] = st;
+      try { conn && conn.close(); } catch (e) {}
+      if (LOBBY.every(x => out[x]) || (enough && enough(out))) finish();
+    };
+    setTimeout(finish, 8000);
+    peer.on("open", () => {
+      for (const id of LOBBY) {
+        const conn = peer.connect(id, { reliable: true });
+        if (!conn) { settle(id, "free"); continue; }
+        conn.on("data", d => {
+          const pr = d && d.presence;
+          const waits = pr && pr.role === "host" && !pr.st && pr.pv === PV;  // an older page is no match
+          settle(id, waits ? "waiting-" + (pr.md === "skjult" ? "skjult" : "normal") : "busy", conn);
+        });
+        conn.on("close", () => settle(id, "busy", conn));
+      }
+    });
+    peer.on("error", err => {
+      const id = err && err.type === "peer-unavailable" && LOBBY.find(x => String(err.message || "").endsWith(x));
+      if (id) settle(id, "free");
+      else if (err && err.type !== "peer-unavailable") finish();
+    });
+  });
+}
+let lobbyTimer = null, lobbyGen = 0;
+async function showLobby() {
+  clearTimeout(lobbyTimer);
+  const gen = ++lobbyGen;  // only the newest look counts; older ones still running are ignored
+  const scan = await scanLobby();
+  const el = $("lobbyStat"); if (!el || gen !== lobbyGen) return;
+  const vals = Object.values(scan);
+  const me = Settings.mode === "skjult" ? "skjult" : "normal", them = me === "skjult" ? "normal" : "skjult";
+  const waiting = vals.filter(v => v === "waiting-" + me).length, other = vals.filter(v => v === "waiting-" + them).length, busy = vals.filter(v => v === "busy").length;
+  const otherTxt = other ? ` ${other} waiting for ${modeName(them)}.` : "";
+  el.textContent = waiting ? `${waiting === 1 ? "1 player is waiting" : waiting + " players are waiting"} for ${modeName(me)} now.${otherTxt}${busy ? ` ${busy} ${busy === 1 ? "game" : "games"} in progress.` : ""}`
+    : other ? `Nobody is waiting for ${modeName(me)}, but ${other} waiting for ${modeName(them)}. Switch game above, or join the queue.`
+    : busy ? `Nobody is waiting right now, but ${busy} ${busy === 1 ? "game is" : "games are"} in progress. Join the queue so others can find you.`
+    : "Nobody is online right now. Join the queue so others can find you.";
+  el.classList.toggle("live", waiting > 0);
+  lobbyTimer = setTimeout(() => { if ($("lobbyStat")) showLobby(); }, 10000);
+}
+// Join someone who waits, or wait in the first free place. Two players who both wait merge:
+// the one in the later place joins the one in the earlier place.
+async function findGame() {
+  clearTimeout(lobbyTimer); lobbyGen++;
+  showPanel(`<h2>Finding an opponent…</h2><p>Looking for someone who wants to play ${modeName(Settings.mode)}.</p><button class="leave" type="button">Cancel</button>`);
+  const want = "waiting-" + (Settings.mode === "skjult" ? "skjult" : "normal");
+  const scan = await scanLobby(o => Object.values(o).includes(want));
+  const wait = LOBBY.find(id => scan[id] === want);
+  if (wait) { joinRoom(wait, "lobby"); return; }
+  for (const id of LOBBY.filter(id => !scan[id] || scan[id] === "free")) {
+    if (await hostRoom(id, "lobby")) { lobbyWait(id); return; }
+  }
+  mpMenu("The lobby is full right now. Try again soon, or play with a code.");
+}
+function lobbyWait(id) {
+  showPanel(`<h2>Waiting for an opponent…</h2><p>You are waiting for a game of <strong>${modeName(NET.md)}</strong>. Others can see you in the lobby. The game starts as soon as someone joins.</p>
+    <p class="newbietxt">Keep the page open meanwhile.</p><button class="leave" type="button">Cancel</button>`);
+  const look = async () => {
+    if (!NET || NET.role !== "host" || NET.guest || NET.room.name !== id) return;
+    const want = "waiting-" + NET.md;
+    const scan = await scanLobby(o => LOBBY.slice(0, LOBBY.indexOf(id)).some(x => o[x] === want));
+    if (!NET || NET.guest) return;
+    const earlier = LOBBY.slice(0, LOBBY.indexOf(id)).find(x => scan[x] === want);
+    if (earlier) { NET.room.leave(); NET = null; joinRoom(earlier, "lobby"); return; }
+    setTimeout(look, 6000 + Math.random() * 4000);
+  };
+  setTimeout(look, 3000 + Math.random() * 3000);
+}
+const NO_ROOM = window.claude ? "This only works when the game is open in Claude and you are both signed in with access to it." : "Could not connect. Check your internet connection and try again.";
+async function hostRoom(name, how) {
+  const room = await getRoom();
+  if (!room) return null;
+  let r;
+  try { r = await room.join(name, "host"); } catch (e) { return null; }
+  NET = { role: "host", room: r, how, lastN: 0, guest: null, v: 0 };
+  NET.md = Settings.mode === "skjult" ? "skjult" : "normal";
+  setMpLabels();
+  r.presence({ role: "host", dz: myDz(), pv: PV, md: NET.md }).catch(() => {});
+  r.onPeers(hostPeers);
+  return r;
+}
+async function hostGame() {
+  clearTimeout(lobbyTimer);
+  if (!(await getRoom())) { mpMenu(NO_ROOM); return; }
+  const code = String(1000 + Math.floor(Math.random() * 9000));
+  if (!(await hostRoom("pismarie-dks-" + code, "code"))) { mpMenu("Could not create the game. Try again."); return; }
+  showPanel(`<h2>Your game code</h2><div class="code">${code}</div>
+    <p>You are playing <strong>${modeName(NET.md)}</strong>. To play something else, tap Cancel and switch game.</p>
+    <p>Ask your opponent to open Pismarie, choose <strong>Online and with friends</strong> and type in the code. The game starts as soon as you are both in.</p>
+    <p class="newbietxt">Keep the page open meanwhile. Say the code out loud, or come back here right after sending it. You both need to use the website.</p><button class="leave" type="button">Cancel</button>`);
+}
+async function joinRoom(name, how) {
+  const room = await getRoom();
+  if (!room) { mpMenu(NO_ROOM); return null; }
+  let r;
+  try { r = await room.join(name, "guest"); } catch (e) { mpMenu("Could not join. Try again."); return null; }
+  NET = { role: "guest", room: r, how, n: 0, acts: [], ver: -1, lastPh: null, lastEv: null, seenHost: false };
+  setMpLabels();
+  r.presence({ role: "guest", acts: [], dz: myDz(), pv: PV }).catch(() => {});
+  r.onPeers(guestPeers);
+  if (how === "lobby") {
+    showPanel(`<h2>Connecting…</h2><p>Someone was waiting. Connecting to the game.</p><button class="leave" type="button">Cancel</button>`);
+    // Someone else may have got there first: then look again.
+    setTimeout(() => { if (NET && NET.room === r && !NET.seenHost) { r.leave(); NET = null; findGame(); } }, 20000);
+  }
+  return r;
+}
+async function joinGame(code) {
+  if (!/^\d{4}$/.test(code)) { shake($("mpCode")); return; }
+  clearTimeout(lobbyTimer);
+  const r = await joinRoom("pismarie-dks-" + code, "code");
+  if (!r) return;
+  showPanel(`<h2>Connecting…</h2><p>Waiting for the game with code <strong>${code}</strong>.</p><button class="leave" type="button">Cancel</button>`);
+  setTimeout(() => {
+    if (!NET || NET.role !== "guest" || NET.seenHost) return;
+    const missing = r.lastError === "peer-unavailable";
+    showPanel(missing
+      ? `<h2>No game found</h2><p>There is no game with the code <strong>${code}</strong> right now. Check the code, and ask your opponent to keep Pismarie open on the screen while you join.</p><p class="newbietxt">You both need to use the website, not one of you in the Claude app.</p><button class="primary" id="mpRetry" type="button">Try again</button>`
+      : `<h2>No connection</h2><p>The game with the code <strong>${code}</strong> exists, but the phones could not connect to each other. Try again, or join the same wifi.</p><button class="primary" id="mpRetry" type="button">Try again</button>`);
+    $("mpRetry").addEventListener("click", () => location.reload());
+  }, 20000);
+}
+
+showMenu();
+$("restart").addEventListener("click", start);
+render();
+</script>
+</body></html>
