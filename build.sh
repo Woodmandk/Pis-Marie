@@ -12,3 +12,12 @@ mkdir -p "$d/en"
 python3 "$d/i18n/en.py" "$d/src/pismarie.html" > "$d/en/body.tmp"
 wrap en ../peerjs.min.js < "$d/en/body.tmp" > "$d/en/index.html"
 rm "$d/en/body.tmp"
+
+# itch.io: the English game alone, zipped for upload as an HTML5 game (dist/ is not committed).
+mkdir -p "$d/dist/itch"
+python3 "$d/i18n/en.py" "$d/src/pismarie.html" --itch > "$d/dist/body.tmp"
+wrap en peerjs.min.js < "$d/dist/body.tmp" > "$d/dist/itch/index.html"
+rm "$d/dist/body.tmp"
+cp "$d/peerjs.min.js" "$d/dist/itch/"
+rm -f "$d/dist/you-snooze-you-lose-itch.zip"
+(cd "$d/dist/itch" && zip -q -r ../you-snooze-you-lose-itch.zip index.html peerjs.min.js)

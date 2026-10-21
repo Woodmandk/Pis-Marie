@@ -220,4 +220,15 @@ src = src.replace("<h1>" + NAME + " <small>", "<h1>You Snooze <span class=\"wrap
 if missing:
     sys.stderr.write("i18n/en.py: these Danish texts were not found:\n" + "\n".join("  " + m[:100] for m in missing) + "\n")
     sys.exit(1)
+# itch.io build (--itch): English only, with no way to the Danish site, and texts that do not point
+# at the website.
+if "--itch" in sys.argv:
+    for a, b in [
+        ('`<a class="lang" href="../" lang="da">Spil på dansk</a>`', '""'),
+        ('d.shop ? "Shop · unlocked" : "Free"', '"Free"'),
+        (" You both need to use the website.", " You both need to play on itch.io."),
+        ('<p class="newbietxt">You both need to use the website, not one of you in the Claude app.</p>', '<p class="newbietxt">You both need to play on itch.io.</p>'),
+    ]:
+        if a not in src: sys.stderr.write("i18n/en.py --itch: not found: " + a[:80] + "\n"); sys.exit(1)
+        src = src.replace(a, b)
 sys.stdout.write(src)
