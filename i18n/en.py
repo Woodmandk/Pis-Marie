@@ -3,6 +3,8 @@
 # Danish piece is no longer found, so a changed Danish text is noticed instead of left untranslated.
 import re, sys
 
+NAME = "You Snooze You Lose"
+
 PAIRS = [
     # page frame
     ('<small>du mod computeren</small>', '<small>you vs the computer</small>'),
@@ -192,7 +194,7 @@ PAIRS = [
     ('name: "Klassisk"', 'name: "Classic"'), ('name: "Hav"', 'name: "Sea"'), ('name: "Nat"', 'name: "Night"'),
     ('name: "Skov"', 'name: "Forest"'), ('name: "Guld"', 'name: "Gold"'), ('name: "Is"', 'name: "Ice"'),
     ('name: "Rummet"', 'name: "Space"'), ('name: "Slik"', 'name: "Candy"'), ('name: "Marmor"', 'name: "Marble"'),
-    ('name: "Træ"', 'name: "Wood"'), ('name: "Pirat"', 'name: "Pirate"'), ('name: "Regnbue"', 'name: "Rainbow"'),
+    ('name: "Dannebrog"', 'name: "Flag"'), ('name: "Træ"', 'name: "Wood"'), ('name: "Pirat"', 'name: "Pirate"'), ('name: "Regnbue"', 'name: "Rainbow"'),
 ]
 # Buttons and short words that appear several times.
 EVERYWHERE = [
@@ -207,6 +209,14 @@ for da, en in PAIRS:
     src = src.replace(da, en)
 for da, en in EVERYWHERE:
     src = src.replace(da, en)
+# The English game is "You Snooze You Lose", and the shout for two equal cards is "Snap!".
+# Only words on their own change; code names such as isPismarie and the "pismarie" ids stay.
+src = src.replace("call Pismarie.", "call Snap.").replace("<span>Pismarie called</span>", "<span>Snaps called</span>")
+src = src.replace("Pismarie!", "Snap!")
+src = re.sub(r"(?<![A-Za-z])Pismarie(?![A-Za-z(])", NAME, src)
+# The longer name needs a smaller heading on a phone, so the buttons stay on the same line.
+src = src.replace("</style>", "@media (max-width: 520px) { header h1 { font-size: 1rem; line-height: 1.05; letter-spacing: 0; } header h1 .wrap { display: block; } }\n</style>", 1)
+src = src.replace("<h1>" + NAME + " <small>", "<h1>You Snooze <span class=\"wrap\">You Lose</span> <small>", 1)
 if missing:
     sys.stderr.write("i18n/en.py: these Danish texts were not found:\n" + "\n".join("  " + m[:100] for m in missing) + "\n")
     sys.exit(1)

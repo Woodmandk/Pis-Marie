@@ -1,8 +1,8 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#113a2d"><style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}</style><script src="../peerjs.min.js"></script></head><body><title>Pismarie</title>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#113a2d"><style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}</style><script src="../peerjs.min.js"></script></head><body><title>You Snooze You Lose</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Rozha+One&family=Fredoka:wght@600&family=Playfair+Display:wght@800&family=Alfa+Slab+One&family=Bebas+Neue&family=Righteous&family=Cinzel:wght@700&family=Bungee&family=Silkscreen&display=swap">
 <style>
-/* Layout: one-screen card table. Opponent's five bunker on top, two middle dynger with the Pismarie button, your five bunker at the bottom. Single felt look by choice. */
+/* Layout: one-screen card table. Opponent's five bunker on top, two middle dynger with the You Snooze You Lose button, your five bunker at the bottom. Single felt look by choice. */
 :root {
   --felt: #1f5e49;
   --felt-deep: #113a2d;
@@ -540,7 +540,7 @@ body.calm :is([data-dz="is"], [data-dz="marmor"], [data-dz="guld"], [data-dz="da
   .msg { min-height: 1.2em; font-size: .8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 }
 @media (hover: none) { .key { display: none; } }
-/* Phone on its side: the header becomes a slim column on the left, the Pismarie button sits beside the dynger,
+/* Phone on its side: the header becomes a slim column on the left, the You Snooze You Lose button sits beside the dynger,
    and both players' counts sit beside their bunker. */
 @media (orientation: landscape) and (max-height: 540px) {
   body { padding-block: 4px; }
@@ -578,11 +578,12 @@ body.calm :is([data-dz="is"], [data-dz="marmor"], [data-dz="guld"], [data-dz="da
   #panel .modeinfo { display: none; }
   #panel .lobby { padding: 8px 12px; gap: 6px; }
 }
+@media (max-width: 520px) { header h1 { font-size: 1rem; line-height: 1.05; letter-spacing: 0; } header h1 .wrap { display: block; } }
 </style>
 
 <div class="table">
   <header>
-    <h1>Pismarie <small>you vs the computer</small></h1>
+    <h1>You Snooze <span class="wrap">You Lose</span> <small>you vs the computer</small></h1>
     <div class="controls">
       <button id="menuBtn" type="button">Menu</button>
       <button id="restart" type="button">New game</button>
@@ -603,7 +604,7 @@ body.calm :is([data-dz="is"], [data-dz="marmor"], [data-dz="guld"], [data-dz="da
   </div>
 
   <div class="callrow">
-    <button id="shout" type="button" aria-disabled="true">Pismarie!</button>
+    <button id="shout" type="button" aria-disabled="true">Snap!</button>
     <div class="msg" id="msg" aria-live="polite"></div>
   </div>
 
@@ -636,7 +637,7 @@ body.calm :is([data-dz="is"], [data-dz="marmor"], [data-dz="guld"], [data-dz="da
       <li><strong>Drag</strong> your cards onto the piles in the middle, one step up or down. An ace goes on both a 2 and a king.</li>
       <li><strong>Tap</strong> a stack to turn over its next card.</li>
       <li>Drag a card into an <strong>empty stack</strong> to make room, or onto a <strong>matching card</strong> in your own stacks. Then you can turn over the card below.</li>
-      <li>Two matching cards on top in the middle? Tap <strong>Pismarie!</strong> before your opponent, and they get both piles.</li>
+      <li>Two matching cards on top in the middle? Tap <strong>Snap!</strong> before your opponent, and they get both piles.</li>
       <li>If nobody can play, you each turn a card from your reserve onto your pile.</li>
       <li>When you have emptied your 5 stacks, you pick one of the piles in the middle. Take the smallest! Your opponent gets the other one, and you both lay out again.</li>
       <li>If a player has no reserve, only one pile is played. If that player empties their stacks, they win.</li>
@@ -1018,10 +1019,10 @@ function afterChange(pl) {
   checkStuck();
 }
 
-// The tutorial's Pismarie step waits for the shout: playing on first would break up the pair.
+// The tutorial's You Snooze You Lose step waits for the shout: playing on first would break up the pair.
 function tutLocked(pl) {
   if (!TUT || pl !== S.you || !TUT_STEPS[TUT.step].lock) return false;
-  say("Tap Pismarie! first.", true);
+  say("Tap Snap! first.", true);
   return true;
 }
 function play(pl, k, i) {
@@ -1138,7 +1139,7 @@ document.addEventListener("click", e => {
 });
 function showBubble() {
   document.querySelectorAll(".bubble").forEach(b => b.remove());
-  const b = document.createElement("div"); b.className = "bubble"; b.textContent = "Pismarie!";
+  const b = document.createElement("div"); b.className = "bubble"; b.textContent = "Snap!";
   document.querySelector(".opp").appendChild(b);
   setTimeout(() => b.remove(), 1400);
 }
@@ -1157,7 +1158,7 @@ function shout(pl) {
   const pileRects = [0, 1].map(i => ({ rect: $("pile" + i).querySelector(".card").getBoundingClientRect(), card: pileTop(S, i) }));
   if (pl === S.ai) showBubble();
   S.ev = { id: (S.ev ? S.ev.id : 0) + 1, k: "shout", w: pl === S.you ? "h" : "g", n };
-  say(pl === S.you ? `Pismarie! ${opp()} gets ${n} cards` : `${opp()} called Pismarie! You get ${n} cards`, true);
+  say(pl === S.you ? `Snap! ${opp()} gets ${n} cards` : `${opp()} called Snap! You get ${n} cards`, true);
   // The won dynger fly to the loser's reserve, then the table slams down new cards.
   const loserSide = $(pl === S.you ? "side1" : "side0");
   pileRects.forEach(p => p.card && fly(p.card, p.rect, loserSide));
@@ -1279,12 +1280,12 @@ document.addEventListener("keydown", e => {
 $("shout").addEventListener("click", () => shout(S.you));
 
 /* Computer opponent. Its pace drifts, it sometimes hesitates, picks moves at random,
-   and can miss a Pismarie altogether. */
+   and can miss a You Snooze You Lose altogether. */
 const pick = a => a[Math.floor(Math.random() * a.length)];
 let mood = 1;
 // How fast the computer is: chosen when you pick "Mod computeren".
 const LEVELS = [
-  { ms: 1900, name: "Easy", info: "Takes it slow and often forgets to call Pismarie." },
+  { ms: 1900, name: "Easy", info: "Takes it slow and often forgets to call Snap." },
   { ms: 1200, name: "Medium", info: "A good challenge." },
   { ms: 750, name: "Hard", info: "Fast and rarely fooled." },
   { ms: 450, name: "Lightning", info: "Almost impossible to beat." },
@@ -1393,7 +1394,7 @@ function finish(youWon, how) {
   showPanel(`<h2>${title}</h2><p>${sub}</p>
     <div class="stats"><span class="h">Time ${time}</span><span class="h">You</span><span class="h">${NET ? "Opponent" : "Computer"}</span>
     <span>Cards played</span><span>${S.you.played}</span><span>${S.ai.played}</span>
-    <span>Pismarie called</span><span>${S.you.shouts}</span><span>${S.ai.shouts}</span>
+    <span>Snaps called</span><span>${S.you.shouts}</span><span>${S.ai.shouts}</span>
     <span>Rounds played</span><span>${S.round}</span><span></span></div>
     ${isGuest() ? `<p>Waiting for your opponent to start a new game.</p><div class="btnrow"><button class="leave" type="button">Menu</button></div>`
       : `<div class="btnrow"><button class="primary" id="againBtn" type="button">New game${NET ? "" : " · " + LEVELS.find(l => l.ms === base()).name}</button>${NET ? `<button class="leave" type="button">Menu</button>` : `<button id="lvBtn" type="button">Change difficulty</button><button id="toMenu" type="button">Menu</button>`}</div>`}`);
@@ -1498,9 +1499,9 @@ function showMenu() {
   stopTimers(); cancelFlow(); running = false; endTutorial(false);
   if (!NET) { S = newGame(Settings.mode); S.phase = "menu"; selected = null; render(); say(""); }
   const fresh = !Settings.tutorialDone;
-  showPanel(`<h2 class="menutitle">Pismarie</h2>
+  showPanel(`<h2 class="menutitle">You Snooze You Lose</h2>
     <p class="menusub">The fast card game for two. First to empty their stacks wins.</p>
-    ${fresh ? `<div class="lobby"><p class="lobbystat live">New to Pismarie?</p>
+    ${fresh ? `<div class="lobby"><p class="lobbystat live">New to You Snooze You Lose?</p>
       <p class="newbietxt">Learn the game in a few minutes by playing it, step by step.</p>
       <div class="btnrow"><button class="primary" id="mTut" type="button">Learn to play</button><button id="mKnow" type="button">I know the game</button></div></div>` : ""}
     <div class="menu">
@@ -1566,7 +1567,7 @@ const TUT_STEPS = [
     done: () => pileTop(S, 1) === cardOf(8, 2), hi: () => [myCard(0), $("pile1").querySelector(".card")] },
   { text: "Now the stack is empty. Drag one of your other cards into the empty space. That makes room, and if a hidden card was under it, you can turn it over.",
     done: () => S.you.cols[0].length > 0, hi: () => [myCard(0)] },
-  { text: "Look, there are two 8s in the middle! Tap Pismarie! before your opponent, and your opponent gets both piles.",
+  { text: "Look, there are two 8s in the middle! Tap Snap! before your opponent, and your opponent gets both piles.",
     enter: () => { tutPair(); render(); flashPile(0, true); sfx("cardOpp"); },
     lock: true, done: () => S.you.shouts > 0 && !S.pending, hi: () => [$("shout")] },
   { text: "Your opponent got both piles, and you each turned a card from your reserve. That also happens when neither of you can play.",
@@ -1574,7 +1575,7 @@ const TUT_STEPS = [
   { text: "Empty your 5 stacks before your opponent. Then you pick one of the piles in the middle: take the smallest. The first to run out of cards completely wins the game.",
     next: "Play the computer", final: true, hi: () => [] },
 ];
-// The Pismarie step needs a pair on top, whatever the player laid before: the opponent lays a card
+// The You Snooze You Lose step needs a pair on top, whatever the player laid before: the opponent lays a card
 // of the same rank as the top of your dynge (taken from its own cards).
 function tutPair() {
   const t = pileTop(S, 1);
@@ -1659,7 +1660,7 @@ const DESIGNS = [
   { id: "hav", name: "Sea" },
   { id: "nat", name: "Night" },
   { id: "skov", name: "Forest" },
-  { id: "dannebrog", name: "Dannebrog", shop: true },
+  { id: "dannebrog", name: "Flag", shop: true },
   { id: "neon", name: "Neon", shop: true },
   { id: "guld", name: "Gold", shop: true },
   { id: "lava", name: "Lava", shop: true },
@@ -1696,7 +1697,7 @@ function applyDesigns() {
 function setMyDz(id) {
   const d = DESIGNS.find(x => x.id === id);
   if (!d) return;
-  if (!owns(d)) { $("dzNote").textContent = `${d.name} will be in the shop when Pismarie becomes an app.`; sfx("nope"); return; }
+  if (!owns(d)) { $("dzNote").textContent = `${d.name} will be in the shop when You Snooze You Lose becomes an app.`; sfx("nope"); return; }
   Settings.design = d.id; saveSettings();
   if (!NET && oppDz === d.id) pickOppDz();
   if (NET) NET.room.presence({ dz: d.id }).catch(() => {});
@@ -1937,7 +1938,7 @@ function hostPeers(ch) {
   if (NET.guest && !ch.updated.includes(g) && !ch.joined.includes(g)) return;
   if (!NET.guest) {
     if (g.presence.pv !== PV) {
-      showPanel(`<h2>Old version</h2><p>Your opponent's phone has an older version of Pismarie. Ask them to reload the page, and the game will start.</p><button class="leave" type="button">Cancel</button>`);
+      showPanel(`<h2>Old version</h2><p>Your opponent's phone has an older version of You Snooze You Lose. Ask them to reload the page, and the game will start.</p><button class="leave" type="button">Cancel</button>`);
       return;
     }
     NET.guest = g.peer;
@@ -1953,7 +1954,7 @@ function guestPeers(ch) {
   const h = ch.peers.find(p => !p.isMe && p.presence && p.presence.role === "host");
   if (!h) { if (NET.seenHost && ch.left.length) { say("The connection dropped. Trying again…"); NET.lost = true; watchLost(); } return; }
   if (h.presence.pv !== PV) {
-    if (!NET.oldHost) { NET.oldHost = true; showPanel(`<h2>Old version</h2><p>The other phone has an older version of Pismarie. Ask them to reload the page and create the game again.</p><button class="primary leave" type="button">Try again</button>`); }
+    if (!NET.oldHost) { NET.oldHost = true; showPanel(`<h2>Old version</h2><p>The other phone has an older version of You Snooze You Lose. Ask them to reload the page and create the game again.</p><button class="primary leave" type="button">Try again</button>`); }
     return;
   }
   if (!NET.seenHost && !h.presence.st) showPanel(`<h2>Connected</h2><p>You are playing <strong>${modeName(h.presence.md)}</strong>. The game starts in a moment…</p><button class="leave" type="button">Cancel</button>`);
@@ -2003,8 +2004,8 @@ function applyState(st) {
     const first = NET.lastEv === null;
     NET.lastEv = st.e.id;
     if (!first && st.e.k === "shout") {
-      if (st.e.w === "h") { showBubble(); buzz([60, 40, 60]); sfx("shoutOpp"); say(`Your opponent called Pismarie! You get ${st.e.n} cards`, true); }
-      else { buzz(40); sfx("shout"); say(`Pismarie! Your opponent gets ${st.e.n} cards`, true); }
+      if (st.e.w === "h") { showBubble(); buzz([60, 40, 60]); sfx("shoutOpp"); say(`Your opponent called Snap! You get ${st.e.n} cards`, true); }
+      else { buzz(40); sfx("shout"); say(`Snap! Your opponent gets ${st.e.n} cards`, true); }
     }
     if (!first && st.e.k === "spit") { flashPile(0); flashPile(1); sfx("spit"); }
   }
@@ -2271,7 +2272,7 @@ async function hostGame() {
   if (!(await hostRoom("pismarie-dks-" + code, "code"))) { mpMenu("Could not create the game. Try again."); return; }
   showPanel(`<h2>Your game code</h2><div class="code">${code}</div>
     <p>You are playing <strong>${modeName(NET.md)}</strong>. To play something else, tap Cancel and switch game.</p>
-    <p>Ask your opponent to open Pismarie, choose <strong>Online and with friends</strong> and type in the code. The game starts as soon as you are both in.</p>
+    <p>Ask your opponent to open You Snooze You Lose, choose <strong>Online and with friends</strong> and type in the code. The game starts as soon as you are both in.</p>
     <p class="newbietxt">Keep the page open meanwhile. Say the code out loud, or come back here right after sending it. You both need to use the website.</p><button class="leave" type="button">Cancel</button>`);
 }
 async function joinRoom(name, how) {
@@ -2300,7 +2301,7 @@ async function joinGame(code) {
     if (!NET || NET.role !== "guest" || NET.seenHost) return;
     const missing = r.lastError === "peer-unavailable";
     showPanel(missing
-      ? `<h2>No game found</h2><p>There is no game with the code <strong>${code}</strong> right now. Check the code, and ask your opponent to keep Pismarie open on the screen while you join.</p><p class="newbietxt">You both need to use the website, not one of you in the Claude app.</p><button class="primary" id="mpRetry" type="button">Try again</button>`
+      ? `<h2>No game found</h2><p>There is no game with the code <strong>${code}</strong> right now. Check the code, and ask your opponent to keep You Snooze You Lose open on the screen while you join.</p><p class="newbietxt">You both need to use the website, not one of you in the Claude app.</p><button class="primary" id="mpRetry" type="button">Try again</button>`
       : `<h2>No connection</h2><p>The game with the code <strong>${code}</strong> exists, but the phones could not connect to each other. Try again, or join the same wifi.</p><button class="primary" id="mpRetry" type="button">Try again</button>`);
     $("mpRetry").addEventListener("click", () => location.reload());
   }, 20000);
